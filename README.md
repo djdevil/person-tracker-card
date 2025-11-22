@@ -1,3 +1,78 @@
+# 👤 Person Tracker Card for Home Assistant
+
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor.
+
+![Person Tracker Card](images/preview.png)
+
+## ✨ Key Features
+
+- 📱 **Battery Monitoring** - Displays device battery level with dynamic icon
+- 🚶 **Activity Tracking** - Shows current activity (Walking, Running, Automotive, Stationary, Cycling)
+- 📍 **Distance from Home** - Waze integration to calculate distance
+- ⏱️ **Travel Time** - Estimates time needed to reach home/work
+- 📶 **Connection Type** - Shows if device is connected via WiFi or mobile network
+- 🎨 **Customizable States** - Different colors and images for each state (Home, Office, etc.)
+- 🖼️ **Custom Images** - Support for transparent PNG/GIF images
+- 🎯 **Complete Visual Editor** - Easy configuration via graphical interface
+- 📐 **Flexible Layout** - Freely position each element on the card
+- 🎨 **Highly Customizable** - Fonts, colors, sizes, spacing completely configurable
+
+## 📸 Screenshots
+
+### Visual Editor
+| Base Tab | Sensors Tab | States Tab |
+|----------|-------------|-----------|
+| ![Base Editor](images/editor-base.png) | ![Sensors Editor](images/editor-sensors.png) | ![States Editor](images/editor-states.png) |
+
+## 📦 Installation
+
+### HACS (Recommended)
+
+1. Open HACS in your Home Assistant
+2. Go to "Frontend"
+3. Click on the three dots in the top right
+4. Select "Custom repositories"
+5. Add this URL: `https://github.com/djdevil/person-tracker-card`
+6. Select category "Lovelace"
+7. Click "Add"
+8. Search for "Person Tracker Card" and install it
+9. Restart Home Assistant
+
+### Manual Installation
+
+1. Download `person-tracker-card.js` and `person-tracker-card-editor.js`
+2. Copy the files to the `config/www/person-tracker-card/` folder
+3. Add the resource in Home Assistant:
+   - Go to Settings → Dashboards → Menu (⋮) → Resources
+   - Click "+ ADD RESOURCE"
+   - URL: `/local/person-tracker-card/person-tracker-card.js`
+   - Type: JavaScript Module
+4. Reload the page (Ctrl+F5)
+
+## 🔧 Basic Configuration
+
+### Method 1: Visual Editor (Recommended)
+
+1. Edit your dashboard
+2. Add a new card
+3. Search for "Person Tracker Card"
+4. Configure through the graphical interface
+
+### Method 2: YAML
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+show_entity_picture: true
+show_name: true
+show_last_changed: true
+show_battery: true
+show_activity: true
+show_distance: true
+show_travel_time: true
+show_connection: true
+```
 # 👤 Person Tracker Card per Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
