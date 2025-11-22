@@ -1,4 +1,4 @@
-# 👤 Person Tracker Card for Home Assistant
+# 👤 Person Tracker Card for Home Assistant - EN
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
@@ -73,7 +73,7 @@ show_distance: true
 show_travel_time: true
 show_connection: true
 ```
-
+# 👤 Person Tracker Card for Home Assistant - IT
 ## ✨ Caratteristiche Principali
 
 - 📱 **Monitoraggio Batteria** - Visualizza il livello di batteria del dispositivo con icona dinamica
