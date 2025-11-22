@@ -46,7 +46,7 @@ class PersonTrackerCard extends LitElement {
 
   static getStubConfig() {
     return {
-      entity: 'person.example',
+      entity: '',
       type: 'custom:person-tracker-card'
     };
   }
@@ -290,12 +290,13 @@ class PersonTrackerCard extends LitElement {
     }
 
     const entity = this.hass.states[this.config.entity];
-    if (!entity) {
+
+    if (!this.config.entity) {
       return html`
         <ha-card>
           <div class="warning">
-            <ha-icon icon="mdi:alert"></ha-icon>
-            <span>Entità ${this.config.entity} non trovata</span>
+            <ha-icon icon="mdi:account-question"></ha-icon>
+            <span>Seleziona un'entità person dalla configurazione</span>
           </div>
         </ha-card>
       `;
