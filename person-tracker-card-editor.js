@@ -651,15 +651,7 @@ class PersonTrackerCardEditor extends LitElement {
         </ha-textfield>
       </div>
 
-      <div class="section">
-        <div class="section-title">Posizione Elementi</div>
 
-        ${this._renderPositionButtons('battery_position', 'Posizione Batteria')}
-        ${this._renderPositionButtons('activity_position', 'Posizione Attività')}
-        ${this._renderPositionButtons('distance_position', 'Posizione Distanza')}
-        ${this._renderPositionButtons('travel_position', 'Posizione Tempo Viaggio')}
-        ${this._renderPositionButtons('connection_position', 'Posizione Connessione')}
-      </div>
     `;
   }
 
