@@ -1,14 +1,17 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-2.2.3-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and two layout modes.
 
 ![Person Tracker Card](images/preview.png)
 
+**[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
+
 ---
 
+<a name="english-version"></a>
 ## 📑 Table of Contents
 
 - [✨ Key Features](#-key-features)
@@ -390,26 +393,16 @@ show_distance: false
 
 ## 📝 Changelog
 
-### v2.2.3 (2024-11-23)
-- 🐛 Fixed: Person name disappears with custom states in compact layout
-- 🎨 Hidden irrelevant style fields in compact mode
-- ✨ Separated person name from location display
-
-### v2.2.2 (2024-11-23)
-- ✨ Added configurable width for compact layout (200-500px)
-- 🎨 Hidden aspect ratio field in compact mode
-- 📝 Improved documentation
-
-### v2.2.1 (2024-11-23)
-- 🐛 Fixed crash when selecting layout from dropdown
-
-### v2.2.0 (2024-11-23)
+### v1.1.0 (2024-11-23)
 - ✨ New compact layout mode
+- 📏 Configurable width for compact layout (200-500px)
+- ⌚ Watch battery support
 - 🎨 Separate Position tab in editor
 - 📐 Conditional UI based on selected layout
-- 🎯 Improved editor organization
+- 🐛 Fixed: Person name disappears with custom states in compact layout
+- 🎨 Hidden irrelevant style fields in compact mode
 
-### v2.1.0 (2024-11-22)
+### v1.0.0 (2024-11-22)
 - 🎉 Initial public release
 - ✨ Complete visual editor
 - 📱 Full Companion App support
@@ -457,11 +450,14 @@ If you find this card useful:
 
 **Made with ❤️ for the Home Assistant Community**
 
-[🇮🇹 Versione Italiana](#italian-version) | [🇬🇧 English Version](#english-version)
-
 ---
 
+<a name="versione-italiana"></a>
 # 👤 Person Tracker Card per Home Assistant
+
+**[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
+
+---
 
 ## ✨ Caratteristiche Principali
 
@@ -832,26 +828,16 @@ show_distance: false
 
 ## 📝 Changelog
 
-### v2.2.3 (2024-11-23)
-- 🐛 Corretto: Nome persona scompare con stati personalizzati in layout compact
-- 🎨 Nascosti campi stile non rilevanti in modalità compact
-- ✨ Separata visualizzazione nome persona da posizione
-
-### v2.2.2 (2024-11-23)
-- ✨ Aggiunta larghezza configurabile per layout compact (200-500px)
-- 🎨 Nascosto campo aspect ratio in modalità compact
-- 📝 Documentazione migliorata
-
-### v2.2.1 (2024-11-23)
-- 🐛 Corretto crash durante selezione layout dal menu
-
-### v2.2.0 (2024-11-23)
+### v1.1.0 (2024-11-23)
 - ✨ Nuova modalità layout compact
+- 📏 Larghezza configurabile per layout compact (200-500px)
+- ⌚ Supporto batteria smartwatch
 - 🎨 Tab Position separato nell'editor
 - 📐 UI condizionale basata sul layout selezionato
-- 🎯 Organizzazione editor migliorata
+- 🐛 Corretto: Nome persona scompare con stati personalizzati in layout compact
+- 🎨 Nascosti campi stile non rilevanti in modalità compact
 
-### v2.1.0 (2024-11-22)
+### v1.0.0 (2024-11-22)
 - 🎉 Prima release pubblica
 - ✨ Editor visuale completo
 - 📱 Supporto completo Companion App
