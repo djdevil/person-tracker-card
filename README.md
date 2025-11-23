@@ -1,483 +1,893 @@
-# 👤 Person Tracker Card for Home Assistant - EN
+# 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+[![Version](https://img.shields.io/badge/version-2.2.3-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor.
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and two layout modes.
 
 ![Person Tracker Card](images/preview.png)
 
+---
+
+## 📑 Table of Contents
+
+- [✨ Key Features](#-key-features)
+- [🎨 Layout Modes](#-layout-modes)
+- [📦 Installation](#-installation)
+- [🔧 Configuration](#-configuration)
+- [📱 Mobile App Integration](#-mobile-app-integration)
+- [🎭 Examples](#-examples)
+- [🔍 Troubleshooting](#-troubleshooting)
+
+---
+
 ## ✨ Key Features
 
-- 📱 **Battery Monitoring** - Displays device battery level with dynamic icon
-- 🚶 **Activity Tracking** - Shows current activity (Walking, Running, Automotive, Stationary, Cycling)
-- 📍 **Distance from Home** - Waze integration to calculate distance
-- ⏱️ **Travel Time** - Estimates time needed to reach home/work
-- 📶 **Connection Type** - Shows if device is connected via WiFi or mobile network
-- 🎨 **Customizable States** - Different colors and images for each state (Home, Office, etc.)
-- 🖼️ **Custom Images** - Support for transparent PNG/GIF images
-- 🎯 **Complete Visual Editor** - Easy configuration via graphical interface
-- 📐 **Flexible Layout** - Freely position each element on the card
-- 🎨 **Highly Customizable** - Fonts, colors, sizes, spacing completely configurable
+- 🎨 **Two Layout Modes**
+  - **Classic**: Fully customizable with positionable elements
+  - **Compact**: Space-efficient horizontal grid layout
+- 📱 **Battery Monitoring** - Phone battery with dynamic icon and color
+- ⌚ **Watch Battery** - Apple Watch and smartwatch support
+- 🚶 **Activity Tracking** - Walking, Running, Automotive, Stationary, Cycling
+- 📍 **Distance from Home** - Waze integration
+- ⏱️ **Travel Time** - Estimated time to reach home/work
+- 📶 **Connection Type** - WiFi or mobile network indicator
+- 🎨 **Customizable States** - Different colors and images for each location
+- 🖼️ **Custom Images** - PNG/GIF with transparency support
+- 🎯 **Complete Visual Editor** - User-friendly GUI configuration
+- 🎨 **Highly Customizable** - Fonts, colors, sizes, background
 
-## 📸 Screenshots
+---
 
-### Visual Editor
-| Base Tab | Sensors Tab | States Tab |
-|----------|-------------|-----------|
-| ![Base Editor](images/editor-base.png) | ![Sensors Editor](images/editor-sensors.png) | ![States Editor](images/editor-states.png) |
+## 🎨 Layout Modes
+
+### Classic Layout
+Full-size card with customizable element positioning.
+
+**Perfect for:**
+- Large dashboard cards
+- Maximum customization
+- Custom aspect ratios
+- Freely positionable elements
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: classic
+aspect_ratio: '1/0.7'
+picture_size: 60
+battery_position: top-right
+activity_position: bottom-left
+```
+
+### Compact Layout
+Horizontal grid layout with fixed structure.
+
+**Perfect for:**
+- Multiple people tracking
+- Space-limited dashboards
+- Mobile interfaces
+- Dense information display
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: compact
+compact_width: 300  # 200-500px
+```
+
+**Layout structure:**
+```
+┌────────────────────────────┐
+│ 🖼️  Person Name           │
+│ 40px  📍 Location         │
+├────────────────────────────┤
+│ 🚶 📶 📱 ⌚ 🏠         │
+└────────────────────────────┘
+```
+
+---
 
 ## 📦 Installation
 
-### HACS (Recommended)
+### Via HACS (Recommended)
 
-1. Open HACS in your Home Assistant
-2. Go to "Frontend"
-3. Click on the three dots in the top right
-4. Select "Custom repositories"
-5. Add this URL: `https://github.com/djdevil/person-tracker-card`
-6. Select category "Dashboard"
-7. Click "Add"
-8. Search for "Person Tracker Card" and install it
-9. Restart Home Assistant
+1. Open HACS in Home Assistant
+2. Go to **Frontend**
+3. Click **⋮** (three dots) → **Custom repositories**
+4. Add: `https://github.com/djdevil/person-tracker-card`
+5. Category: **Dashboard**
+6. Search for **Person Tracker Card**
+7. Click **Install**
+8. Restart Home Assistant
 
 ### Manual Installation
 
 1. Download `person-tracker-card.js` and `person-tracker-card-editor.js`
-2. Copy the files to the `config/www/person-tracker-card/` folder
-3. Add the resource in Home Assistant:
-   - Go to Settings → Dashboards → Menu (⋮) → Resources
-   - Click "+ ADD RESOURCE"
+2. Copy to `config/www/person-tracker-card/`
+3. Add resource:
+   - Settings → Dashboards → ⋮ → Resources
+   - **+ ADD RESOURCE**
    - URL: `/local/person-tracker-card/person-tracker-card.js`
-   - Type: JavaScript Module
-4. Reload the page (Ctrl+F5)
+   - Type: **JavaScript Module**
+4. Hard refresh browser (Ctrl+Shift+R)
 
-## 🔧 Basic Configuration
+---
 
-### Method 1: Visual Editor (Recommended)
+## 🔧 Configuration
 
-1. Edit your dashboard
-2. Add a new card
-3. Search for "Person Tracker Card"
-4. Configure through the graphical interface
+### Quick Start (GUI Editor)
 
-### Method 2: YAML
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_activity: true
-show_distance: true
-show_travel_time: true
-show_connection: true
-```
-# 👤 Person Tracker Card for Home Assistant - IT
-## ✨ Caratteristiche Principali
+1. Edit dashboard → Add card
+2. Search **Person Tracker Card**
+3. Select **person** entity
+4. Choose **layout** (classic/compact)
+5. Configure sensors and style
 
-- 📱 **Monitoraggio Batteria** - Visualizza il livello di batteria del dispositivo con icona dinamica
-- 🚶 **Tracciamento Attività** - Mostra l'attività corrente (Walking, Running, Automotive, Stationary, Cycling)
-- 📍 **Distanza da Casa** - Integrazione con Waze per calcolare la distanza
-- ⏱️ **Tempo di Viaggio** - Stima del tempo necessario per raggiungere casa/lavoro
-- 📶 **Tipo Connessione** - Mostra se il dispositivo è connesso tramite WiFi o rete mobile
-- 🎨 **Stati Personalizzabili** - Colori e immagini differenti per ogni stato (Casa, Ufficio, etc.)
-- 🖼️ **Immagini Personalizzate** - Supporto per immagini PNG/GIF trasparenti
-- 🎯 **Editor Visuale Completo** - Configurazione facile tramite interfaccia grafica
-- 📐 **Layout Flessibile** - Posiziona liberamente ogni elemento sulla card
-- 🎨 **Altamente Personalizzabile** - Font, colori, dimensioni, spaziature completamente configurabili
-
-## 📸 Screenshot
-
-
-### Editor Visuale
-| Tab Base | Tab Sensori | Tab Stati |
-|----------|------------|----------|
-| ![Editor Base](images/editor-base.png) | ![Editor Sensori](images/editor-sensors.png) | ![Editor Stati](images/editor-states.png) |
-
-## 📦 Installazione
-
-### HACS (Consigliato)
-
-1. Apri HACS nel tuo Home Assistant
-2. Vai su "Frontend"
-3. Clicca sui tre puntini in alto a destra
-4. Seleziona "Repository personalizzati"
-5. Aggiungi questo URL: `https://github.com/djdevil/person-tracker-card`
-6. Seleziona categoria "Dashboard"
-7. Clicca su "Aggiungi"
-8. Cerca "Person Tracker Card" e installala
-9. Riavvia Home Assistant
-
-### Installazione Manuale
-
-1. Scarica `person-tracker-card.js` e `person-tracker-card-editor.js`
-2. Copia i file nella cartella `config/www/person-tracker-card/`
-3. Aggiungi la risorsa in Home Assistant:
-   - Vai su Impostazioni → Dashboard → Menu (⋮) → Risorse
-   - Clicca "+ AGGIUNGI RISORSA"
-   - URL: `/local/person-tracker-card/person-tracker-card.js`
-   - Tipo: Modulo JavaScript
-4. Ricarica la pagina (Ctrl+F5)
-
-## 🔧 Configurazione Base
-
-### Metodo 1: Editor Visuale (Consigliato)
-
-1. Modifica la tua dashboard
-2. Aggiungi una nuova card
-3. Cerca "Person Tracker Card"
-4. Configura tramite l'interfaccia grafica
-
-### Metodo 2: YAML
+### Basic YAML
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_activity: true
-show_distance: true
-show_travel_time: true
-show_connection: true
+layout: compact  # or 'classic'
 ```
 
-## ⚙️ Configurazione Avanzata
-
-### Opzioni Complete
+### Compact Layout Configuration
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-
-# Visualizzazione Elementi
+layout: compact
+compact_width: 300        # Width in pixels (200-500)
 show_entity_picture: true
 show_name: true
-show_last_changed: true
 show_battery: true
+show_watch_battery: true
 show_activity: true
+show_connection: true
 show_distance: true
 show_travel_time: true
-show_connection: true
 
-# Sensori Personalizzati (opzionale)
+# Custom sensors (optional)
 battery_sensor: sensor.phone_davide_battery_level
+watch_battery_sensor: sensor.watch_davide_battery_level
 activity_sensor: sensor.phone_davide_activity
 connection_sensor: sensor.phone_davide_connection_type
 distance_sensor: sensor.waze_davide
-travel_sensor: sensor.casa_lavoro_davide
 
-# Layout e Dimensioni
+# Styling
+card_background: 'rgba(255,255,255,0.05)'
+card_border_radius: '12px'
+```
+
+### Classic Layout Configuration
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: classic
 aspect_ratio: '1/0.7'
 picture_size: 55
+show_entity_picture: true
+show_name: true
+show_last_changed: true
+show_battery: true
+show_watch_battery: true
+show_activity: true
+show_connection: true
+show_distance: true
+show_travel_time: true
 
-# Stili Generali
-card_background: 'rgba(255,255,255,0.05)'
-card_border_radius: '15px'
-name_font_size: '20px'
-state_font_size: '14px'
-
-# Posizionamento Elementi
+# Element positioning
 battery_position: top-right
+watch_battery_position: top-right-2
 activity_position: bottom-left
 distance_position: top-left
 travel_position: top-left-2
 connection_position: bottom-right
 
-# Dimensioni Font Elementi
+# Font sizes
+name_font_size: '20px'
+state_font_size: '14px'
 battery_font_size: '13px'
 activity_font_size: '13px'
-distance_font_size: '12px'
-travel_font_size: '12px'
-connection_font_size: '12px'
 
-# Aggiornamenti
-triggers_update: all  # all | entity | custom
+# Styling
+card_background: 'rgba(255,255,255,0.05)'
+card_border_radius: '15px'
+```
 
-# Stati Personalizzati (vedi sotto)
+### Available Positions (Classic only)
+
+- `top-left`, `top-right`
+- `bottom-left`, `bottom-right`
+- `top-left-2`, `top-right-2`
+- `bottom-left-2`, `bottom-right-2`
+
+### Custom States with Colors
+
+```yaml
 state:
   - value: home
-    name: 🏡 Casa
+    name: 🏡 Home
     styles:
       name:
         color: '#7DDA9F'
+  
   - value: not_home
-    name: 🏃‍♂️ Fuori Casa
+    name: 🏃‍♂️ Away
     styles:
       name:
         color: '#93ADCB'
+  
+  - value: work
+    name: 🏢 Office
+    entity_picture: /local/images/office.png
+    styles:
+      name:
+        color: '#FFD700'
 ```
 
-### Stati Personalizzati con Immagini
+---
 
-Puoi definire stati personalizzati con colori e immagini diverse:
+## 📱 Mobile App Integration
+
+### Required Permissions
+
+**iOS - Home Assistant Companion App:**
+1. Location: Settings → App → Location → **Always**
+2. Motion & Fitness: Settings → Privacy → Motion & Fitness → **ON**
+
+**Android - Home Assistant Companion App:**
+1. Location: Always allow
+2. Physical Activity: Enable in app settings
+
+### Automatic Sensor Detection
+
+The card automatically finds these sensors:
+
+```
+sensor.phone_[name]_battery_level
+sensor.phone_[name]_activity
+sensor.phone_[name]_connection_type
+sensor.watch_[name]_battery_level
+```
+
+Where `[name]` is your person entity name without `person.` prefix.
+
+Example for `person.davide`:
+```
+sensor.phone_davide_battery_level
+sensor.phone_davide_activity
+sensor.phone_davide_connection_type
+sensor.watch_davide_battery_level
+```
+
+### Waze Integration
+
+For distance tracking:
+
+1. Settings → Devices & Services → Add Integration
+2. Search **Waze Travel Time**
+3. Configure:
+   - Origin: `zone.home`
+   - Destination: `person.name`
+   - Name: `waze_name`
+
+---
+
+## 🎭 Examples
+
+### Compact Grid - Multiple People
+
+```yaml
+type: grid
+columns: 2
+cards:
+  - type: custom:person-tracker-card
+    entity: person.davide
+    layout: compact
+    compact_width: 280
+    
+  - type: custom:person-tracker-card
+    entity: person.nunzia
+    layout: compact
+    compact_width: 280
+    
+  - type: custom:person-tracker-card
+    entity: person.child
+    layout: compact
+    compact_width: 280
+    
+  - type: custom:person-tracker-card
+    entity: person.grandpa
+    layout: compact
+    compact_width: 280
+```
+
+### Vertical Stack - Mobile View
+
+```yaml
+type: vertical-stack
+cards:
+  - type: custom:person-tracker-card
+    entity: person.davide
+    layout: compact
+    compact_width: 250
+    
+  - type: custom:person-tracker-card
+    entity: person.nunzia
+    layout: compact
+    compact_width: 250
+```
+
+### Mixed Layout
+
+```yaml
+type: vertical-stack
+cards:
+  - type: custom:person-tracker-card
+    entity: person.davide
+    layout: classic
+    aspect_ratio: '1/1'
+    
+  - type: horizontal-stack
+    cards:
+      - type: custom:person-tracker-card
+        entity: person.child1
+        layout: compact
+        compact_width: 240
+        
+      - type: custom:person-tracker-card
+        entity: person.child2
+        layout: compact
+        compact_width: 240
+```
+
+### Minimal Compact (Sidebar)
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: compact
+compact_width: 200
+show_last_changed: false
+show_watch_battery: false
+show_travel_time: false
+show_distance: false
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### Card doesn't appear
+- Check browser console (F12) for errors
+- Verify resource is loaded in Dashboard → Resources
+- Hard refresh: Ctrl+Shift+R
+
+### Sensors not found
+- Check Companion App is installed
+- Verify sensor names in Developer Tools → States
+- Manually specify sensors in configuration
+
+### Images don't show
+- Place files in `config/www/`
+- Use correct path: `/local/folder/file.png`
+- Restart Home Assistant if needed
+
+### Editor doesn't open
+- Ensure both JS files are loaded
+- Clear browser cache
+- Restart Home Assistant
+
+### Layout doesn't change
+- Verify `layout: 'compact'` or `layout: 'classic'`
+- Values are case-sensitive
+- Clear cache and reload
+
+---
+
+## 📝 Changelog
+
+### v2.2.3 (2024-11-23)
+- 🐛 Fixed: Person name disappears with custom states in compact layout
+- 🎨 Hidden irrelevant style fields in compact mode
+- ✨ Separated person name from location display
+
+### v2.2.2 (2024-11-23)
+- ✨ Added configurable width for compact layout (200-500px)
+- 🎨 Hidden aspect ratio field in compact mode
+- 📝 Improved documentation
+
+### v2.2.1 (2024-11-23)
+- 🐛 Fixed crash when selecting layout from dropdown
+
+### v2.2.0 (2024-11-23)
+- ✨ New compact layout mode
+- 🎨 Separate Position tab in editor
+- 📐 Conditional UI based on selected layout
+- 🎯 Improved editor organization
+
+### v2.1.0 (2024-11-22)
+- 🎉 Initial public release
+- ✨ Complete visual editor
+- 📱 Full Companion App support
+- 🎨 Customizable states
+- 📍 Waze integration
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file
+
+---
+
+## 💝 Support
+
+If you find this card useful:
+
+- ⭐ Star the repository
+- 🐛 Report bugs
+- 💡 Suggest features
+- 🤝 Contribute code
+
+---
+
+## 🙏 Credits
+
+- Home Assistant Community
+- HACS Team
+- All contributors
+
+---
+
+**Made with ❤️ for the Home Assistant Community**
+
+[🇮🇹 Versione Italiana](#italian-version) | [🇬🇧 English Version](#english-version)
+
+---
+
+# 👤 Person Tracker Card per Home Assistant
+
+## ✨ Caratteristiche Principali
+
+- 🎨 **Due Modalità di Layout**
+  - **Classic**: Completamente personalizzabile con elementi posizionabili
+  - **Compact**: Layout a griglia orizzontale per risparmiare spazio
+- 📱 **Monitoraggio Batteria** - Batteria telefono con icona e colore dinamici
+- ⌚ **Batteria Smartwatch** - Supporto Apple Watch e altri smartwatch
+- 🚶 **Tracciamento Attività** - Walking, Running, Automotive, Stationary, Cycling
+- 📍 **Distanza da Casa** - Integrazione Waze
+- ⏱️ **Tempo di Viaggio** - Tempo stimato per raggiungere casa/lavoro
+- 📶 **Tipo Connessione** - Indicatore WiFi o rete mobile
+- 🎨 **Stati Personalizzabili** - Colori e immagini diverse per ogni posizione
+- 🖼️ **Immagini Personalizzate** - Supporto PNG/GIF con trasparenza
+- 🎯 **Editor Visuale Completo** - Configurazione tramite GUI
+- 🎨 **Altamente Personalizzabile** - Font, colori, dimensioni, background
+
+---
+
+## 🎨 Modalità Layout
+
+### Layout Classic
+Card a dimensione intera con posizionamento elementi personalizzabile.
+
+**Perfetto per:**
+- Card dashboard grandi
+- Massima personalizzazione
+- Aspect ratio personalizzati
+- Elementi posizionabili liberamente
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: classic
+aspect_ratio: '1/0.7'
+picture_size: 60
+battery_position: top-right
+activity_position: bottom-left
+```
+
+### Layout Compact
+Layout a griglia orizzontale con struttura fissa.
+
+**Perfetto per:**
+- Tracciamento di più persone
+- Dashboard con spazio limitato
+- Interfacce mobile
+- Visualizzazione densa di informazioni
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: compact
+compact_width: 300  # 200-500px
+```
+
+**Struttura layout:**
+```
+┌────────────────────────────┐
+│ 🖼️  Nome Persona          │
+│ 40px  📍 Posizione        │
+├────────────────────────────┤
+│ 🚶 📶 📱 ⌚ 🏠         │
+└────────────────────────────┘
+```
+
+---
+
+## 📦 Installazione
+
+### Via HACS (Consigliato)
+
+1. Apri HACS in Home Assistant
+2. Vai su **Frontend**
+3. Click **⋮** (tre puntini) → **Repository personalizzati**
+4. Aggiungi: `https://github.com/djdevil/person-tracker-card`
+5. Categoria: **Dashboard**
+6. Cerca **Person Tracker Card**
+7. Click **Installa**
+8. Riavvia Home Assistant
+
+### Installazione Manuale
+
+1. Scarica `person-tracker-card.js` e `person-tracker-card-editor.js`
+2. Copia in `config/www/person-tracker-card/`
+3. Aggiungi risorsa:
+   - Impostazioni → Dashboard → ⋮ → Risorse
+   - **+ AGGIUNGI RISORSA**
+   - URL: `/local/person-tracker-card/person-tracker-card.js`
+   - Tipo: **Modulo JavaScript**
+4. Ricarica forzata browser (Ctrl+Shift+R)
+
+---
+
+## 🔧 Configurazione
+
+### Quick Start (Editor GUI)
+
+1. Modifica dashboard → Aggiungi card
+2. Cerca **Person Tracker Card**
+3. Seleziona entità **person**
+4. Scegli **layout** (classic/compact)
+5. Configura sensori e stile
+
+### YAML Base
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: compact  # oppure 'classic'
+```
+
+### Configurazione Layout Compact
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: compact
+compact_width: 300        # Larghezza in pixel (200-500)
+show_entity_picture: true
+show_name: true
+show_battery: true
+show_watch_battery: true
+show_activity: true
+show_connection: true
+show_distance: true
+show_travel_time: true
+
+# Sensori personalizzati (opzionale)
+battery_sensor: sensor.iphonedavide_battery_level
+watch_battery_sensor: sensor.watch_davide_battery_level
+activity_sensor: sensor.iphonedavide_activity
+connection_sensor: sensor.iphonedavide_connection_type
+distance_sensor: sensor.waze_davide
+
+# Stile
+card_background: 'rgba(255,255,255,0.05)'
+card_border_radius: '12px'
+```
+
+### Configurazione Layout Classic
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: classic
+aspect_ratio: '1/0.7'
+picture_size: 55
+show_entity_picture: true
+show_name: true
+show_last_changed: true
+show_battery: true
+show_watch_battery: true
+show_activity: true
+show_connection: true
+show_distance: true
+show_travel_time: true
+
+# Posizionamento elementi
+battery_position: top-right
+watch_battery_position: top-right-2
+activity_position: bottom-left
+distance_position: top-left
+travel_position: top-left-2
+connection_position: bottom-right
+
+# Dimensioni font
+name_font_size: '20px'
+state_font_size: '14px'
+battery_font_size: '13px'
+activity_font_size: '13px'
+
+# Stile
+card_background: 'rgba(255,255,255,0.05)'
+card_border_radius: '15px'
+```
+
+### Posizioni Disponibili (Solo Classic)
+
+- `top-left`, `top-right`
+- `bottom-left`, `bottom-right`
+- `top-left-2`, `top-right-2`
+- `bottom-left-2`, `bottom-right-2`
+
+### Stati Personalizzati con Colori
 
 ```yaml
 state:
   - value: home
     name: 🏡 Casa
-    entity_picture: /local/images/home.png
     styles:
       name:
         color: '#7DDA9F'
   
-  - value: Ufficio
+  - value: not_home
+    name: 🏃‍♂️ Fuori
+    styles:
+      name:
+        color: '#93ADCB'
+  
+  - value: Lavoro Davide
     name: 🏢 Ufficio
-    entity_picture: /local/images/office.png
+    entity_picture: /local/foto-pkg/davidelavoro.gif
     styles:
       name:
         color: '#FFD700'
-  
-  - value: Palestra
-    name: 🏋️ Palestra
-    entity_picture: /local/images/gym.gif
-    styles:
-      name:
-        color: '#FF6B6B'
 ```
 
-### Posizioni Disponibili
+---
 
-Ogni elemento può essere posizionato in una delle seguenti posizioni:
+## 📱 Integrazione App Mobile
 
-- `top-left` - Alto a sinistra
-- `top-right` - Alto a destra
-- `bottom-left` - Basso a sinistra
-- `bottom-right` - Basso a destra
-- `top-left-2` - Alto a sinistra (seconda posizione)
-- `top-right-2` - Alto a destra (seconda posizione)
-- `bottom-left-2` - Basso a sinistra (seconda posizione)
-- `bottom-right-2` - Basso a destra (seconda posizione)
+### Permessi Richiesti
 
-### Modalità di Aggiornamento
+**iOS - App Home Assistant Companion:**
+1. Posizione: Impostazioni → App → Posizione → **Sempre**
+2. Movimento e Fitness: Impostazioni → Privacy → Movimento e Fitness → **ON**
 
-L'opzione `triggers_update` controlla quando la card viene aggiornata:
+**Android - App Home Assistant Companion:**
+1. Posizione: Consenti sempre
+2. Attività Fisica: Abilita nelle impostazioni app
 
-- `all` - Aggiorna quando cambia qualsiasi entità correlata (predefinito)
-- `entity` - Aggiorna solo quando cambia l'entità person principale
-- `custom` - Aggiorna per entità specifiche definite dall'utente
+### Rilevamento Automatico Sensori
 
-## 🎨 Creare Immagini Personalizzate
-
-### Con iPhone/iPad
-
-1. **Scarica l'app gratuita "Background Eraser"**
-   - Disponibile su App Store
-   - Facile da usare per rimuovere sfondi
-
-2. **Crea la tua immagine**:
-   - Scatta una foto o usa un'immagine esistente
-   - Apri l'app Background Eraser
-   - Rimuovi lo sfondo con il dito
-   - Esporta come PNG con trasparenza
-
-3. **Per immagini animate (GIF)**:
-   - Usa l'app "ImgPlay" (gratuita)
-   - Crea una GIF da foto o video
-   - Puoi anche rimuovere lo sfondo
-   - Esporta come GIF
-
-4. **Carica su Home Assistant**:
-   - Copia il file in `config/www/images/`
-   - Usa il percorso `/local/images/tuaimmagine.png` nella configurazione
-
-### Dimensioni Consigliate
-
-- **Immagini statiche (PNG)**: 512x512 px
-- **GIF animate**: 512x512 px, max 5 MB
-- **Formato**: PNG con trasparenza o GIF
-- **Sfondo**: Trasparente per migliore integrazione
-
-### Esempi di Immagini
-
-Puoi creare immagini per rappresentare:
-- 🏠 Casa - Logo della tua casa
-- 🏢 Ufficio - Logo aziendale
-- 🏋️ Palestra - Icona fitness
-- 🛒 Supermercato - Logo del negozio
-- 🚗 In viaggio - Icona auto animata
-- ✈️ Aeroporto - Icona aereo
-
-## 📱 Integrazione con Home Assistant Companion App
-
-Per il corretto funzionamento, assicurati che l'app Home Assistant Companion abbia i permessi per:
-
-1. **Posizione**:
-   - Vai nelle impostazioni del telefono
-   - App → Home Assistant
-   - Posizione → Sempre
-
-2. **Batteria**:
-   - Automaticamente tracciata dall'app
-
-3. **Attività fisica**:
-   - iOS: Impostazioni → Privacy → Movimento e fitness
-   - Android: Attiva il sensore di attività nell'app
-
-4. **Connettività**:
-   - Automaticamente tracciata dall'app
-
-### Sensori Companion App Utilizzati
-
-La card cerca automaticamente questi sensori:
+La card trova automaticamente questi sensori:
 
 ```
 sensor.phone_[nome]_battery_level
 sensor.phone_[nome]_activity
 sensor.phone_[nome]_connection_type
+sensor.watch_[nome]_battery_level
 ```
 
-Dove `[nome]` è il nome dell'entità person senza il prefixo `person.`
+Dove `[nome]` è il nome della tua entità person senza `person.`
 
 Esempio per `person.davide`:
 ```
 sensor.phone_davide_battery_level
 sensor.phone_davide_activity
 sensor.phone_davide_connection_type
+sensor.watch_davide_battery_level
 ```
 
-## 🗺️ Integrazione Waze
+### Integrazione Waze
 
-Per la distanza da casa, installa l'integrazione Waze Travel Time:
+Per il tracciamento distanza:
 
-1. Vai su Impostazioni → Dispositivi e servizi
-2. Aggiungi integrazione → Cerca "Waze"
+1. Impostazioni → Dispositivi e Servizi → Aggiungi Integrazione
+2. Cerca **Waze Travel Time**
 3. Configura:
-   - Origine: La tua zona home
+   - Origine: `zone.home`
    - Destinazione: `person.nome`
    - Nome: `waze_nome`
 
-## 🎭 Esempi di Configurazione
+---
 
-### Configurazione Minima
+## 🎭 Esempi
+
+### Griglia Compact - Più Persone
 
 ```yaml
-type: custom:person-tracker-card
-entity: person.davide
+type: grid
+columns: 2
+cards:
+  - type: custom:person-tracker-card
+    entity: person.davide
+    layout: compact
+    compact_width: 280
+    
+  - type: custom:person-tracker-card
+    entity: person.nunzia
+    layout: compact
+    compact_width: 280
+    
+  - type: custom:person-tracker-card
+    entity: person.bambino
+    layout: compact
+    compact_width: 280
+    
+  - type: custom:person-tracker-card
+    entity: person.nonno
+    layout: compact
+    compact_width: 280
 ```
 
-### Configurazione Completa
+### Stack Verticale - Vista Mobile
 
 ```yaml
-type: custom:person-tracker-card
-entity: person.davide
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_activity: true
-show_distance: true
-show_travel_time: true
-show_connection: true
-aspect_ratio: '1/0.7'
-picture_size: 60
-card_background: 'linear-gradient(135deg, rgba(125, 218, 159, 0.1) 0%, rgba(147, 173, 203, 0.1) 100%)'
-card_border_radius: '20px'
-name_font_size: '22px'
-state_font_size: '16px'
-battery_position: top-right
-activity_position: bottom-left
-distance_position: top-left
-travel_position: top-left-2
-connection_position: bottom-right
-state:
-  - value: home
-    name: 🏡 A Casa
-    entity_picture: /local/images/home.gif
-    styles:
-      name:
-        color: '#7DDA9F'
-  - value: Ufficio
-    name: 🏢 In Ufficio
-    entity_picture: /local/images/office.png
-    styles:
-      name:
-        color: '#FFD700'
-  - value: not_home
-    name: 🌍 In Giro
-    entity_picture: /local/images/travel.gif
-    styles:
-      name:
-        color: '#93ADCB'
+type: vertical-stack
+cards:
+  - type: custom:person-tracker-card
+    entity: person.davide
+    layout: compact
+    compact_width: 250
+    
+  - type: custom:person-tracker-card
+    entity: person.nunzia
+    layout: compact
+    compact_width: 250
 ```
 
-### Solo Informazioni Essenziali
+### Layout Misto
+
+```yaml
+type: vertical-stack
+cards:
+  - type: custom:person-tracker-card
+    entity: person.davide
+    layout: classic
+    aspect_ratio: '1/1'
+    
+  - type: horizontal-stack
+    cards:
+      - type: custom:person-tracker-card
+        entity: person.figlio1
+        layout: compact
+        compact_width: 240
+        
+      - type: custom:person-tracker-card
+        entity: person.figlio2
+        layout: compact
+        compact_width: 240
+```
+
+### Compact Minimale (Sidebar)
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_activity: false
-show_distance: false
+layout: compact
+compact_width: 200
+show_last_changed: false
+show_watch_battery: false
 show_travel_time: false
-show_connection: true
-aspect_ratio: '1/0.5'
+show_distance: false
 ```
+
+---
 
 ## 🔍 Risoluzione Problemi
 
 ### La card non appare
+- Controlla console browser (F12) per errori
+- Verifica risorsa caricata in Dashboard → Risorse
+- Ricarica forzata: Ctrl+Shift+R
 
-1. Controlla la console del browser (F12) per errori
-2. Verifica che la risorsa sia caricata correttamente
-3. Ricarica la pagina con cache vuota (Ctrl+Shift+R)
+### Sensori non trovati
+- Controlla Companion App installata
+- Verifica nomi sensori in Strumenti Sviluppatore → Stati
+- Specifica manualmente i sensori nella configurazione
 
-### I sensori non vengono trovati
+### Immagini non appaiono
+- Inserisci file in `config/www/`
+- Usa percorso corretto: `/local/cartella/file.png`
+- Riavvia Home Assistant se necessario
 
-1. Controlla che l'app Companion sia installata e configurata
-2. Verifica i nomi dei sensori in Strumenti Sviluppatore → Stati
-3. Specifica manualmente i sensori nella configurazione
+### Editor non si apre
+- Assicurati che entrambi i file JS siano caricati
+- Svuota cache browser
+- Riavvia Home Assistant
 
-### Le immagini personalizzate non appaiono
+### Layout non cambia
+- Verifica `layout: 'compact'` o `layout: 'classic'`
+- I valori sono case-sensitive
+- Svuota cache e ricarica
 
-1. Controlla che il file sia in `config/www/`
-2. Usa il percorso corretto: `/local/cartella/file.png`
-3. Verifica i permessi del file
-4. Riavvia Home Assistant se necessario
-
-### L'editor non si apre
-
-1. Assicurati di aver caricato entrambi i file JS
-2. Ricarica le risorse Lovelace
-3. Prova a riavviare Home Assistant
+---
 
 ## 📝 Changelog
 
-### v1.0 (2024-11-22)
+### v2.2.3 (2024-11-23)
+- 🐛 Corretto: Nome persona scompare con stati personalizzati in layout compact
+- 🎨 Nascosti campi stile non rilevanti in modalità compact
+- ✨ Separata visualizzazione nome persona da posizione
+
+### v2.2.2 (2024-11-23)
+- ✨ Aggiunta larghezza configurabile per layout compact (200-500px)
+- 🎨 Nascosto campo aspect ratio in modalità compact
+- 📝 Documentazione migliorata
+
+### v2.2.1 (2024-11-23)
+- 🐛 Corretto crash durante selezione layout dal menu
+
+### v2.2.0 (2024-11-23)
+- ✨ Nuova modalità layout compact
+- 🎨 Tab Position separato nell'editor
+- 📐 UI condizionale basata sul layout selezionato
+- 🎯 Organizzazione editor migliorata
+
+### v2.1.0 (2024-11-22)
 - 🎉 Prima release pubblica
 - ✨ Editor visuale completo
-- 📱 Supporto tutti i sensori Companion App
-- 🎨 Stati personalizzabili con colori
-- 📍 Integrazione Waze per distanze
+- 📱 Supporto completo Companion App
+- 🎨 Stati personalizzabili
+- 📍 Integrazione Waze
 
+---
 
 ## 🤝 Contribuire
 
-I contributi sono benvenuti! Per favore:
+Contributi benvenuti! Per favore:
 
-1. Fai un Fork del progetto
-2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
-3. Committa i cambiamenti (`git commit -m 'Add some AmazingFeature'`)
-4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Apri una Pull Request
+1. Fai Fork del repository
+2. Crea feature branch (`git checkout -b feature/FunzionalitàFica`)
+3. Committa modifiche (`git commit -m 'Aggiungi FunzionalitàFica'`)
+4. Push al branch (`git push origin feature/FunzionalitàFica`)
+5. Apri Pull Request
+
+---
 
 ## 📄 Licenza
 
-Questo progetto è rilasciato sotto licenza MIT. Vedi il file [LICENSE](LICENSE) per i dettagli.
+Licenza MIT - Vedi file [LICENSE](LICENSE)
+
+---
 
 ## 💝 Supporto
 
-Se questa card ti è utile, considera di:
+Se trovi utile questa card:
 
-- ⭐ Mettere una stella al repository
-- 🐛 Segnalare bug e problemi
-- 💡 Suggerire nuove funzionalità
-- 🤝 Contribuire al codice
+- ⭐ Stella il repository
+- 🐛 Segnala bug
+- 💡 Suggerisci funzionalità
+- 🤝 Contribuisci al codice
+
+---
 
 ## 🙏 Ringraziamenti
 
@@ -487,4 +897,4 @@ Se questa card ti è utile, considera di:
 
 ---
 
-**Creato con ❤️ per la comunità Home Assistant**
+**Realizzato con ❤️ per la Community Home Assistant**
