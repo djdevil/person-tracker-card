@@ -1,5 +1,5 @@
 // Person Tracker Card v2.1 - Fixed Version
-// Supporto completo per tutte le opzioni dell'editor
+// Full support for all editor options
 
 console.log("Person Tracker Card v2.1 Fixed loading...");
 
@@ -101,12 +101,12 @@ class PersonTrackerCard extends LitElement {
     return value;
   }
 
-  // Supporto per l'editor visuale
+  // Support for visual editor
   static async getConfigElement() {
-    // Prova prima la versione fixed, poi quella normale
+    // Try fixed version first, then normal version
     await import('./person-tracker-card-editor-fixed.js').catch(async () => {
       await import('./person-tracker-card-editor.js').catch(() => {
-        console.warn('Editor non trovato');
+        console.warn('Editor not found');
       });
     });
     return document.createElement('person-tracker-card-editor');
@@ -114,7 +114,7 @@ class PersonTrackerCard extends LitElement {
 
   static getStubConfig() {
     return {
-      entity: 'person',  // Metti solo il dominio, l'editor lo gestirà
+      entity: 'person',  // Put only the domain, the editor will handle it
       type: 'custom:person-tracker-card'
     };
   }
@@ -129,9 +129,9 @@ class PersonTrackerCard extends LitElement {
 
     await this._loadTranslations();
 
-    // Configurazione predefinita con tutte le nuove opzioni
+    // Default configuration with all new options
     this.config = {
-      // Visualizzazione
+      // Display
       show_entity_picture: true,
       show_name: true,
       show_last_changed: true,
@@ -626,22 +626,22 @@ class PersonTrackerCard extends LitElement {
   }
 }
 
-// Registrazione della card
+// Card registration
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v2.1 FIXED %c Editor Completo! ',
+    '%c PERSON-TRACKER-CARD %c v2.1 FIXED %c Complete Editor! ',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #FFD700; color: black; font-weight: bold;'
   );
 }
 
-// Aggiungi info per Lovelace
+// Add info for Lovelace
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'person-tracker-card',
   name: 'Person Tracker Card',
-  description: 'Card avanzata per tracking persone con editor visuale completo',
+  description: 'Advanced card for person tracking with complete visual editor',
   preview: true
 });

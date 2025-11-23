@@ -1,5 +1,5 @@
-// Person Tracker Card Editor - Versione Corretta
-// Fix per tutti i bug segnalati
+// Person Tracker Card Editor - Fixed Version
+// Fix for all reported bugs
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -117,7 +117,7 @@ class PersonTrackerCardEditor extends LitElement {
       ...config
     };
 
-    // fallback per posizioni
+    // fallback for positions
     const positionDefaults = {
       battery_position: 'top-right',
       activity_position: 'bottom-left',
@@ -914,7 +914,7 @@ class PersonTrackerCardEditor extends LitElement {
         styles: { name: { color: '#93ADCB' } }
       },
       {
-        value: 'Ufficio',
+        value: 'office',
         name: this._localize('editor.states.office'),
         styles: { name: { color: '#FFD700' } }
       },
@@ -940,11 +940,11 @@ class PersonTrackerCardEditor extends LitElement {
   }
 }
 
-// Registra l'editor
+// Register the editor
 if (!customElements.get('person-tracker-card-editor')) {
   customElements.define('person-tracker-card-editor', PersonTrackerCardEditor);
   console.log('Person Tracker Card Editor registered (fixed version)');
 }
 
-// Esporta per la card principale
+// Export for main card
 window.PersonTrackerCardEditor = PersonTrackerCardEditor;
