@@ -1,30 +1,63 @@
 ## Person Tracker Card
 
-Card avanzata per Home Assistant che mostra informazioni dettagliate sulle persone con editor visuale completo.
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and dual layout modes.
 
-### ✨ Caratteristiche
+### ✨ Features
 
-- 📱 Monitoraggio batteria con icona dinamica
-- 🚶 Tracciamento attività (Walking, Running, Automotive, etc.)
-- 📍 Distanza da casa con integrazione Waze
-- ⏱️ Tempo di viaggio stimato
-- 📶 Tipo di connessione (WiFi/Mobile)
-- 🎨 Stati personalizzabili con colori e immagini
-- 🖼️ Supporto PNG/GIF trasparenti
-- 🎯 Editor visuale completo
-- 📐 Layout completamente personalizzabile
+- 🎨 **Two Layout Modes** - Classic (customizable) and Compact (space-efficient)
+- 📱 **Battery Monitoring** - Phone battery with dynamic icon and color
+- ⌚ **Watch Battery** - Smartwatch battery support (Apple Watch, etc.)
+- 🚶 **Activity Tracking** - Walking, Running, Automotive, Stationary, Cycling
+- 📍 **Distance from Home** - Waze integration for real-time distance
+- ⏱️ **Travel Time** - Estimated time to reach home/work
+- 📶 **Connection Type** - WiFi or mobile network indicator
+- 🎨 **Customizable States** - Different colors and images per location
+- 🖼️ **Custom Images** - Transparent PNG and animated GIF support
+- 🎯 **Complete Visual Editor** - Easy configuration via GUI
+- 📐 **Fully Customizable Layout** - Position elements freely (Classic mode)
+- 📏 **Adjustable Width** - Configurable card width in Compact mode (200-500px)
 
-### 📦 Installazione
+### 🎨 Layout Modes
 
-1. Installa tramite HACS
-2. Aggiungi la card alla tua dashboard
-3. Configura tramite l'editor visuale
+**Classic Layout**
+- Fully customizable element positioning
+- Configurable aspect ratio and image size
+- Perfect for large dashboard cards
 
-### 🔧 Configurazione Base
+**Compact Layout** (New!)
+- Horizontal grid with fixed structure
+- Space-efficient design
+- Adjustable width (200-500px)
+- Perfect for tracking multiple people
 
+### 📦 Installation
+
+1. Install via HACS
+2. Add the card to your dashboard
+3. Configure using the visual editor
+
+### 🔧 Basic Configuration
+
+**Compact Layout:**
 ```yaml
 type: custom:person-tracker-card
-entity: person.nome
+entity: person.name
+layout: compact
+compact_width: 300
 ```
 
-Per la documentazione completa, visita il [README](https://github.com/yourusername/person-tracker-card).
+**Classic Layout:**
+```yaml
+type: custom:person-tracker-card
+entity: person.name
+layout: classic
+aspect_ratio: '1/0.7'
+```
+
+### 📱 Requirements
+
+- Home Assistant Companion App installed
+- Location permissions enabled
+- Battery and activity sensors configured
+
+For complete documentation, visit the [README](https://github.com/djdevil/person-tracker-card).
