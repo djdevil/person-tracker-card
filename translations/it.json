@@ -1,0 +1,88 @@
+{
+  "config": {
+    "tab": {
+      "base": "Base",
+      "sensors": "Sensori",
+      "states": "Stati",
+      "style": "Stile"
+    },
+    "section": {
+      "base_config": "Configurazione Base",
+      "display_options": "Opzioni Visualizzazione",
+      "automatic_sensors": "Sensori Automatici",
+      "custom_states": "Stati Personalizzati",
+      "style_customization": "Personalizzazione Stile Card"
+    },
+    "label": {
+      "person_entity": "Entità Persona (obbligatoria)",
+      "custom_name": "Nome personalizzato (facoltativo)",
+      "custom_image_url": "URL immagine personalizzata",
+      "aspect_ratio": "Rapporto dimensioni",
+      "show_picture": "Mostra foto persona",
+      "show_name": "Mostra nome",
+      "show_last_updated": "Mostra ultimo aggiornamento",
+      "battery_sensor": "Sensore batteria",
+      "activity_sensor": "Sensore attività",
+      "connection_sensor": "Sensore connessione",
+      "distance_sensor": "Sensore distanza",
+      "travel_sensor": "Sensore tempo di viaggio",
+      "position": "Posizione {element}",
+      "state_value": "Valore stato (es: home, not_home)",
+      "display_name": "Nome visualizzato",
+      "custom_image": "Immagine personalizzata (facoltativo)",
+      "name_color": "Colore nome",
+      "name_font": "Font nome",
+      "state_font": "Font stato",
+      "card_background": "Sfondo card",
+      "border_radius": "Raggio bordo",
+      "image_size": "Dimensione immagine (%)"
+    },
+    "helper": {
+      "custom_image": "Es: /local/photos/mario.jpg",
+      "aspect_ratio": "Formato: larghezza/altezza (es: 1/0.7)",
+      "card_background": "Es: rgba(255,255,255,0.05) o #1a1a2e"
+    },
+    "text": {
+      "sensors_auto_detect": "I sensori vengono rilevati automaticamente in base all'entità persona selezionata.",
+      "sensor_pattern": "Schema standard: sensor.phone_{name}_*",
+      "configure_states": "Configura come vengono visualizzati i diversi stati della persona"
+    },
+    "sensor": {
+      "battery": "Batteria",
+      "activity": "Attività",
+      "connection": "Connessione",
+      "distance": "Distanza da Casa",
+      "travel_time": "Tempo di Viaggio"
+    },
+    "button": {
+      "add_state": "Aggiungi Stato",
+      "add_default_states": "Aggiungi Stati Predefiniti"
+    },
+    "preview": {
+      "default_states": "Stati Predefiniti"
+    },
+    "position": {
+      "top_left": "In Alto a Sinistra",
+      "top_right": "In Alto a Destra",
+      "bottom_left": "In Basso a Sinistra",
+      "bottom_right": "In Basso a Destra"
+    },
+    "state": {
+      "home": "🏡 A Casa",
+      "not_home": "🏃‍♂️ Fuori Casa",
+      "office": "🏢 Ufficio",
+      "unknown": "❓ Sconosciuto"
+    }
+  },
+  "card": {
+    "day": "giorno",
+    "days": "giorni",
+    "hour": "ora",
+    "hours": "ore",
+    "minute": "minuto",
+    "minutes": "minuti",
+    "now": "Ora",
+    "ago": "fa",
+    "entity_not_found": "Entità {entity} non trovata"
+  }
+}

@@ -1,5 +1,6 @@
 {
   "name": "Person Tracker Card",
+  "content_in_root": true,
   "filename": "person-tracker-card.js",
   "render_readme": true
 }

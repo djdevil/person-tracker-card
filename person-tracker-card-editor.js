@@ -1,11 +1,155 @@
-// Person Tracker Card Editor - Versione Corretta
-// Fix per tutti i bug segnalati
+// Person Tracker Card Editor - Fixed Version
+// Fix for all reported bugs
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
 );
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
+
+// Editor translations
+const editorTranslations = {
+  en: {
+    // Tabs
+    tab_base: 'Base',
+    tab_sensors: 'Sensors',
+    tab_states: 'States',
+    tab_style: 'Style',
+    
+    // Base tab
+    section_base_config: 'Base Configuration',
+    label_person_entity: 'Person Entity (required)',
+    label_custom_name: 'Custom name (optional)',
+    label_custom_image_url: 'Custom image URL',
+    helper_custom_image: 'Ex: /local/photos/mario.jpg',
+    label_aspect_ratio: 'Aspect ratio',
+    helper_aspect_ratio: 'Format: width/height (ex: 1/0.7)',
+    
+    // Display options
+    section_display_options: 'Display Options',
+    label_show_picture: 'Show person picture',
+    label_show_name: 'Show name',
+    label_show_last_updated: 'Show last updated',
+    
+    // Sensors tab
+    section_automatic_sensors: 'Automatic Sensors',
+    text_sensors_auto_detect: 'Sensors are automatically detected based on the selected person entity.',
+    text_sensor_pattern: 'Standard pattern: sensor.phone_{name}_*',
+    sensor_battery: 'Battery',
+    sensor_activity: 'Activity',
+    sensor_connection: 'Connection',
+    sensor_distance: 'Distance from Home',
+    sensor_travel_time: 'Travel Time',
+    label_battery_sensor: 'Battery sensor',
+    label_activity_sensor: 'Activity sensor',
+    label_connection_sensor: 'Connection sensor',
+    label_distance_sensor: 'Distance sensor',
+    label_travel_sensor: 'Travel time sensor',
+    label_position: '{element} position',
+    
+    // States tab
+    section_custom_states: 'Custom States',
+    text_configure_states: 'Configure how different person states are displayed',
+    label_state_value: 'State value (ex: home, not_home)',
+    label_display_name: 'Display name',
+    label_custom_image: 'Custom image (optional)',
+    label_name_color: 'Name color',
+    button_add_state: 'Add State',
+    preview_default_states: 'Default States',
+    button_add_default_states: 'Add Default States',
+    
+    // Style tab
+    section_style_customization: 'Card Style Customization',
+    label_name_font: 'Name font',
+    label_state_font: 'State font',
+    label_card_background: 'Card background',
+    helper_card_background: 'Ex: rgba(255,255,255,0.05) or #1a1a2e',
+    label_border_radius: 'Border radius',
+    label_image_size: 'Image size (%)',
+    
+    // Position labels
+    position_top_left: 'Top Left',
+    position_top_right: 'Top Right',
+    position_bottom_left: 'Bottom Left',
+    position_bottom_right: 'Bottom Right',
+    
+    // Default state names
+    state_home: '🏡 Home',
+    state_not_home: '🏃‍♂️ Away from Home',
+    state_office: '🏢 Office',
+    state_unknown: '❓ Unknown'
+  },
+  it: {
+    // Tabs
+    tab_base: 'Base',
+    tab_sensors: 'Sensori',
+    tab_states: 'Stati',
+    tab_style: 'Stile',
+    
+    // Base tab
+    section_base_config: 'Configurazione Base',
+    label_person_entity: 'Entità Persona (obbligatoria)',
+    label_custom_name: 'Nome personalizzato (facoltativo)',
+    label_custom_image_url: 'URL immagine personalizzata',
+    helper_custom_image: 'Es: /local/photos/mario.jpg',
+    label_aspect_ratio: 'Rapporto dimensioni',
+    helper_aspect_ratio: 'Formato: larghezza/altezza (es: 1/0.7)',
+    
+    // Display options
+    section_display_options: 'Opzioni Visualizzazione',
+    label_show_picture: 'Mostra foto persona',
+    label_show_name: 'Mostra nome',
+    label_show_last_updated: 'Mostra ultimo aggiornamento',
+    
+    // Sensors tab
+    section_automatic_sensors: 'Sensori Automatici',
+    text_sensors_auto_detect: 'I sensori vengono rilevati automaticamente in base all\'entità persona selezionata.',
+    text_sensor_pattern: 'Schema standard: sensor.phone_{name}_*',
+    sensor_battery: 'Batteria',
+    sensor_activity: 'Attività',
+    sensor_connection: 'Connessione',
+    sensor_distance: 'Distanza da Casa',
+    sensor_travel_time: 'Tempo di Viaggio',
+    label_battery_sensor: 'Sensore batteria',
+    label_activity_sensor: 'Sensore attività',
+    label_connection_sensor: 'Sensore connessione',
+    label_distance_sensor: 'Sensore distanza',
+    label_travel_sensor: 'Sensore tempo di viaggio',
+    label_position: 'Posizione {element}',
+    
+    // States tab
+    section_custom_states: 'Stati Personalizzati',
+    text_configure_states: 'Configura come vengono visualizzati i diversi stati della persona',
+    label_state_value: 'Valore stato (es: home, not_home)',
+    label_display_name: 'Nome visualizzato',
+    label_custom_image: 'Immagine personalizzata (facoltativo)',
+    label_name_color: 'Colore nome',
+    button_add_state: 'Aggiungi Stato',
+    preview_default_states: 'Stati Predefiniti',
+    button_add_default_states: 'Aggiungi Stati Predefiniti',
+    
+    // Style tab
+    section_style_customization: 'Personalizzazione Stile Card',
+    label_name_font: 'Font nome',
+    label_state_font: 'Font stato',
+    label_card_background: 'Sfondo card',
+    helper_card_background: 'Es: rgba(255,255,255,0.05) o #1a1a2e',
+    label_border_radius: 'Raggio bordo',
+    label_image_size: 'Dimensione immagine (%)',
+    
+    // Position labels
+    position_top_left: 'In Alto a Sinistra',
+    position_top_right: 'In Alto a Destra',
+    position_bottom_left: 'In Basso a Sinistra',
+    position_bottom_right: 'In Basso a Destra',
+    
+    // Default state names
+    state_home: '🏡 A Casa',
+    state_not_home: '🏃‍♂️ Fuori Casa',
+    state_office: '🏢 Ufficio',
+    state_unknown: '❓ Sconosciuto'
+  }
+};
 
 class PersonTrackerCardEditor extends LitElement {
   static get properties() {
@@ -20,6 +164,20 @@ class PersonTrackerCardEditor extends LitElement {
   constructor() {
     super();
     this._selectedTab = 'base';
+  }
+
+  // Get translated string
+  _t(key, replacements = {}) {
+    const lang = this.hass?.language || 'en';
+    const translationSet = editorTranslations[lang] || editorTranslations['en'];
+    let text = translationSet[key] || editorTranslations['en'][key] || key;
+    
+    // Replace placeholders
+    Object.keys(replacements).forEach(placeholder => {
+      text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+    });
+    
+    return text;
   }
 
   setConfig(config) {
@@ -47,7 +205,7 @@ class PersonTrackerCardEditor extends LitElement {
       ...config
     };
 
-    // fallback per posizioni
+    // fallback for positions
     const positionDefaults = {
       battery_position: 'top-right',
       activity_position: 'bottom-left',
@@ -282,6 +440,27 @@ class PersonTrackerCardEditor extends LitElement {
         border-radius: 4px;
       }
 
+
+      .position-button-group.buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .position-button-group.buttons button {
+        padding: 6px 12px;
+        border: 1px solid var(--divider-color);
+        background: none;
+        cursor: pointer;
+        border-radius: 4px;
+        color: var(--primary-text-color);
+        transition: background-color 0.3s;
+      }
+
+      .position-button-group.buttons button.selected {
+        background-color: var(--primary-color);
+        color: white;
+      }
       @media (max-width: 600px) {
         .tabs {
           overflow-x: auto;
@@ -307,82 +486,82 @@ class PersonTrackerCardEditor extends LitElement {
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
             @click="${() => this._selectedTab = 'base'}">
             <ha-icon icon="mdi:card-account-details"></ha-icon>
-            Base
+            ${this._t('tab_base')}
           </button>
           <button
-            class="tab ${this._selectedTab === 'sensori' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'sensori'}">
+            class="tab ${this._selectedTab === 'sensors' ? 'active' : ''}"
+            @click="${() => this._selectedTab = 'sensors'}">
             <ha-icon icon="mdi:leak"></ha-icon>
-            Sensori
+            ${this._t('tab_sensors')}
           </button>
           <button
-            class="tab ${this._selectedTab === 'stati' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'stati'}">
+            class="tab ${this._selectedTab === 'states' ? 'active' : ''}"
+            @click="${() => this._selectedTab = 'states'}">
             <ha-icon icon="mdi:palette"></ha-icon>
-            Stati
+            ${this._t('tab_states')}
           </button>
           <button
-            class="tab ${this._selectedTab === 'stile' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'stile'}">
+            class="tab ${this._selectedTab === 'style' ? 'active' : ''}"
+            @click="${() => this._selectedTab = 'style'}">
             <ha-icon icon="mdi:brush"></ha-icon>
-            Stile
+            ${this._t('tab_style')}
           </button>
         </div>
 
         ${this._selectedTab === 'base' ? this._renderBaseTab() : ''}
-        ${this._selectedTab === 'sensori' ? this._renderSensoriTab() : ''}
-        ${this._selectedTab === 'stati' ? this._renderStatiTab() : ''}
-        ${this._selectedTab === 'stile' ? this._renderStileTab() : ''}
+        ${this._selectedTab === 'sensors' ? this._renderSensorsTab() : ''}
+        ${this._selectedTab === 'states' ? this._renderStatesTab() : ''}
+        ${this._selectedTab === 'style' ? this._renderStyleTab() : ''}
       </div>
     `;
   }
 
   _renderBaseTab() {
     if (!this._config) {
-      return html`<div>Configurazione non disponibile.</div>`;
+      return html`<div>Configuration not available.</div>`;
     }
 
     const entityValue = this._config.entity || '';
 
     return html`
       <div class="section">
-        <div class="section-title">Configurazione Base</div>
+        <div class="section-title">${this._t('section_base_config')}</div>
 
         <ha-entity-picker
           .hass=${this.hass}
           .value=${entityValue}
-          .label=${'Entità Persona (richiesto)'}
+          .label=${this._t('label_person_entity')}
           .includeDomains=${['person']}
           .required=${true}
           @value-changed=${(e) => this._valueChanged(e, 'entity')}>
         </ha-entity-picker>
 
         <ha-textfield
-          label="Nome personalizzato (opzionale)"
+          label="${this._t('label_custom_name')}"
           .value=${this._config.name || ''}
           @input=${(e) => this._valueChanged(e, 'name')}>
         </ha-textfield>
 
         <ha-textfield
-          label="URL immagine personalizzata"
+          label="${this._t('label_custom_image_url')}"
           .value=${this._config.entity_picture || ''}
           @input=${(e) => this._valueChanged(e, 'entity_picture')}
-          helper-text="Es: /local/foto/mario.jpg">
+          helper-text="${this._t('helper_custom_image')}">
         </ha-textfield>
 
         <ha-textfield
-          label="Rapporto aspetto"
+          label="${this._t('label_aspect_ratio')}"
           .value=${this._config.aspect_ratio || '1/0.7'}
           @input=${(e) => this._valueChanged(e, 'aspect_ratio')}
-          helper-text="Formato: larghezza/altezza (es: 1/0.7)">
+          helper-text="${this._t('helper_aspect_ratio')}">
         </ha-textfield>
       </div>
 
       <div class="section">
-        <div class="section-title">Opzioni di Visualizzazione</div>
+        <div class="section-title">${this._t('section_display_options')}</div>
 
         <div class="config-row">
-          <span class="config-label">Mostra immagine persona</span>
+          <span class="config-label">${this._t('label_show_picture')}</span>
           <ha-switch
             .checked=${this._config.show_entity_picture !== false}
             @change=${(e) => this._valueChanged(e, 'show_entity_picture')}>
@@ -390,7 +569,7 @@ class PersonTrackerCardEditor extends LitElement {
         </div>
 
         <div class="config-row">
-          <span class="config-label">Mostra nome</span>
+          <span class="config-label">${this._t('label_show_name')}</span>
           <ha-switch
             .checked=${this._config.show_name !== false}
             @change=${(e) => this._valueChanged(e, 'show_name')}>
@@ -398,7 +577,7 @@ class PersonTrackerCardEditor extends LitElement {
         </div>
 
         <div class="config-row">
-          <span class="config-label">Mostra ultimo aggiornamento</span>
+          <span class="config-label">${this._t('label_show_last_updated')}</span>
           <ha-switch
             .checked=${this._config.show_last_changed !== false}
             @change=${(e) => this._valueChanged(e, 'show_last_changed')}>
@@ -409,24 +588,24 @@ class PersonTrackerCardEditor extends LitElement {
   }
 
 
-  _renderSensoriTab() {
+  _renderSensorsTab() {
   const entityBase = this._config.entity
     ? this._config.entity.replace('person.', '')
     : 'example';
 
   return html`
     <div class="section">
-      <div class="section-title">Sensori Automatici</div>
+      <div class="section-title">${this._t('section_automatic_sensors')}</div>
       <p class="info-text">
-        I sensori vengono rilevati automaticamente in base all'entità persona selezionata.
-        Pattern standard: sensor.phone_${entityBase}_*
+        ${this._t('text_sensors_auto_detect')}
+        ${this._t('text_sensor_pattern', { name: entityBase })}
       </p>
 
-      <!-- Batteria -->
+      <!-- Battery -->
       <div class="sensor-group">
         <div class="sensor-header">
           <ha-icon icon="mdi:battery" class="sensor-icon"></ha-icon>
-          <span class="sensor-title">Batteria</span>
+          <span class="sensor-title">${this._t('sensor_battery')}</span>
           <ha-switch
             .checked=${this._config.show_battery !== false}
             @change=${(e) => this._valueChanged(e, 'show_battery')}>
@@ -437,20 +616,20 @@ class PersonTrackerCardEditor extends LitElement {
           <ha-entity-picker
             .hass=${this.hass}
             .value=${this._config.battery_sensor || `sensor.phone_${entityBase}_battery_level`}
-            .label=${'Sensore batteria'}
+            .label=${this._t('label_battery_sensor')}
             .includeDomains=${['sensor']}
             @value-changed=${(e) => this._valueChanged(e, 'battery_sensor')}>
           </ha-entity-picker>
 
-          ${this._renderPositionButtons('battery_position', 'Posizione batteria')}
+          ${this._renderPositionButtons('battery_position', this._t('label_position', { element: this._t('sensor_battery') }))}
         ` : ''}
       </div>
 
-      <!-- Attività -->
+      <!-- Activity -->
       <div class="sensor-group">
         <div class="sensor-header">
           <ha-icon icon="mdi:walk" class="sensor-icon"></ha-icon>
-          <span class="sensor-title">Attività</span>
+          <span class="sensor-title">${this._t('sensor_activity')}</span>
           <ha-switch
             .checked=${this._config.show_activity !== false}
             @change=${(e) => this._valueChanged(e, 'show_activity')}>
@@ -461,20 +640,20 @@ class PersonTrackerCardEditor extends LitElement {
           <ha-entity-picker
             .hass=${this.hass}
             .value=${this._config.activity_sensor || `sensor.phone_${entityBase}_activity`}
-            .label=${'Sensore attività'}
+            .label=${this._t('label_activity_sensor')}
             .includeDomains=${['sensor']}
             @value-changed=${(e) => this._valueChanged(e, 'activity_sensor')}>
           </ha-entity-picker>
 
-          ${this._renderPositionButtons('activity_position', 'Posizione attività')}
+          ${this._renderPositionButtons('activity_position', this._t('label_position', { element: this._t('sensor_activity') }))}
         ` : ''}
       </div>
 
-      <!-- Connessione -->
+      <!-- Connection -->
       <div class="sensor-group">
         <div class="sensor-header">
           <ha-icon icon="mdi:wifi" class="sensor-icon"></ha-icon>
-          <span class="sensor-title">Connessione</span>
+          <span class="sensor-title">${this._t('sensor_connection')}</span>
           <ha-switch
             .checked=${this._config.show_connection !== false}
             @change=${(e) => this._valueChanged(e, 'show_connection')}>
@@ -485,20 +664,20 @@ class PersonTrackerCardEditor extends LitElement {
           <ha-entity-picker
             .hass=${this.hass}
             .value=${this._config.connection_sensor || `sensor.phone_${entityBase}_connection_type`}
-            .label=${'Sensore connessione'}
+            .label=${this._t('label_connection_sensor')}
             .includeDomains=${['sensor']}
             @value-changed=${(e) => this._valueChanged(e, 'connection_sensor')}>
           </ha-entity-picker>
 
-          ${this._renderPositionButtons('connection_position', 'Posizione connessione')}
+          ${this._renderPositionButtons('connection_position', this._t('label_position', { element: this._t('sensor_connection') }))}
         ` : ''}
       </div>
 
-      <!-- Distanza -->
+      <!-- Distance -->
       <div class="sensor-group">
         <div class="sensor-header">
           <ha-icon icon="mdi:home-map-marker" class="sensor-icon"></ha-icon>
-          <span class="sensor-title">Distanza da Casa</span>
+          <span class="sensor-title">${this._t('sensor_distance')}</span>
           <ha-switch
             .checked=${this._config.show_distance !== false}
             @change=${(e) => this._valueChanged(e, 'show_distance')}>
@@ -509,20 +688,20 @@ class PersonTrackerCardEditor extends LitElement {
           <ha-entity-picker
             .hass=${this.hass}
             .value=${this._config.distance_sensor || `sensor.waze_${entityBase}`}
-            .label=${'Sensore distanza'}
+            .label=${this._t('label_distance_sensor')}
             .includeDomains=${['sensor']}
             @value-changed=${(e) => this._valueChanged(e, 'distance_sensor')}>
           </ha-entity-picker>
 
-          ${this._renderPositionButtons('distance_position', 'Posizione distanza')}
+          ${this._renderPositionButtons('distance_position', this._t('label_position', { element: this._t('sensor_distance') }))}
         ` : ''}
       </div>
 
-      <!-- Tempo viaggio -->
+      <!-- Travel Time -->
       <div class="sensor-group">
         <div class="sensor-header">
           <ha-icon icon="mdi:car-clock" class="sensor-icon"></ha-icon>
-          <span class="sensor-title">Tempo di Viaggio</span>
+          <span class="sensor-title">${this._t('sensor_travel_time')}</span>
           <ha-switch
             .checked=${this._config.show_travel_time !== false}
             @change=${(e) => this._valueChanged(e, 'show_travel_time')}>
@@ -532,13 +711,13 @@ class PersonTrackerCardEditor extends LitElement {
         ${this._config.show_travel_time !== false ? html`
           <ha-entity-picker
             .hass=${this.hass}
-            .value=${this._config.travel_sensor || `sensor.casa_lavoro_${entityBase}`}
-            .label=${'Sensore tempo viaggio'}
+            .value=${this._config.travel_sensor || `sensor.home_work_${entityBase}`}
+            .label=${this._t('label_travel_sensor')}
             .includeDomains=${['sensor']}
             @value-changed=${(e) => this._valueChanged(e, 'travel_sensor')}>
           </ha-entity-picker>
 
-          ${this._renderPositionButtons('travel_position', 'Posizione tempo viaggio')}
+          ${this._renderPositionButtons('travel_position', this._t('label_position', { element: this._t('sensor_travel_time') }))}
         ` : ''}
       </div>
     </div>
@@ -547,20 +726,20 @@ class PersonTrackerCardEditor extends LitElement {
 
 
 
-  _renderStatiTab() {
+  _renderStatesTab() {
     const states = this._config.state || [];
 
     return html`
       <div class="section">
-        <div class="section-title">Stati Personalizzati</div>
+        <div class="section-title">${this._t('section_custom_states')}</div>
         <p class="info-text">
-          Configura come vengono visualizzati i diversi stati della persona
+          ${this._t('text_configure_states')}
         </p>
 
         ${states.map((state, index) => html`
           <div class="state-item">
             <div class="state-header">
-              <span>${state.name || state.value || 'Nuovo stato'}</span>
+              <span>${state.name || state.value || 'New state'}</span>
               <ha-icon-button
                 icon="mdi:delete"
                 class="remove-button"
@@ -569,25 +748,25 @@ class PersonTrackerCardEditor extends LitElement {
             </div>
 
             <ha-textfield
-              label="Valore stato (es: home, not_home)"
+              label="${this._t('label_state_value')}"
               .value=${state.value || ''}
               @input=${(e) => this._updateState(index, 'value', e.target.value)}>
             </ha-textfield>
 
             <ha-textfield
-              label="Nome visualizzato"
+              label="${this._t('label_display_name')}"
               .value=${state.name || ''}
               @input=${(e) => this._updateState(index, 'name', e.target.value)}>
             </ha-textfield>
 
             <ha-textfield
-              label="Immagine personalizzata (opzionale)"
+              label="${this._t('label_custom_image')}"
               .value=${state.entity_picture || ''}
               @input=${(e) => this._updateState(index, 'entity_picture', e.target.value)}>
             </ha-textfield>
 
             <div class="config-row">
-              <span class="config-label">Colore nome</span>
+              <span class="config-label">${this._t('label_name_color')}</span>
               <div class="color-picker">
                 <div class="color-preview"
                      style="background-color: ${state.styles?.name?.color || '#7DDA9F'}">
@@ -610,55 +789,55 @@ class PersonTrackerCardEditor extends LitElement {
           icon="mdi:plus"
           class="add-button"
           @click=${this._addState}>
-          Aggiungi Stato
+          ${this._t('button_add_state')}
         </mwc-button>
       </div>
 
       <div class="preview-box">
-        <div class="preview-title">Stati Predefiniti</div>
+        <div class="preview-title">${this._t('preview_default_states')}</div>
         <mwc-button
           @click=${this._addDefaultStates}
           icon="mdi:magic">
-          Aggiungi Stati Predefiniti
+          ${this._t('button_add_default_states')}
         </mwc-button>
       </div>
     `;
   }
 
-  _renderStileTab() {
+  _renderStyleTab() {
     return html`
       <div class="section">
-        <div class="section-title">Personalizzazione Stile Card</div>
+        <div class="section-title">${this._t('section_style_customization')}</div>
 
         <div class="two-column">
           <ha-textfield
-            label="Font nome"
+            label="${this._t('label_name_font')}"
             .value=${this._config.name_font_size || '20px'}
             @input=${(e) => this._valueChanged(e, 'name_font_size')}>
           </ha-textfield>
 
           <ha-textfield
-            label="Font stato"
+            label="${this._t('label_state_font')}"
             .value=${this._config.state_font_size || '14px'}
             @input=${(e) => this._valueChanged(e, 'state_font_size')}>
           </ha-textfield>
         </div>
 
         <ha-textfield
-          label="Background card"
+          label="${this._t('label_card_background')}"
           .value=${this._config.card_background || 'rgba(255,255,255,0.05)'}
           @input=${(e) => this._valueChanged(e, 'card_background')}
-          helper-text="Es: rgba(255,255,255,0.05) o #1a1a2e">
+          helper-text="${this._t('helper_card_background')}">
         </ha-textfield>
 
         <ha-textfield
-          label="Border radius"
+          label="${this._t('label_border_radius')}"
           .value=${this._config.card_border_radius || '15px'}
           @input=${(e) => this._valueChanged(e, 'card_border_radius')}>
         </ha-textfield>
 
         <ha-textfield
-          label="Dimensione immagine (%)"
+          label="${this._t('label_image_size')}"
           type="number"
           min="10"
           max="100"
@@ -673,10 +852,10 @@ class PersonTrackerCardEditor extends LitElement {
 
   _renderPositionButtons(configKey, label) {
     const options = [
-      { value: 'top-left', label: 'Alto Sinistra' },
-      { value: 'top-right', label: 'Alto Destra' },
-      { value: 'bottom-left', label: 'Basso Sinistra' },
-      { value: 'bottom-right', label: 'Basso Destra' }
+      { value: 'top-left', label: this._t('position_top_left') },
+      { value: 'top-right', label: this._t('position_top_right') },
+      { value: 'bottom-left', label: this._t('position_bottom_left') },
+      { value: 'bottom-right', label: this._t('position_bottom_right') }
     ];
     const selected = this._config[configKey] || options[0].value;
 
@@ -723,7 +902,7 @@ class PersonTrackerCardEditor extends LitElement {
       value = target.value;
     }
 
-    console.log(`_valueChanged chiamato con configValue=${configValue} e value=`, value);
+    console.log(`_valueChanged called with configValue=${configValue} and value=`, value);
 
     if (value === '' || value === undefined) {
       delete this._config[configValue];
@@ -744,28 +923,28 @@ class PersonTrackerCardEditor extends LitElement {
 
     const value = ev.detail?.value;
 
-    // Valori ammessi per triggers_update
+    // Allowed values for triggers_update
     const validTriggerValues = ['all', 'entity', 'custom'];
 
-    // Valori ammessi per posizioni
+    // Allowed values for positions
     const validPositions = [
       'top-left', 'top-right', 'bottom-left', 'bottom-right',
       'top-left-2', 'top-right-2', 'bottom-left-2', 'bottom-right-2'
     ];
 
     if (!value || typeof value !== 'string') {
-      console.warn(`Valore non valido (tipo o undefined) per ${configValue}:`, value);
+      console.warn(`Invalid value (type or undefined) for ${configValue}:`, value);
       return;
     }
 
     if (configValue === 'triggers_update') {
       if (!validTriggerValues.includes(value)) {
-        console.warn(`Valore triggers_update non valido:`, value);
+        console.warn(`Invalid triggers_update value:`, value);
         return;
       }
     } else {
       if (!validPositions.includes(value)) {
-        console.warn(`Valore posizione non valido per ${configValue}:`, value);
+        console.warn(`Invalid position value for ${configValue}:`, value);
         return;
       }
     }
@@ -836,22 +1015,22 @@ class PersonTrackerCardEditor extends LitElement {
     const defaultStates = [
       {
         value: 'home',
-        name: '🏡 Casa',
+        name: this._t('state_home'),
         styles: { name: { color: '#7DDA9F' } }
       },
       {
         value: 'not_home',
-        name: '🏃‍♂️ Fuori Casa',
+        name: this._t('state_not_home'),
         styles: { name: { color: '#93ADCB' } }
       },
       {
-        value: 'Ufficio',
-        name: '🏢 Ufficio',
+        value: 'Office',
+        name: this._t('state_office'),
         styles: { name: { color: '#FFD700' } }
       },
       {
         value: 'unknown',
-        name: '❓ Sconosciuto',
+        name: this._t('state_unknown'),
         styles: { name: { color: '#808080' } }
       }
     ];
@@ -871,11 +1050,11 @@ class PersonTrackerCardEditor extends LitElement {
   }
 }
 
-// Registra l'editor
+// Register the editor
 if (!customElements.get('person-tracker-card-editor')) {
   customElements.define('person-tracker-card-editor', PersonTrackerCardEditor);
   console.log('Person Tracker Card Editor registered (fixed version)');
 }
 
-// Esporta per la card principale
+// Export for the main card
 window.PersonTrackerCardEditor = PersonTrackerCardEditor;

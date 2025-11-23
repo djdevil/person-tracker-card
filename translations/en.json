@@ -1,0 +1,88 @@
+{
+  "config": {
+    "tab": {
+      "base": "Base",
+      "sensors": "Sensors",
+      "states": "States",
+      "style": "Style"
+    },
+    "section": {
+      "base_config": "Base Configuration",
+      "display_options": "Display Options",
+      "automatic_sensors": "Automatic Sensors",
+      "custom_states": "Custom States",
+      "style_customization": "Card Style Customization"
+    },
+    "label": {
+      "person_entity": "Person Entity (required)",
+      "custom_name": "Custom name (optional)",
+      "custom_image_url": "Custom image URL",
+      "aspect_ratio": "Aspect ratio",
+      "show_picture": "Show person picture",
+      "show_name": "Show name",
+      "show_last_updated": "Show last updated",
+      "battery_sensor": "Battery sensor",
+      "activity_sensor": "Activity sensor",
+      "connection_sensor": "Connection sensor",
+      "distance_sensor": "Distance sensor",
+      "travel_sensor": "Travel time sensor",
+      "position": "{element} position",
+      "state_value": "State value (ex: home, not_home)",
+      "display_name": "Display name",
+      "custom_image": "Custom image (optional)",
+      "name_color": "Name color",
+      "name_font": "Name font",
+      "state_font": "State font",
+      "card_background": "Card background",
+      "border_radius": "Border radius",
+      "image_size": "Image size (%)"
+    },
+    "helper": {
+      "custom_image": "Ex: /local/photos/mario.jpg",
+      "aspect_ratio": "Format: width/height (ex: 1/0.7)",
+      "card_background": "Ex: rgba(255,255,255,0.05) or #1a1a2e"
+    },
+    "text": {
+      "sensors_auto_detect": "Sensors are automatically detected based on the selected person entity.",
+      "sensor_pattern": "Standard pattern: sensor.phone_{name}_*",
+      "configure_states": "Configure how different person states are displayed"
+    },
+    "sensor": {
+      "battery": "Battery",
+      "activity": "Activity",
+      "connection": "Connection",
+      "distance": "Distance from Home",
+      "travel_time": "Travel Time"
+    },
+    "button": {
+      "add_state": "Add State",
+      "add_default_states": "Add Default States"
+    },
+    "preview": {
+      "default_states": "Default States"
+    },
+    "position": {
+      "top_left": "Top Left",
+      "top_right": "Top Right",
+      "bottom_left": "Bottom Left",
+      "bottom_right": "Bottom Right"
+    },
+    "state": {
+      "home": "🏡 Home",
+      "not_home": "🏃‍♂️ Away from Home",
+      "office": "🏢 Office",
+      "unknown": "❓ Unknown"
+    }
+  },
+  "card": {
+    "day": "day",
+    "days": "days",
+    "hour": "hour",
+    "hours": "hours",
+    "minute": "minute",
+    "minutes": "minutes",
+    "now": "Now",
+    "ago": "ago",
+    "entity_not_found": "Entity {entity} not found"
+  }
+}

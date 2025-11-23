@@ -1,30 +1,31 @@
 ## Person Tracker Card
 
-Card avanzata per Home Assistant che mostra informazioni dettagliate sulle persone con editor visuale completo.
+Advanced card for Home Assistant that shows detailed information about people with complete visual editor.
 
-### ✨ Caratteristiche
+### ✨ Features
 
-- 📱 Monitoraggio batteria con icona dinamica
-- 🚶 Tracciamento attività (Walking, Running, Automotive, etc.)
-- 📍 Distanza da casa con integrazione Waze
-- ⏱️ Tempo di viaggio stimato
-- 📶 Tipo di connessione (WiFi/Mobile)
-- 🎨 Stati personalizzabili con colori e immagini
-- 🖼️ Supporto PNG/GIF trasparenti
-- 🎯 Editor visuale completo
-- 📐 Layout completamente personalizzabile
+- 📱 Battery monitoring with dynamic icon
+- 🚶 Activity tracking (Walking, Running, Automotive, etc.)
+- 📍 Distance from home with Waze integration
+- ⏱️ Estimated travel time
+- 📶 Connection type (WiFi/Mobile)
+- 🎨 Customizable states with colors and images
+- 🖼️ Transparent PNG/GIF support
+- 🎯 Complete visual editor
+- 📐 Fully customizable layout
+- 🌍 Multi-language support (English & Italian)
 
-### 📦 Installazione
+### 📦 Installation
 
-1. Installa tramite HACS
-2. Aggiungi la card alla tua dashboard
-3. Configura tramite l'editor visuale
+1. Install via HACS
+2. Add the card to your dashboard
+3. Configure through the visual editor
 
-### 🔧 Configurazione Base
+### 🔧 Basic Configuration
 
 ```yaml
 type: custom:person-tracker-card
-entity: person.nome
+entity: person.name
 ```
 
-Per la documentazione completa, visita il [README](https://github.com/yourusername/person-tracker-card).
+For complete documentation, visit the [README](https://github.com/yourusername/person-tracker-card).

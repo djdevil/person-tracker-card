@@ -1,86 +1,99 @@
 # Changelog
 
-Tutte le modifiche notevoli a questo progetto saranno documentate in questo file.
+All notable changes to this project will be documented in this file.
 
-Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
-e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [2.2.0] - 2024-11-22
+
+### Added
+- 🌍 Multi-language support (English and Italian)
+- 🌐 Automatic language detection from Home Assistant user settings
+- 🔤 Translated editor interface for English and Italian
+- 📝 Localized time indicators (days/hours/minutes ago)
+- 🗣️ Localized error messages and default state names
+
+### Changed
+- 📝 Updated code comments from Italian to English for better maintainability
+- 🌍 Card now defaults to English for unsupported languages
 
 ## [2.1.0] - 2024-11-22
 
-### Aggiunto
-- ✨ Supporto completo per immagini PNG con trasparenza
-- ✨ Supporto per GIF animate come immagini di stato
-- 📱 Possibilità di posizionare elementi in 8 posizioni diverse
-- 🎨 Immagini personalizzate per ogni stato
-- 📐 Controllo dimensione immagine in percentuale
-- 🔧 Editor visuale completo per tutte le opzioni
+### Added
+- ✨ Complete support for PNG images with transparency
+- ✨ Support for animated GIFs as state images
+- 📱 Ability to position elements in 8 different positions
+- 🎨 Custom images for each state
+- 📐 Image size control in percentage
+- 🔧 Complete visual editor for all options
 
-### Modificato
-- 🎨 Migliorato rendering immagini personalizzate
-- 🐛 Fix rendering immagini con sfondo trasparente
-- 📱 Ottimizzato layout responsive
-- 🎯 Migliorata gestione aspect ratio
+### Changed
+- 🎨 Improved custom image rendering
+- 🐛 Fixed rendering of images with transparent background
+- 📱 Optimized responsive layout
+- 🎯 Improved aspect ratio handling
 
-### Corretto
-- 🐛 Fix editor che non salvava alcune opzioni
-- 🐛 Fix posizionamento elementi sovrapposti
-- 🐛 Fix caricamento immagini custom in stati
-- 🔧 Fix validazione valori nell'editor
+### Fixed
+- 🐛 Fixed editor not saving some options
+- 🐛 Fixed overlapping element positioning
+- 🐛 Fixed custom image loading in states
+- 🔧 Fixed value validation in editor
 
 ## [2.0.0] - 2024-11-20
 
-### Aggiunto
-- 🎉 Prima release pubblica
-- ✨ Editor visuale completo con tab organizzate
-- 📱 Supporto per tutti i sensori Companion App:
-  - Batteria con icona dinamica
-  - Attività fisica con riconoscimento tipo
-  - Tipo di connessione (WiFi/Mobile)
-  - Distanza da casa
-  - Tempo di viaggio
-- 🎨 Stati personalizzabili:
-  - Nomi custom con emoji
-  - Colori personalizzabili
-  - Immagini per stato (base)
-- 📍 Integrazione Waze per calcolo distanze
-- 🎯 Posizionamento libero elementi
-- 📐 Aspect ratio configurabile
-- 🎨 Stili completamente personalizzabili:
-  - Background card
+### Added
+- 🎉 First public release
+- ✨ Complete visual editor with organized tabs
+- 📱 Support for all Companion App sensors:
+  - Battery with dynamic icon
+  - Activity tracking with type recognition
+  - Connection type (WiFi/Mobile)
+  - Distance from home
+  - Travel time
+- 🎨 Customizable states:
+  - Custom names with emojis
+  - Customizable colors
+  - State images (basic)
+- 📍 Waze integration for distance calculation
+- 🎯 Free element positioning
+- 📐 Configurable aspect ratio
+- 🎨 Fully customizable styles:
+  - Card background
   - Border radius
-  - Font size per ogni elemento
-  - Colori elementi
-- 🔄 Controllo modalità aggiornamento (all/entity/custom)
-- 📱 Design responsive
-- 🌙 Supporto temi scuri/chiari
+  - Font size for each element
+  - Element colors
+- 🔄 Update mode control (all/entity/custom)
+- 📱 Responsive design
+- 🌙 Dark/light theme support
 
-### Caratteristiche Tecniche
-- ⚡ Ottimizzato con `shouldUpdate()` per performance
-- 🔧 Supporto configurazione YAML e UI
-- 🎨 CSS modulare e manutenibile
-- 📝 Codice ben documentato
-- 🧪 Testato su varie configurazioni
+### Technical Features
+- ⚡ Optimized with `shouldUpdate()` for performance
+- 🔧 YAML and UI configuration support
+- 🎨 Modular and maintainable CSS
+- 📝 Well-documented code
+- 🧪 Tested on various configurations
 
-## [1.0.0] - 2024-11-15 (Versione Interna)
+## [1.0.0] - 2024-11-15 (Internal Version)
 
-### Aggiunto
-- 📱 Versione base della card
-- 🎨 Visualizzazione stato persona
-- 📊 Sensori base (batteria, attività)
-- 🖼️ Immagine persona
+### Added
+- 📱 Basic card version
+- 🎨 Person state visualization
+- 📊 Basic sensors (battery, activity)
+- 🖼️ Person image
 
 ---
 
-## Tipi di Modifiche
+## Types of Changes
 
-- `Aggiunto` per nuove funzionalità
-- `Modificato` per cambiamenti a funzionalità esistenti
-- `Deprecato` per funzionalità che verranno rimosse
-- `Rimosso` per funzionalità rimosse
-- `Corretto` per bug fix
-- `Sicurezza` per vulnerabilità corrette
+- `Added` for new features
+- `Changed` for changes in existing functionality
+- `Deprecated` for soon-to-be removed features
+- `Removed` for now removed features
+- `Fixed` for any bug fixes
+- `Security` in case of vulnerabilities
 
-## Link Versioni
+## Version Links
 
 - [2.1.0]: https://github.com/yourusername/person-tracker-card/releases/tag/v2.1.0
 - [2.0.0]: https://github.com/yourusername/person-tracker-card/releases/tag/v2.0.0

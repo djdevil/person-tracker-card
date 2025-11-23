@@ -1,12 +1,12 @@
-# 👤 Person Tracker Card for Home Assistant - EN
+# 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor.
+Advanced card for Home Assistant that shows detailed information about people with complete visual editor.
 
 ![Person Tracker Card](images/preview.png)
 
-## ✨ Key Features
+## ✨ Main Features
 
 - 📱 **Battery Monitoring** - Displays device battery level with dynamic icon
 - 🚶 **Activity Tracking** - Shows current activity (Walking, Running, Automotive, Stationary, Cycling)
@@ -15,16 +15,17 @@ Advanced card for Home Assistant that displays detailed information about people
 - 📶 **Connection Type** - Shows if device is connected via WiFi or mobile network
 - 🎨 **Customizable States** - Different colors and images for each state (Home, Office, etc.)
 - 🖼️ **Custom Images** - Support for transparent PNG/GIF images
-- 🎯 **Complete Visual Editor** - Easy configuration via graphical interface
+- 🎯 **Complete Visual Editor** - Easy configuration through graphical interface
 - 📐 **Flexible Layout** - Freely position each element on the card
-- 🎨 **Highly Customizable** - Fonts, colors, sizes, spacing completely configurable
+- 🎨 **Highly Customizable** - Fonts, colors, sizes, spacing fully configurable
+- 🌍 **Multi-Language Support** - Available in English and Italian, with automatic language detection
 
 ## 📸 Screenshots
 
 ### Visual Editor
 | Base Tab | Sensors Tab | States Tab |
-|----------|-------------|-----------|
-| ![Base Editor](images/editor-base.png) | ![Sensors Editor](images/editor-sensors.png) | ![States Editor](images/editor-states.png) |
+|----------|-------------|------------|
+| ![Editor Base](images/editor-base.png) | ![Editor Sensors](images/editor-sensors.png) | ![Editor States](images/editor-states.png) |
 
 ## 📦 Installation
 
@@ -32,10 +33,10 @@ Advanced card for Home Assistant that displays detailed information about people
 
 1. Open HACS in your Home Assistant
 2. Go to "Frontend"
-3. Click on the three dots in the top right
+3. Click the three dots in the top right corner
 4. Select "Custom repositories"
 5. Add this URL: `https://github.com/djdevil/person-tracker-card`
-6. Select category "Dashboard"
+6. Select category "Lovelace"
 7. Click "Add"
 8. Search for "Person Tracker Card" and install it
 9. Restart Home Assistant
@@ -61,79 +62,10 @@ Advanced card for Home Assistant that displays detailed information about people
 4. Configure through the graphical interface
 
 ### Method 2: YAML
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_activity: true
-show_distance: true
-show_travel_time: true
-show_connection: true
-```
-# 👤 Person Tracker Card for Home Assistant - IT
-## ✨ Caratteristiche Principali
-
-- 📱 **Monitoraggio Batteria** - Visualizza il livello di batteria del dispositivo con icona dinamica
-- 🚶 **Tracciamento Attività** - Mostra l'attività corrente (Walking, Running, Automotive, Stationary, Cycling)
-- 📍 **Distanza da Casa** - Integrazione con Waze per calcolare la distanza
-- ⏱️ **Tempo di Viaggio** - Stima del tempo necessario per raggiungere casa/lavoro
-- 📶 **Tipo Connessione** - Mostra se il dispositivo è connesso tramite WiFi o rete mobile
-- 🎨 **Stati Personalizzabili** - Colori e immagini differenti per ogni stato (Casa, Ufficio, etc.)
-- 🖼️ **Immagini Personalizzate** - Supporto per immagini PNG/GIF trasparenti
-- 🎯 **Editor Visuale Completo** - Configurazione facile tramite interfaccia grafica
-- 📐 **Layout Flessibile** - Posiziona liberamente ogni elemento sulla card
-- 🎨 **Altamente Personalizzabile** - Font, colori, dimensioni, spaziature completamente configurabili
-
-## 📸 Screenshot
-
-
-### Editor Visuale
-| Tab Base | Tab Sensori | Tab Stati |
-|----------|------------|----------|
-| ![Editor Base](images/editor-base.png) | ![Editor Sensori](images/editor-sensors.png) | ![Editor Stati](images/editor-states.png) |
-
-## 📦 Installazione
-
-### HACS (Consigliato)
-
-1. Apri HACS nel tuo Home Assistant
-2. Vai su "Frontend"
-3. Clicca sui tre puntini in alto a destra
-4. Seleziona "Repository personalizzati"
-5. Aggiungi questo URL: `https://github.com/djdevil/person-tracker-card`
-6. Seleziona categoria "Dashboard"
-7. Clicca su "Aggiungi"
-8. Cerca "Person Tracker Card" e installala
-9. Riavvia Home Assistant
-
-### Installazione Manuale
-
-1. Scarica `person-tracker-card.js` e `person-tracker-card-editor.js`
-2. Copia i file nella cartella `config/www/person-tracker-card/`
-3. Aggiungi la risorsa in Home Assistant:
-   - Vai su Impostazioni → Dashboard → Menu (⋮) → Risorse
-   - Clicca "+ AGGIUNGI RISORSA"
-   - URL: `/local/person-tracker-card/person-tracker-card.js`
-   - Tipo: Modulo JavaScript
-4. Ricarica la pagina (Ctrl+F5)
-
-## 🔧 Configurazione Base
-
-### Metodo 1: Editor Visuale (Consigliato)
-
-1. Modifica la tua dashboard
-2. Aggiungi una nuova card
-3. Cerca "Person Tracker Card"
-4. Configura tramite l'interfaccia grafica
-
-### Metodo 2: YAML
 
 ```yaml
 type: custom:person-tracker-card
-entity: person.davide
+entity: person.david
 show_entity_picture: true
 show_name: true
 show_last_changed: true
@@ -144,15 +76,15 @@ show_travel_time: true
 show_connection: true
 ```
 
-## ⚙️ Configurazione Avanzata
+## ⚙️ Advanced Configuration
 
-### Opzioni Complete
+### Complete Options
 
 ```yaml
 type: custom:person-tracker-card
-entity: person.davide
+entity: person.david
 
-# Visualizzazione Elementi
+# Element Display
 show_entity_picture: true
 show_name: true
 show_last_changed: true
@@ -162,207 +94,225 @@ show_distance: true
 show_travel_time: true
 show_connection: true
 
-# Sensori Personalizzati (opzionale)
-battery_sensor: sensor.phone_davide_battery_level
-activity_sensor: sensor.phone_davide_activity
-connection_sensor: sensor.phone_davide_connection_type
-distance_sensor: sensor.waze_davide
-travel_sensor: sensor.casa_lavoro_davide
+# Custom Sensors (optional)
+battery_sensor: sensor.phone_david_battery_level
+activity_sensor: sensor.phone_david_activity
+connection_sensor: sensor.phone_david_connection_type
+distance_sensor: sensor.waze_david
+travel_sensor: sensor.home_work_david
 
-# Layout e Dimensioni
+# Layout and Dimensions
 aspect_ratio: '1/0.7'
 picture_size: 55
 
-# Stili Generali
+# General Styles
 card_background: 'rgba(255,255,255,0.05)'
 card_border_radius: '15px'
 name_font_size: '20px'
 state_font_size: '14px'
 
-# Posizionamento Elementi
+# Element Positioning
 battery_position: top-right
 activity_position: bottom-left
 distance_position: top-left
 travel_position: top-left-2
 connection_position: bottom-right
 
-# Dimensioni Font Elementi
+# Element Font Sizes
 battery_font_size: '13px'
 activity_font_size: '13px'
 distance_font_size: '12px'
 travel_font_size: '12px'
 connection_font_size: '12px'
 
-# Aggiornamenti
+# Updates
 triggers_update: all  # all | entity | custom
 
-# Stati Personalizzati (vedi sotto)
+# Custom States (see below)
 state:
   - value: home
-    name: 🏡 Casa
+    name: 🏡 Home
     styles:
       name:
         color: '#7DDA9F'
   - value: not_home
-    name: 🏃‍♂️ Fuori Casa
+    name: 🏃‍♂️ Away from Home
     styles:
       name:
         color: '#93ADCB'
 ```
 
-### Stati Personalizzati con Immagini
+### Custom States with Images
 
-Puoi definire stati personalizzati con colori e immagini diverse:
+You can define custom states with different colors and images:
 
 ```yaml
 state:
   - value: home
-    name: 🏡 Casa
+    name: 🏡 Home
     entity_picture: /local/images/home.png
     styles:
       name:
         color: '#7DDA9F'
   
-  - value: Ufficio
-    name: 🏢 Ufficio
+  - value: Office
+    name: 🏢 Office
     entity_picture: /local/images/office.png
     styles:
       name:
         color: '#FFD700'
   
-  - value: Palestra
-    name: 🏋️ Palestra
+  - value: Gym
+    name: 🏋️ Gym
     entity_picture: /local/images/gym.gif
     styles:
       name:
         color: '#FF6B6B'
 ```
 
-### Posizioni Disponibili
+### Available Positions
 
-Ogni elemento può essere posizionato in una delle seguenti posizioni:
+Each element can be positioned in one of the following positions:
 
-- `top-left` - Alto a sinistra
-- `top-right` - Alto a destra
-- `bottom-left` - Basso a sinistra
-- `bottom-right` - Basso a destra
-- `top-left-2` - Alto a sinistra (seconda posizione)
-- `top-right-2` - Alto a destra (seconda posizione)
-- `bottom-left-2` - Basso a sinistra (seconda posizione)
-- `bottom-right-2` - Basso a destra (seconda posizione)
+- `top-left` - Top left
+- `top-right` - Top right
+- `bottom-left` - Bottom left
+- `bottom-right` - Bottom right
+- `top-left-2` - Top left (second position)
+- `top-right-2` - Top right (second position)
+- `bottom-left-2` - Bottom left (second position)
+- `bottom-right-2` - Bottom right (second position)
 
-### Modalità di Aggiornamento
+### Update Modes
 
-L'opzione `triggers_update` controlla quando la card viene aggiornata:
+The `triggers_update` option controls when the card is updated:
 
-- `all` - Aggiorna quando cambia qualsiasi entità correlata (predefinito)
-- `entity` - Aggiorna solo quando cambia l'entità person principale
-- `custom` - Aggiorna per entità specifiche definite dall'utente
+- `all` - Updates when any related entity changes (default)
+- `entity` - Updates only when the main person entity changes
+- `custom` - Updates for specific user-defined entities
 
-## 🎨 Creare Immagini Personalizzate
+## 🎨 Creating Custom Images
 
-### Con iPhone/iPad
+### With iPhone/iPad
 
-1. **Scarica l'app gratuita "Background Eraser"**
-   - Disponibile su App Store
-   - Facile da usare per rimuovere sfondi
+1. **Download the free "Background Eraser" app**
+   - Available on App Store
+   - Easy to use for removing backgrounds
 
-2. **Crea la tua immagine**:
-   - Scatta una foto o usa un'immagine esistente
-   - Apri l'app Background Eraser
-   - Rimuovi lo sfondo con il dito
-   - Esporta come PNG con trasparenza
+2. **Create your image**:
+   - Take a photo or use an existing image
+   - Open the Background Eraser app
+   - Remove the background with your finger
+   - Export as PNG with transparency
 
-3. **Per immagini animate (GIF)**:
-   - Usa l'app "ImgPlay" (gratuita)
-   - Crea una GIF da foto o video
-   - Puoi anche rimuovere lo sfondo
-   - Esporta come GIF
+3. **For animated images (GIF)**:
+   - Use the "ImgPlay" app (free)
+   - Create a GIF from photos or video
+   - You can also remove the background
+   - Export as GIF
 
-4. **Carica su Home Assistant**:
-   - Copia il file in `config/www/images/`
-   - Usa il percorso `/local/images/tuaimmagine.png` nella configurazione
+4. **Upload to Home Assistant**:
+   - Copy the file to `config/www/images/`
+   - Use the path `/local/images/yourimage.png` in configuration
 
-### Dimensioni Consigliate
+### Recommended Dimensions
 
-- **Immagini statiche (PNG)**: 512x512 px
-- **GIF animate**: 512x512 px, max 5 MB
-- **Formato**: PNG con trasparenza o GIF
-- **Sfondo**: Trasparente per migliore integrazione
+- **Static images (PNG)**: 512x512 px
+- **Animated GIF**: 512x512 px, max 5 MB
+- **Format**: PNG with transparency or GIF
+- **Background**: Transparent for better integration
 
-### Esempi di Immagini
+### Image Examples
 
-Puoi creare immagini per rappresentare:
-- 🏠 Casa - Logo della tua casa
-- 🏢 Ufficio - Logo aziendale
-- 🏋️ Palestra - Icona fitness
-- 🛒 Supermercato - Logo del negozio
-- 🚗 In viaggio - Icona auto animata
-- ✈️ Aeroporto - Icona aereo
+You can create images to represent:
+- 🏠 Home - Your house logo
+- 🏢 Office - Company logo
+- 🏋️ Gym - Fitness icon
+- 🛒 Supermarket - Store logo
+- 🚗 Traveling - Animated car icon
+- ✈️ Airport - Airplane icon
 
-## 📱 Integrazione con Home Assistant Companion App
+## 📱 Integration with Home Assistant Companion App
 
-Per il corretto funzionamento, assicurati che l'app Home Assistant Companion abbia i permessi per:
+For proper functionality, make sure the Home Assistant Companion app has permissions for:
 
-1. **Posizione**:
-   - Vai nelle impostazioni del telefono
-   - App → Home Assistant
-   - Posizione → Sempre
+1. **Location**:
+   - Go to phone settings
+   - Apps → Home Assistant
+   - Location → Always
 
-2. **Batteria**:
-   - Automaticamente tracciata dall'app
+2. **Battery**:
+   - Automatically tracked by the app
 
-3. **Attività fisica**:
-   - iOS: Impostazioni → Privacy → Movimento e fitness
-   - Android: Attiva il sensore di attività nell'app
+3. **Physical Activity**:
+   - iOS: Settings → Privacy → Motion & Fitness
+   - Android: Enable activity sensor in the app
 
-4. **Connettività**:
-   - Automaticamente tracciata dall'app
+4. **Connectivity**:
+   - Automatically tracked by the app
 
-### Sensori Companion App Utilizzati
+### Companion App Sensors Used
 
-La card cerca automaticamente questi sensori:
+The card automatically searches for these sensors:
 
 ```
-sensor.phone_[nome]_battery_level
-sensor.phone_[nome]_activity
-sensor.phone_[nome]_connection_type
+sensor.phone_[name]_battery_level
+sensor.phone_[name]_activity
+sensor.phone_[name]_connection_type
 ```
 
-Dove `[nome]` è il nome dell'entità person senza il prefixo `person.`
+Where `[name]` is the person entity name without the `person.` prefix
 
-Esempio per `person.davide`:
+Example for `person.david`:
 ```
-sensor.phone_davide_battery_level
-sensor.phone_davide_activity
-sensor.phone_davide_connection_type
+sensor.phone_david_battery_level
+sensor.phone_david_activity
+sensor.phone_david_connection_type
 ```
 
-## 🗺️ Integrazione Waze
+## 🗺️ Waze Integration
 
-Per la distanza da casa, installa l'integrazione Waze Travel Time:
+For distance from home, install the Waze Travel Time integration:
 
-1. Vai su Impostazioni → Dispositivi e servizi
-2. Aggiungi integrazione → Cerca "Waze"
-3. Configura:
-   - Origine: La tua zona home
-   - Destinazione: `person.nome`
-   - Nome: `waze_nome`
+1. Go to Settings → Devices and Services
+2. Add integration → Search "Waze"
+3. Configure:
+   - Origin: Your home zone
+   - Destination: `person.name`
+   - Name: `waze_name`
 
-## 🎭 Esempi di Configurazione
+## 🌍 Multi-Language Support
 
-### Configurazione Minima
+The card automatically detects your Home Assistant language and displays the interface accordingly.
+
+### Supported Languages
+
+- **English (en)** - Default language
+- **Italian (it)** - Lingua italiana
+
+The card will automatically use the language set in your Home Assistant user profile. If your language is not yet supported, the card will default to English.
+
+### Translated Elements
+
+- Time ago indicators (e.g., "2 hours ago" / "2 ore fa")
+- Editor interface labels and buttons
+- Default state names
+- Error messages
+
+## 🎭 Configuration Examples
+
+### Minimal Configuration
 
 ```yaml
 type: custom:person-tracker-card
-entity: person.davide
+entity: person.david
 ```
 
-### Configurazione Completa
+### Complete Configuration
 
 ```yaml
 type: custom:person-tracker-card
-entity: person.davide
+entity: person.david
 show_entity_picture: true
 show_name: true
 show_last_changed: true
@@ -384,30 +334,30 @@ travel_position: top-left-2
 connection_position: bottom-right
 state:
   - value: home
-    name: 🏡 A Casa
+    name: 🏡 At Home
     entity_picture: /local/images/home.gif
     styles:
       name:
         color: '#7DDA9F'
-  - value: Ufficio
-    name: 🏢 In Ufficio
+  - value: Office
+    name: 🏢 At Office
     entity_picture: /local/images/office.png
     styles:
       name:
         color: '#FFD700'
   - value: not_home
-    name: 🌍 In Giro
+    name: 🌍 Out and About
     entity_picture: /local/images/travel.gif
     styles:
       name:
         color: '#93ADCB'
 ```
 
-### Solo Informazioni Essenziali
+### Essential Information Only
 
 ```yaml
 type: custom:person-tracker-card
-entity: person.davide
+entity: person.david
 show_entity_picture: true
 show_name: true
 show_last_changed: true
@@ -419,72 +369,71 @@ show_connection: true
 aspect_ratio: '1/0.5'
 ```
 
-## 🔍 Risoluzione Problemi
+## 🔍 Troubleshooting
 
-### La card non appare
+### Card doesn't appear
 
-1. Controlla la console del browser (F12) per errori
-2. Verifica che la risorsa sia caricata correttamente
-3. Ricarica la pagina con cache vuota (Ctrl+Shift+R)
+1. Check browser console (F12) for errors
+2. Verify that the resource is loaded correctly
+3. Reload the page with empty cache (Ctrl+Shift+R)
 
-### I sensori non vengono trovati
+### Sensors not found
 
-1. Controlla che l'app Companion sia installata e configurata
-2. Verifica i nomi dei sensori in Strumenti Sviluppatore → Stati
-3. Specifica manualmente i sensori nella configurazione
+1. Check that the Companion app is installed and configured
+2. Verify sensor names in Developer Tools → States
+3. Manually specify sensors in configuration
 
-### Le immagini personalizzate non appaiono
+### Custom images don't appear
 
-1. Controlla che il file sia in `config/www/`
-2. Usa il percorso corretto: `/local/cartella/file.png`
-3. Verifica i permessi del file
-4. Riavvia Home Assistant se necessario
+1. Check that the file is in `config/www/`
+2. Use the correct path: `/local/folder/file.png`
+3. Verify file permissions
+4. Restart Home Assistant if necessary
 
-### L'editor non si apre
+### Editor doesn't open
 
-1. Assicurati di aver caricato entrambi i file JS
-2. Ricarica le risorse Lovelace
-3. Prova a riavviare Home Assistant
+1. Make sure you've loaded both JS files
+2. Reload Lovelace resources
+3. Try restarting Home Assistant
 
 ## 📝 Changelog
 
 ### v1.0 (2024-11-22)
-- 🎉 Prima release pubblica
-- ✨ Editor visuale completo
-- 📱 Supporto tutti i sensori Companion App
-- 🎨 Stati personalizzabili con colori
-- 📍 Integrazione Waze per distanze
+- 🎉 First public release
+- ✨ Complete visual editor
+- 📱 Support for all Companion App sensors
+- 🎨 Customizable states with colors
+- 📍 Waze integration for distances
 
+## 🤝 Contributing
 
-## 🤝 Contribuire
+Contributions are welcome! Please:
 
-I contributi sono benvenuti! Per favore:
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-1. Fai un Fork del progetto
-2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
-3. Committa i cambiamenti (`git commit -m 'Add some AmazingFeature'`)
-4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Apri una Pull Request
+## 📄 License
 
-## 📄 Licenza
+This project is released under the MIT license. See the [LICENSE](LICENSE) file for details.
 
-Questo progetto è rilasciato sotto licenza MIT. Vedi il file [LICENSE](LICENSE) per i dettagli.
+## 💝 Support
 
-## 💝 Supporto
+If this card is useful to you, consider:
 
-Se questa card ti è utile, considera di:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs and issues
+- 💡 Suggesting new features
+- 🤝 Contributing to the code
 
-- ⭐ Mettere una stella al repository
-- 🐛 Segnalare bug e problemi
-- 💡 Suggerire nuove funzionalità
-- 🤝 Contribuire al codice
-
-## 🙏 Ringraziamenti
+## 🙏 Acknowledgments
 
 - Home Assistant Community
 - HACS Team
-- Tutti i contributori
+- All contributors
 
 ---
 
-**Creato con ❤️ per la comunità Home Assistant**
+**Created with ❤️ for the Home Assistant community**
