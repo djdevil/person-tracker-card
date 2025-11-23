@@ -5,7 +5,11 @@
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and two layout modes.
 
+## 📑 Classic Layout
 ![Person Tracker Card](images/preview.png)
+
+## 📑 Compact Layout
+![Person Tracker Card](images/compact.png)
 
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
