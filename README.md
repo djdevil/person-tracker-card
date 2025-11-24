@@ -98,16 +98,21 @@ compact_width: 300  # 200-500px
 
 ## 📦 Installation
 
-### Via HACS (Recommended)
+## Install
 
-1. Open HACS in Home Assistant
-2. Go to **Frontend**
-3. Click **⋮** (three dots) → **Custom repositories**
-4. Add: `https://github.com/djdevil/person-tracker-card`
-5. Category: **Dashboard**
-6. Search for **Person Tracker Card**
-7. Click **Install**
-8. Restart Home Assistant
+### Installation via HACS (Recommended)
+
+Have [HACS](https://hacs.xyz/) installed, this will allow you to update easily.
+
+* Adding Person Tracker Card to HACS can be done using this button:
+
+[![image](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=dashboard)
+
+> [!NOTE]
+> If the button above doesn't work, add `https://github.com/djdevil/person-tracker-card` as a custom repository of type **Dashboard** in HACS.
+
+* Click Install on the `Person Tracker Card` card.
+* Restart Home Assistant.
 
 ### Manual Installation
 
@@ -533,16 +538,19 @@ compact_width: 300  # 200-500px
 
 ## 📦 Installazione
 
-### Via HACS (Consigliato)
+### Installazione via HACS (Consigliato)
 
-1. Apri HACS in Home Assistant
-2. Vai su **Frontend**
-3. Click **⋮** (tre puntini) → **Repository personalizzati**
-4. Aggiungi: `https://github.com/djdevil/person-tracker-card`
-5. Categoria: **Dashboard**
-6. Cerca **Person Tracker Card**
-7. Click **Installa**
-8. Riavvia Home Assistant
+Assicurati di avere [HACS](https://hacs.xyz/) installato, questo ti permetterà di aggiornare facilmente.
+
+* Puoi aggiungere Person Tracker Card a HACS usando questo pulsante:
+
+[![image](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=dashboard)
+
+> [!NOTE]
+> Se il pulsante sopra non funziona, aggiungi `https://github.com/djdevil/person-tracker-card` come repository personalizzata di tipo **Dashboard** in HACS.
+
+* Clicca Installa sulla card `Person Tracker Card`.
+* Riavvia Home Assistant.
 
 ### Installazione Manuale
 
