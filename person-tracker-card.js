@@ -465,7 +465,14 @@ class PersonTrackerCard extends LitElement {
       'Stationary': 'mdi:human',
       'Cycling': 'mdi:bike',
       'Still': 'mdi:human-handsdown',
-      'Unknown': 'mdi:help'
+      'Unknown': 'mdi:help',
+      'in_vehicle': 'mdi:car',
+      'on_bicycle': 'mdi:bike',
+      'on_foot': 'mdi:human',
+      'still': 'mdi:human-handsdown',
+      'tilting': 'mdi:hiking',
+      'walking': 'mdi:walk',
+      'running': 'mdi:run'
     };
     return icons[this._activity] || '';
   }
@@ -714,9 +721,9 @@ class PersonTrackerCard extends LitElement {
     // Activity icon e color
     const activityIcon = this._activityIcon;
     let activityColor = 'var(--secondary-text-color)';
-    if (this._activity === 'Stationary') activityColor = 'green';
-    else if (this._activity === 'Walking' || this._activity === 'Running') activityColor = 'orange';
-    else if (this._activity === 'Automotive') activityColor = 'blue';
+    if (this._activity === 'Stationary' || this._activity === 'still' || this._activity === 'Still' || this._activity === 'on_foot') activityColor = 'green';
+    else if (this._activity === 'Walking' || this._activity === 'Running' || this._activity === 'tilting' || this._activity === 'walking' || this._activity === 'running') activityColor = 'orange';
+    else if (this._activity === 'Automotive' || this._activity === 'Cycling' || this._activity === 'on_bicycle' || this._activity === 'in_vehicle') activityColor = 'blue';
 
     // Connection
     const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
