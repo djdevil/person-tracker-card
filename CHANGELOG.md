@@ -3,6 +3,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-05-30
+
+### Added
+- 🎨 **Modern Layout** - New stylish layout with circular progress indicators
+  - Circular SVG rings for battery, watch battery, distance, and travel time
+  - Icon badges for activity and connection status
+  - State-colored border around profile picture (green=home, red=not_home, orange=other)
+  - Clean horizontal design: Picture | Name/State | Indicators
+- ⚙️ **Modern Layout Customization**:
+  - `modern_picture_size` - Profile picture size (30-80px, default: 40px)
+  - `modern_name_font_size` - Person name font size (default: 14px)
+  - `modern_state_font_size` - State/location font size (default: 12px)
+  - `modern_travel_max_time` - Max travel time for ring calculation (default: 60 min)
+- 🔋 **Enhanced Battery Display** - Circular progress rings show percentage visually
+- 📍 **Enhanced Distance Display** - Circular ring with distance value and unit
+- 🚗 **Enhanced Travel Time Display** - Color-coded ring (green/orange/red based on time)
+- 🎯 **Improved Activity Icons**:
+  - Now reads icon from entity attributes first
+  - Extended icon mapping with Italian translations
+  - Fallback to `mdi:human-male` for unknown states
+  - Case-insensitive state matching
+
+### Changed
+- 📐 **Responsive Modern Layout** - Card automatically expands based on number of indicators
+- 🔤 **Larger Default Fonts** - Modern layout uses 14px for name, 12px for state (more readable)
+- ⭕ **Larger Indicator Rings** - 38px rings with 11px text for better visibility
+- 🎨 **Improved Ring Design** - Rounded stroke caps, better contrast colors
+
+### Fixed
+- 🐛 **Activity Icon Always Visible** - Removed condition that hid icon when empty
+- 🐛 **Ring Overlap Prevention** - Indicators no longer overlap with name/state text
+- 🐛 **Editor Cleanup** - Removed redundant "show ring" toggles from Modern options
+
+### Technical Improvements
+- ⚡ **Flexbox Layout** - Modern layout uses flexbox for better responsiveness
+- 🎨 **CSS Variables** - Ring sizes and colors defined in static styles
+- 🔧 **Simplified Conditions** - Cleaner render logic for all layouts
+
+---
+
 ## [1.1.2] - 2025-01-25
 
 ### Added
@@ -120,13 +160,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Features Summary
 
-### Multilanguage Support (v1.1.1) 🌍
-- 4 complete language translations
-- Automatic detection from Home Assistant
-- English fallback for unsupported languages
-- All UI elements translated
-- Zero performance impact
-
 ### Layout Modes
 
 #### Classic Layout (v1.0.0)
@@ -142,6 +175,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bottom icon bar with all indicators
 - Configurable width (200-500px)
 - Perfect for multiple person tracking
+
+#### Modern Layout (v1.2.0) 🆕
+- Circular progress indicators for numeric values
+- Icon badges for activity and connection
+- State-colored profile picture border
+- Auto-expanding responsive design
+- Customizable font sizes
+- Perfect for modern, minimal dashboards
 
 ---
 
@@ -167,6 +208,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Version Links
+- [1.2.0]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.0
 - [1.1.2]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.1.2
 - [1.1.1]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.1.1
 - [1.1.0]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.1.0
