@@ -485,20 +485,32 @@ class PersonTrackerCard extends LitElement {
     }
 
     // Activity
+    // Activity - NASCONDE se stato è unknown, unavailable o simili, senza distinzione tra maiuscole/minuscole
     if (this.config.show_activity) {
       const activityEntityId = this.config.activity_sensor || `sensor.phone_${entityBase}_activity`;
       const activityEntity = this.hass.states[activityEntityId];
-      if (activityEntity) {
+
+      // Lista stati da escludere (case insensitive)
+      const invalidStates = ['unknown', 'unavailable', 'none', 'null', ''];
+
+      if (
+        activityEntity &&
+        !invalidStates.includes((activityEntity.state || '').toLowerCase().trim())
+      ) {
         this._activity = activityEntity.state;
         // Legge l'icona dall'attributo icon dell'entità, se non presente usa il mapping hardcoded
         if (activityEntity.attributes?.icon) {
           this._activityIcon = activityEntity.attributes.icon;
         } else {
-          // Fallback alle icone predefinite
           this._activityIcon = this._getActivityIcon();
         }
+      } else {
+        // Reset per valori non validi
+        this._activity = 'unknown';
+        this._activityIcon = '';
       }
     }
+
 
     // Connection
     if (this.config.show_connection) {
@@ -883,7 +895,7 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
-            ${this.config.show_activity && this.activity && !['unknown', 'unavailable'].includes(this.activity.toLowerCase()) ? html`
+            ${this.config.show_activity && this._activity !== 'unknown' ? html`
               <div class="custom-field activity clickable"
                    @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))}
                    style="font-size: ${this.config.activity_font_size};
@@ -989,7 +1001,7 @@ class PersonTrackerCard extends LitElement {
           </div>
 
           <div class="compact-icons" style="gap: ${badgeGap}px;">
-            ${this.config.show_activity && this.activity && !['unknown', 'unavailable'].includes(this.activity.toLowerCase()) ? html`
+           ${this.config.show_activity && this._activity !== 'unknown' ? html`
               <div class="compact-icon-badge clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))} style="width: ${badgeSize}px; height: ${badgeSize}px;">
                 <ha-icon icon="${activityIcon}" style="--mdc-icon-size: ${iconSize}px; color: ${activityColor};"></ha-icon>
               </div>
@@ -1171,7 +1183,7 @@ class PersonTrackerCard extends LitElement {
             ` : ''}
 
             <!-- Activity -->
-            ${this.config.show_activity && this.activity && !['unknown', 'unavailable'].includes(this.activity.toLowerCase()) ? html`
+            ${this.config.show_activity && this._activity !== 'unknown' ? html`
               <div class="ring-container ring-icon-only clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))} style="width: ${ringSize}px; height: ${ringSize}px;">
                 <ha-icon icon="${activityIcon}" style="--mdc-icon-size: ${ringIconSize}px;"></ha-icon>
               </div>
