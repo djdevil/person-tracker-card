@@ -3,6 +3,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-07
+
+### Added
+- 🔧 **Configurable Distance Precision** - New `distance_precision` option to control decimal places shown for distance (0=integer, 1=one decimal, 2=two decimals; default: 1). Works across all three layouts.
+- 🖱️ **Tap Action Support** - New `tap_action` config option to override the default click behavior on the card:
+  - `more-info` (default) — opens the more-info dialog for the person entity (or a custom entity)
+  - `navigate` — navigates to a Lovelace path (e.g. `/lovelace/home`)
+  - `url` — opens an external URL in a new tab
+  - `call-service` — calls a HA service with optional `service_data`
+  - `none` — disables click entirely
+- 🛠️ **Tap Action Editor UI** — dedicated section in the Base tab to configure tap action without YAML
+- 🔄 **Automatic Cache Busting** — the card now automatically updates its Lovelace resource URL with the current version query param (`?v=X.X.X`) on load. After a HACS update, admin users no longer need to manually clear the browser cache — the page reloads automatically.
+
+### Fixed
+- 🐛 **iOS Connection Type** (issue #14) — iOS Companion App uses `sensor.*_network_type` instead of `sensor.*_connection_type`. The card now auto-detects which sensor exists and falls back gracefully, so connection status works on both iOS and Android without manual configuration.
+- 🐛 **Sensors Not Showing in Classic/Compact** (issue #15) — distance was hidden when value was `0` or unavailable/unknown state string. The card now tracks sensor existence separately (`_distanceSensorFound`) and shows the distance indicator whenever the sensor is present.
+- 🐛 **ha-entity-picker Not Loading in Editor** (issue #20) — `ha-entity-picker` is lazy-loaded by HA and was sometimes undefined when the editor opened first. Fixed by requesting the config element of `hui-glance-card` (which depends on `ha-entity-picker`), forcing HA to register the component before the editor renders.
+
+### Changed
+- 📦 **`hacs.json`** — added `"filename"` field so HACS correctly identifies the main resource file for URL management
+
 ## [1.2.4] - 2025-12-04
 
 ### Fixed
@@ -300,10 +321,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Visual hover feedback
 - Works across all layouts
 
-#### Configurable Sizes (v1.2.2) 🆕
+#### Configurable Sizes (v1.2.2)
 - Classic: `classic_icon_size` (12-32px)
 - Compact: `compact_icon_size` (12-32px) with proportional scaling
 - Modern: `modern_ring_size` (28-60px) with proportional scaling
+
+#### Tap Action & Cache Busting (v1.3.0) 🆕
+- Configurable `tap_action` with 5 modes (more-info, navigate, url, call-service, none)
+- Automatic browser cache invalidation after HACS updates
 
 ---
 
@@ -329,6 +354,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Version Links
+- [1.3.0]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.3.0
+- [1.2.4]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.4
 - [1.2.2]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.2
 - [1.2.1]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.1
 - [1.2.0]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.0

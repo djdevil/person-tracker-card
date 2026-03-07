@@ -1,6 +1,9 @@
-// Person Tracker Card v1.2.4 - Multilanguage Version
+// Person Tracker Card v1.3.0 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.3.0: Fix #20 editor ha-entity-picker not loading; Fix #14 iOS network_type fallback;
+//         Fix #16 distance_precision option; Fix #15 distance now shows in classic/compact
+//         Fix #17 tap_action support (more-info, navigate, url, call-service, none)
 // v1.2.4 Fix Language fr,ge. Hide Activity Status when unknown
 // v1.2.2: Bug fix, battery state, animation,fixed light theme
 // v1.2.0: Added Modern layout with circular progress indicators for battery and travel time
@@ -8,7 +11,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.2.4 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.0 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -194,7 +197,8 @@ class PersonTrackerCard extends LitElement {
       _travelTime: { state: true },
       _watchBatteryLevel: { state: true },
       _watchBatteryIcon: { state: true },
-      _watchBatteryCharging: { state: true }
+      _watchBatteryCharging: { state: true },
+      _distanceSensorFound: { state: true }
     };
   }
 
@@ -212,6 +216,7 @@ class PersonTrackerCard extends LitElement {
     this._watchBatteryIcon = 'mdi:battery';
     this._watchBatteryCharging = false;
     this._travelTime = 0;
+    this._distanceSensorFound = false;
     this._localize = null;
   }
 
@@ -325,6 +330,10 @@ class PersonTrackerCard extends LitElement {
       classic_icon_size: 16,
       // Compact layout options
       compact_icon_size: 16,
+      // Tap action (Fix #17)
+      tap_action: { action: 'more-info' },
+      // Distance precision (Fix #16)
+      distance_precision: 1,
       // Modern layout options
       modern_picture_size: 40,
       modern_ring_size: 38,
@@ -404,7 +413,7 @@ class PersonTrackerCard extends LitElement {
       entities.push(this.config.activity_sensor || `sensor.phone_${entityBase}_activity`);
     }
     if (this.config.show_connection) {
-      entities.push(this.config.connection_sensor || `sensor.phone_${entityBase}_connection_type`);
+      entities.push(this._getConnectionSensorId(entityBase));
     }
     if (this.config.show_distance) {
       entities.push(this.config.distance_sensor || `sensor.waze_${entityBase}`);
@@ -512,9 +521,9 @@ class PersonTrackerCard extends LitElement {
     }
 
 
-    // Connection
+    // Connection (Fix #14: iOS uses network_type, Android uses connection_type)
     if (this.config.show_connection) {
-      const connectionEntityId = this.config.connection_sensor || `sensor.phone_${entityBase}_connection_type`;
+      const connectionEntityId = this._getConnectionSensorId(entityBase);
       const connectionEntity = this.hass.states[connectionEntityId];
       if (connectionEntity) {
         this._connectionType = connectionEntity.state;
@@ -523,16 +532,20 @@ class PersonTrackerCard extends LitElement {
       }
     }
 
-    // Distance
+    // Distance (Fix #15/#16: track sensor availability, support decimal precision)
     if (this.config.show_distance) {
       const distanceEntityId = this.config.distance_sensor || `sensor.waze_${entityBase}`;
       const distanceEntity = this.hass.states[distanceEntityId];
-      if (distanceEntity) {
+      const validState = distanceEntity &&
+        distanceEntity.state !== 'unavailable' &&
+        distanceEntity.state !== 'unknown';
+      if (validState) {
         this._distanceFromHome = parseFloat(distanceEntity.state) || 0;
-        // Legge l'unità di misura dall'entità, default 'km'
         this._distanceUnit = distanceEntity.attributes?.unit_of_measurement || 'km';
-        // Legge l'icona dall'entità se disponibile
         this._distanceIcon = distanceEntity.attributes?.icon || 'mdi:map-marker-distance';
+        this._distanceSensorFound = true;
+      } else {
+        this._distanceSensorFound = false;
       }
     }
 
@@ -582,6 +595,14 @@ class PersonTrackerCard extends LitElement {
     return '#50A14F';
   }
 
+  // Fix #14: resolve connection sensor ID with iOS fallback (network_type vs connection_type)
+  _getConnectionSensorId(entityBase) {
+    if (this.config.connection_sensor) return this.config.connection_sensor;
+    const primary = `sensor.phone_${entityBase}_connection_type`;
+    const fallback = `sensor.phone_${entityBase}_network_type`;
+    return (this.hass && this.hass.states[primary]) ? primary : fallback;
+  }
+
   // Check if connection type is WiFi (case-insensitive, handles iOS "Wi-Fi" and Android "wifi")
   _isWifiConnection(connectionType) {
     if (!connectionType) return false;
@@ -600,6 +621,36 @@ class PersonTrackerCard extends LitElement {
     this.dispatchEvent(event);
   }
 
+  // Handle tap_action (Fix #17: configurable on-tap behaviour)
+  _handleTapAction() {
+    const action = this.config.tap_action || { action: 'more-info' };
+    switch (action.action) {
+      case 'more-info':
+        this._showMoreInfo(action.entity || this.config.entity);
+        break;
+      case 'navigate':
+        if (action.navigation_path) {
+          window.history.pushState(null, '', action.navigation_path);
+          window.dispatchEvent(new CustomEvent('location-changed', { bubbles: true, composed: true }));
+        }
+        break;
+      case 'url':
+        if (action.url_path) {
+          window.open(action.url_path, action.url_target || '_blank');
+        }
+        break;
+      case 'call-service': {
+        if (!action.service) break;
+        const [domain, service] = action.service.split('.');
+        this.hass.callService(domain, service, action.service_data || {});
+        break;
+      }
+      case 'none':
+      default:
+        break;
+    }
+  }
+
   // Get sensor entity ID for a specific type
   _getSensorEntityId(type) {
     const entityBase = this.config.entity?.split('.')[1] || '';
@@ -607,7 +658,7 @@ class PersonTrackerCard extends LitElement {
       'battery': this.config.battery_sensor || `sensor.phone_${entityBase}_battery_level`,
       'watch_battery': this.config.watch_battery_sensor || `sensor.watch_${entityBase}_battery_level`,
       'activity': this.config.activity_sensor || `sensor.phone_${entityBase}_activity`,
-      'connection': this.config.connection_sensor || `sensor.phone_${entityBase}_connection_type`,
+      'connection': this._getConnectionSensorId(entityBase),
       'distance': this.config.distance_sensor || `sensor.waze_${entityBase}`,
       'travel': this.config.travel_sensor || `sensor.home_work_${entityBase}`
     };
@@ -832,7 +883,7 @@ class PersonTrackerCard extends LitElement {
         <div class="card-container" style="padding-bottom: ${paddingBottom}">
           <div class="card-content">
             <!-- Sezione superiore con foto, nome e stato -->
-            <div class="content-top clickable" @click=${() => this._showMoreInfo(this.config.entity)} style="cursor: pointer;">
+            <div class="content-top clickable" @click=${() => this._handleTapAction()} style="cursor: pointer;">
               ${this.config.show_entity_picture && entityPicture ? html`
                 <div class="entity-picture" style="width: ${this.config.picture_size}%;">
                   <img
@@ -905,13 +956,13 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
-            ${this.config.show_distance && this._distanceFromHome > 0 ? html`
+            ${this.config.show_distance && this._distanceSensorFound ? html`
               <div class="custom-field distance clickable"
                    @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))}
                    style="font-size: ${this.config.distance_font_size};
                           ${Object.entries(distancePos).map(([k, v]) => `${k}: ${v}`).join('; ')}">
                 <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" .style=${iconStyle}></ha-icon>
-                <span>${Math.round(this._distanceFromHome)} ${this._distanceUnit}</span>
+                <span>${parseFloat(this._distanceFromHome.toFixed(this.config.distance_precision ?? 1))} ${this._distanceUnit}</span>
               </div>
             ` : ''}
 
@@ -985,18 +1036,18 @@ class PersonTrackerCard extends LitElement {
       <ha-card style="background: ${this.config.card_background}; border-radius: ${this.config.card_border_radius}; padding: ${cardPadding}px; max-width: ${maxWidth}px;">
         <div class="compact-grid">
           ${this.config.show_entity_picture && entityPicture ? html`
-            <div class="compact-picture clickable" @click=${() => this._showMoreInfo(this.config.entity)}>
+            <div class="compact-picture clickable" @click=${() => this._handleTapAction()}>
               <img src="${entityPicture}" alt="${personName}" style="width: ${pictureSize}px; height: ${pictureSize}px;" />
             </div>
           ` : ''}
 
           ${this.config.show_name ? html`
-            <div class="compact-name clickable" @click=${() => this._showMoreInfo(this.config.entity)} style="color: inherit; cursor: pointer; font-size: ${nameFontSize}px;">
+            <div class="compact-name clickable" @click=${() => this._handleTapAction()} style="color: inherit; cursor: pointer; font-size: ${nameFontSize}px;">
               ${personName}
             </div>
           ` : ''}
 
-          <div class="compact-location clickable" @click=${() => this._showMoreInfo(this.config.entity)} style="color: ${stateStyles.color || 'var(--secondary-text-color)'}; cursor: pointer; font-size: ${locationFontSize}px;">
+          <div class="compact-location clickable" @click=${() => this._handleTapAction()} style="color: ${stateStyles.color || 'var(--secondary-text-color)'}; cursor: pointer; font-size: ${locationFontSize}px;">
             ${displayLocation}
           </div>
 
@@ -1030,11 +1081,11 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
-            ${this.config.show_distance && this._distanceFromHome > 0 ? html`
+            ${this.config.show_distance && this._distanceSensorFound ? html`
               <div class="compact-icon-badge clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="width: ${badgeSize}px; height: ${badgeSize}px; flex-direction: column; justify-content: center; align-items: center; gap: 0; line-height: 1;">
                 <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size: ${smallIconSize}px;"></ha-icon>
                 <span style="font-size: ${smallFontSize}px; font-weight: bold; color: #4A9EFF; line-height: 1;">
-                  ${Math.round(this._distanceFromHome)}${this._distanceUnit}
+                  ${parseFloat(this._distanceFromHome.toFixed(this.config.distance_precision ?? 1))}${this._distanceUnit}
                 </span>
               </div>
             ` : ''}
@@ -1084,8 +1135,9 @@ class PersonTrackerCard extends LitElement {
     const travelPercentage = travelTime > 0 ? Math.min((travelTime / maxTravelTime) * 100, 100) : 0;
     const travelColor = this._getTravelTimeColor(travelTime);
 
-    // Distance
-    const distance = Math.round(this._distanceFromHome);
+    // Distance (Fix #16: use configured precision)
+    const distPrecision = this.config.distance_precision ?? 1;
+    const distance = parseFloat(this._distanceFromHome.toFixed(distPrecision));
     const maxDistance = this.config.modern_distance_max || 100;
     const distancePercentage = distance > 0 ? Math.min((distance / maxDistance) * 100, 100) : 0;
 
@@ -1118,7 +1170,7 @@ class PersonTrackerCard extends LitElement {
           <!-- Picture with state-colored border - clicks open person entity -->
           ${this.config.show_entity_picture && entityPicture ? html`
             <div class="modern-picture clickable"
-                 @click=${() => this._showMoreInfo(this.config.entity)}
+                 @click=${() => this._handleTapAction()}
                  style="
               border: 3px solid ${borderColor};
               border-radius: 50%;
@@ -1137,7 +1189,7 @@ class PersonTrackerCard extends LitElement {
           ` : ''}
 
           <!-- Center: Name and State - clicks open person entity -->
-          <div class="modern-info clickable" @click=${() => this._showMoreInfo(this.config.entity)} style="cursor: pointer;">
+          <div class="modern-info clickable" @click=${() => this._handleTapAction()} style="cursor: pointer;">
             ${this.config.show_person_name ? html`
               <div style="font-size: ${this.config.modern_name_font_size || '14px'}; font-weight: bold; text-transform: uppercase; margin: 0; padding: 0;">
                 ${personName}
@@ -1197,7 +1249,7 @@ class PersonTrackerCard extends LitElement {
             ` : ''}
 
             <!-- Distance -->
-            ${this.config.show_distance ? html`
+            ${this.config.show_distance && this._distanceSensorFound ? html`
               <div class="ring-container clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="width: ${ringSize}px; height: ${ringSize}px;">
                 <svg viewBox="0 0 36 36" class="ring-svg">
                   <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${ringBgColor}" stroke-width="3"/>
@@ -1205,7 +1257,7 @@ class PersonTrackerCard extends LitElement {
                 </svg>
                 <div class="ring-text">
                   <span class="ring-value" style="font-size: ${ringValueFontSize}px;">${distance}</span>
-                  <span class="ring-unit" style="font-size: ${ringUnitFontSize}px;">${this._distanceUnit}</span>
+                  <span class="ring-unit" style="font-size: ${ringUnitFontSize}px; white-space: nowrap;">${this._distanceUnit}</span>
                 </div>
               </div>
             ` : ''}
@@ -1645,7 +1697,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.2.4 %c! ',
+    '%c PERSON-TRACKER-CARD %c v1.3.0 %c! ',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #FFD700; color: black; font-weight: bold;'
@@ -1660,3 +1712,53 @@ window.customCards.push({
   description: 'Advanced person tracking card with full visual editor',
   preview: true
 });
+
+// Cache-busting: automatically update the Lovelace resource URL with the current
+// version query param (?v=X.X.X). When HACS updates the file the browser would
+// otherwise serve the cached old version because the URL hasn't changed.
+// This ensures all users get the new version without manually clearing the cache.
+(async () => {
+  const CARD_VERSION = '1.3.0';
+  const CARD_FILE = 'person-tracker-card.js';
+
+  try {
+    // Wait until home-assistant element is available
+    await customElements.whenDefined('home-assistant');
+    const ha = document.querySelector('home-assistant');
+    if (!ha) return;
+
+    // Wait for hass object (may take a moment on startup)
+    let attempts = 0;
+    while (!(ha.__hass || ha._hass) && attempts < 20) {
+      await new Promise(r => setTimeout(r, 500));
+      attempts++;
+    }
+    const hass = ha.__hass || ha._hass;
+    if (!hass) return;
+
+    // Only admins can update Lovelace resources
+    if (!hass.user?.is_admin) return;
+
+    const resources = await hass.callWS({ type: 'lovelace/resources' });
+    if (!Array.isArray(resources)) return;
+
+    const res = resources.find(r => r.url && r.url.includes(CARD_FILE));
+    if (!res) return;
+
+    const baseUrl = res.url.split('?')[0];
+    const expectedUrl = `${baseUrl}?v=${CARD_VERSION}`;
+
+    if (res.url !== expectedUrl) {
+      await hass.callWS({
+        type: 'lovelace/resources/update',
+        resource_id: res.id,
+        res_type: res.type,
+        url: expectedUrl,
+      });
+      console.info(`[Person Tracker Card] Resource URL updated to v${CARD_VERSION}, reloading page to clear cache...`);
+      window.location.reload();
+    }
+  } catch (e) {
+    // Silent fail — non-critical, user can still clear cache manually
+  }
+})();

@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.3.0: Fix #20 load ha-entity-picker via hui-glance-card.getConfigElement(); distance_precision field added
 // v1.2.4: Bug fix language, add hide state unknown activity status.
 
 const LitElement = Object.getPrototypeOf(
@@ -437,6 +438,29 @@ class PersonTrackerCardEditor extends LitElement {
     this._localize = null;
   }
 
+  async connectedCallback() {
+    super.connectedCallback();
+    // Fix #20: load ha-entity-picker by requesting config element of hui-glance-card
+    // hui-glance-card depends on ha-entity-picker, so this forces it to load.
+    // See: https://community.home-assistant.io/t/re-using-existing-frontend-components-in-lovelace-card-editor/103415
+    if (!customElements.get('ha-entity-picker')) {
+      const GlanceCard = customElements.get('hui-glance-card');
+      if (GlanceCard) {
+        await GlanceCard.getConfigElement();
+      } else {
+        // hui-glance-card not yet registered — wait for it (with 3s timeout)
+        await Promise.race([
+          customElements.whenDefined('hui-glance-card').then(async () => {
+            const Card = customElements.get('hui-glance-card');
+            if (Card) await Card.getConfigElement();
+          }),
+          new Promise(resolve => setTimeout(resolve, 3000))
+        ]);
+      }
+      this.requestUpdate();
+    }
+  }
+
   _initLocalization() {
     if (this.hass && !this._localize) {
       this._localize = new EditorLocalizationHelper(this.hass);
@@ -810,7 +834,7 @@ class PersonTrackerCardEditor extends LitElement {
         <ha-select
           label="${this._t('editor.layout')}"
           .value=${this._config.layout || 'classic'}
-          @closed=${(e) => this._handleLayoutChange(e)}>
+          @request-selected=${(e) => this._handleLayoutChange(e)}>
           <mwc-list-item value="classic">Classic</mwc-list-item>
           <mwc-list-item value="compact">Compact</mwc-list-item>
           <mwc-list-item value="modern">Modern</mwc-list-item>
@@ -900,9 +924,74 @@ class PersonTrackerCardEditor extends LitElement {
           </div>
         ` : ''}
       </div>
+
+      <div class="section">
+        <div class="section-title">Tap Action</div>
+
+        <ha-select
+          label="On tap"
+          .value=${this._config.tap_action?.action || 'more-info'}
+          @request-selected=${(e) => this._handleTapActionChange(e)}>
+          <mwc-list-item value="more-info">More Info (default)</mwc-list-item>
+          <mwc-list-item value="navigate">Navigate</mwc-list-item>
+          <mwc-list-item value="url">Open URL</mwc-list-item>
+          <mwc-list-item value="call-service">Call Service</mwc-list-item>
+          <mwc-list-item value="none">None</mwc-list-item>
+        </ha-select>
+
+        ${(this._config.tap_action?.action === 'more-info') ? html`
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${this._config.tap_action?.entity || ''}
+            label="Entity (leave empty for person entity)"
+            allow-custom-entity
+            @value-changed=${(e) => this._updateTapAction('entity', e.detail?.value || '')}>
+          </ha-entity-picker>
+        ` : ''}
+
+        ${(this._config.tap_action?.action === 'navigate') ? html`
+          <ha-textfield
+            label="Navigation path (e.g. /lovelace/home)"
+            .value=${this._config.tap_action?.navigation_path || ''}
+            @input=${(e) => this._updateTapAction('navigation_path', e.target.value)}>
+          </ha-textfield>
+        ` : ''}
+
+        ${(this._config.tap_action?.action === 'url') ? html`
+          <ha-textfield
+            label="URL"
+            .value=${this._config.tap_action?.url_path || ''}
+            @input=${(e) => this._updateTapAction('url_path', e.target.value)}>
+          </ha-textfield>
+        ` : ''}
+
+        ${(this._config.tap_action?.action === 'call-service') ? html`
+          <ha-textfield
+            label="Service (e.g. light.turn_on)"
+            .value=${this._config.tap_action?.service || ''}
+            @input=${(e) => this._updateTapAction('service', e.target.value)}>
+          </ha-textfield>
+        ` : ''}
+      </div>
     `;
   }
 
+
+  _handleTapActionChange(ev) {
+    if (!this._config || !this.hass) return;
+    ev.stopPropagation();
+    const value = ev.target && ev.target.getAttribute ? ev.target.getAttribute('value') : null;
+    if (!value) return;
+    this._config = { ...this._config, tap_action: { action: value } };
+    this._fireEvent('config-changed', { config: this._config });
+    this.requestUpdate();
+  }
+
+  _updateTapAction(key, value) {
+    const tapAction = { ...(this._config.tap_action || { action: 'more-info' }), [key]: value };
+    this._config = { ...this._config, tap_action: tapAction };
+    this._fireEvent('config-changed', { config: this._config });
+  }
 
   _renderSensorsTab() {
     const entityBase = this._config.entity
@@ -1053,6 +1142,15 @@ class PersonTrackerCardEditor extends LitElement {
             allow-custom-entity
             @value-changed=${(e) => this._valueChanged(e, 'distance_sensor')}>
           </ha-entity-picker>
+
+          <ha-textfield
+            label="Distance decimal places (0=integer, 1=one decimal, 2=two decimals)"
+            type="number"
+            min="0"
+            max="3"
+            .value=${String(this._config.distance_precision ?? 1)}
+            @input=${(e) => this._valueChanged(e, 'distance_precision')}>
+          </ha-textfield>
         </div>
 
         <!-- Travel Time -->
@@ -1462,12 +1560,27 @@ class PersonTrackerCardEditor extends LitElement {
 
     ev.stopPropagation();
 
-    const target = ev.target;
-    const value = target.value;
+    // HA 2025: ha-select emette request-selected sull'item cliccato
+    // Leggiamo il valore dall'item (ev.target) invece che da target.value
+    const item = ev.target;
+    const value = item && item.getAttribute ? item.getAttribute('value') : ev.target.value;
 
     if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern')) {
       console.warn('Invalid layout value:', value);
       return;
+    }
+
+    // Aggiorna il label visibile nel picker (fix HA 2025)
+    const select = ev.currentTarget || ev.composedPath().find(el => el.tagName === 'HA-SELECT');
+    if (select) {
+      select.value = value;
+      const pf = select.shadowRoot && select.shadowRoot.querySelector('ha-picker-field');
+      if (pf && pf.shadowRoot) {
+        const cb = pf.shadowRoot.querySelector('ha-combo-box-item');
+        if (cb) { const sp = cb.querySelector('span[slot="headline"]'); if (sp) sp.textContent = item.textContent.trim(); }
+      }
+      const dropdown = select.shadowRoot && select.shadowRoot.querySelector('ha-dropdown');
+      if (dropdown) dropdown.open = false;
     }
 
     this._config = { ...this._config, layout: value };
@@ -1482,7 +1595,9 @@ class PersonTrackerCardEditor extends LitElement {
     ev.stopPropagation();
     ev.preventDefault();
 
-    const value = ev.detail?.value;
+    // HA 2025: request-selected porta il valore nell'item (ev.target), non in ev.detail.value
+    const value = (ev.target && ev.target.getAttribute && ev.target.getAttribute('value'))
+      || ev.detail?.value;
 
     // Allowed values for triggers_update
     const validTriggerValues = ['all', 'entity', 'custom'];

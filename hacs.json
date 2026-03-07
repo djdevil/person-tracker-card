@@ -1,4 +1,5 @@
 {
-  "name": "Person Tracker Card",  
+  "name": "Person Tracker Card",
+  "filename": "person-tracker-card.js",
   "render_readme": true
 }
