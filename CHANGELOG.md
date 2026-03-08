@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-03-08
+
+### Added
+- 🌟 **Neon Layout** - New cyberpunk-inspired dark theme layout:
+  - Animated pulsing glow ring around profile picture (color adapts to person state)
+  - Neon corner brackets framing the card
+  - CRT scanlines overlay for retro-futuristic effect
+  - Neon status dot next to person name with color glow
+  - State label in neon color with text-shadow glow
+  - Last changed timestamp in muted style
+  - Neon badges row for battery, watch battery, activity, connection, distance, and travel time
+  - Charging animation on battery badges
+  - Vivid state colors: green (home), red/pink (away), cyan/orange (other states)
+- 🎨 **Neon Layout Editor UI** — dedicated section in Style tab with layout description and options panel
+
+---
+
 ## [1.3.0] - 2026-03-07
 
 ### Added
@@ -326,7 +343,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Compact: `compact_icon_size` (12-32px) with proportional scaling
 - Modern: `modern_ring_size` (28-60px) with proportional scaling
 
-#### Tap Action & Cache Busting (v1.3.0) 🆕
+#### Neon Layout (v1.3.1) 🆕
+- Cyberpunk dark theme with animated glow ring and neon badges
+- Vivid state-colored glows, corner brackets, scanlines overlay
+- Adapts to person state (home/away/other) with matching neon color
+
+#### Tap Action & Cache Busting (v1.3.0)
 - Configurable `tap_action` with 5 modes (more-info, navigate, url, call-service, none)
 - Automatic browser cache invalidation after HACS updates
 
@@ -354,6 +376,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Version Links
+- [1.3.1]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.3.1
 - [1.3.0]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.3.0
 - [1.2.4]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.4
 - [1.2.2]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.2

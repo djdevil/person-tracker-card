@@ -812,6 +812,15 @@ class PersonTrackerCard extends LitElement {
     return CHARGING_STATES.includes(state);
   }
 
+  // Get vivid neon color based on person state
+  _getNeonStateColor(state) {
+    if (!state) return '#888888';
+    const lower = state.toLowerCase();
+    if (lower === 'home') return '#00ff88';
+    if (lower === 'not_home') return '#ff2255';
+    return '#ff9500';
+  }
+
   // Get travel time color based on value
   _getTravelTimeColor(travelTime) {
     const maxTime = this.config.modern_travel_max_time || 60;
@@ -842,6 +851,8 @@ class PersonTrackerCard extends LitElement {
       return this._renderCompactLayout();
     } else if (this.config.layout === 'modern') {
       return this._renderModernLayout();
+    } else if (this.config.layout === 'neon') {
+      return this._renderNeonLayout();
     } else {
       return this._renderClassicLayout();
     }
@@ -1283,6 +1294,142 @@ class PersonTrackerCard extends LitElement {
 
 
 
+  _renderNeonLayout() {
+    const entity = this.hass.states[this.config.entity];
+    const stateConfig = this._getCurrentStateConfig();
+
+    const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
+    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
+
+    // Usa il colore configurato nell'editor per lo stato corrente, con fallback neon
+    const stateColor = stateConfig?.styles?.name?.color || this._getNeonStateColor(entity.state);
+    const glowColor = stateColor + '66';
+    const bgGradient = `linear-gradient(160deg, #080810 0%, ${stateColor}18 60%, ${stateColor}08 100%)`;
+
+    const batteryColor = this._getBatteryColor(this._batteryLevel);
+    const watchBatteryColor = this._getBatteryColor(this._watchBatteryLevel);
+    const travelTime = Math.round(this._travelTime);
+    const travelColor = this._getTravelTimeColor(travelTime);
+    const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const connectionColor = this._isWifiConnection(this._connectionType) ? '#00d4ff' : '#ff9500';
+
+    return html`
+      <ha-card style="
+        background: ${bgGradient};
+        border: 1px solid ${stateColor};
+        border-radius: ${this.config.card_border_radius};
+        box-shadow: 0 0 18px ${glowColor}, 0 0 40px ${stateColor}22, inset 0 0 40px rgba(0,0,0,0.6);
+        position: relative;
+        overflow: hidden;
+      ">
+        <!-- Scanlines -->
+        <div class="neon-scanlines"></div>
+
+        <!-- Corner decorations -->
+        <div class="neon-corner neon-corner-tl" style="border-color: ${stateColor};"></div>
+        <div class="neon-corner neon-corner-tr" style="border-color: ${stateColor};"></div>
+        <div class="neon-corner neon-corner-bl" style="border-color: ${stateColor};"></div>
+        <div class="neon-corner neon-corner-br" style="border-color: ${stateColor};"></div>
+
+        <div class="neon-container">
+
+          <!-- Photo with animated glow ring -->
+          ${this.config.show_entity_picture && entityPicture ? html`
+            <div class="neon-picture-wrapper clickable" @click=${() => this._handleTapAction()}>
+              <div class="neon-ring-outer" style="
+                border-color: ${stateColor};
+                box-shadow: 0 0 10px ${stateColor}, 0 0 24px ${glowColor};
+                --neon-color: ${stateColor};
+                --neon-glow: ${glowColor};
+              "></div>
+              <img class="neon-photo" src="${entityPicture}" alt="${personName}" />
+            </div>
+          ` : ''}
+
+          <!-- Name + Location + Time -->
+          <div class="neon-info clickable" @click=${() => this._handleTapAction()}>
+            ${this.config.show_person_name ? html`
+              <div class="neon-name" style="color: #fff; text-shadow: 0 0 8px ${stateColor}33;">
+                <span class="neon-status-dot" style="background: ${stateColor}; box-shadow: 0 0 8px ${stateColor};"></span>
+                ${personName.toUpperCase()}
+              </div>
+            ` : ''}
+            ${this.config.show_name ? html`
+              <div class="neon-location" style="color: ${stateColor}; text-shadow: 0 0 8px ${glowColor};">
+                ${displayLocation}
+              </div>
+            ` : ''}
+            ${this.config.show_last_changed ? html`
+              <div class="neon-time">${this._getRelativeTime(entity.last_changed)}</div>
+            ` : ''}
+          </div>
+
+          <!-- Sensor badges -->
+          <div class="neon-badges">
+            ${this.config.show_battery ? html`
+              <div class="neon-badge clickable ${this._batteryCharging ? 'charging' : ''}"
+                   @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}
+                   style="border-color: ${batteryColor}; box-shadow: 0 0 6px ${batteryColor}44;">
+                ${this._batteryCharging
+                  ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:12px; color:#4CAF50;"></ha-icon>`
+                  : html`<span>📱</span>`}
+                <span style="color:${batteryColor};">${this._batteryLevel}%</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_watch_battery ? html`
+              <div class="neon-badge clickable ${this._watchBatteryCharging ? 'charging' : ''}"
+                   @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))}
+                   style="border-color: ${watchBatteryColor}; box-shadow: 0 0 6px ${watchBatteryColor}44;">
+                ${this._watchBatteryCharging
+                  ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:12px; color:#4CAF50;"></ha-icon>`
+                  : html`<span>⌚</span>`}
+                <span style="color:${watchBatteryColor};">${this._watchBatteryLevel}%</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_distance && this._distanceSensorFound ? html`
+              <div class="neon-badge clickable"
+                   @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))}
+                   style="border-color: #00d4ff; box-shadow: 0 0 6px #00d4ff44;">
+                <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px; color:#00d4ff;"></ha-icon>
+                <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome.toFixed(this.config.distance_precision ?? 1))} ${this._distanceUnit}</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_travel_time && this._travelTime > 0 ? html`
+              <div class="neon-badge clickable"
+                   @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}
+                   style="border-color: ${travelColor}; box-shadow: 0 0 6px ${travelColor}44;">
+                <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px; color:${travelColor};"></ha-icon>
+                <span style="color:${travelColor};">${travelTime} min</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_activity && this._activity !== 'unknown' ? html`
+              <div class="neon-badge clickable"
+                   @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))}
+                   style="border-color: #b44fff; box-shadow: 0 0 6px #b44fff44;">
+                <ha-icon icon="${this._activityIcon}" style="--mdc-icon-size:13px; color:#b44fff;"></ha-icon>
+                <span style="color:#b44fff;">${this._activity}</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_connection ? html`
+              <div class="neon-badge clickable"
+                   @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}
+                   style="border-color: ${connectionColor}; box-shadow: 0 0 6px ${connectionColor}44;">
+                <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:13px; color:${connectionColor};"></ha-icon>
+              </div>
+            ` : ''}
+          </div>
+
+        </div>
+      </ha-card>
+    `;
+  }
+
   static get styles() {
     return css`
       :host {
@@ -1689,6 +1836,151 @@ class PersonTrackerCard extends LitElement {
           --mdc-icon-size: 14px;
         }
       }
+
+      /* ===== NEON LAYOUT ===== */
+
+      @keyframes neon-ring-pulse {
+        0%, 100% {
+          box-shadow: 0 0 10px var(--neon-color, #00ff88), 0 0 22px var(--neon-glow, #00ff8866);
+        }
+        50% {
+          box-shadow: 0 0 18px var(--neon-color, #00ff88), 0 0 44px var(--neon-glow, #00ff8866), 0 0 70px var(--neon-glow, #00ff8833);
+        }
+      }
+
+      @keyframes neon-status-blink {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+      }
+
+      .neon-scanlines {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,0) 0px,
+          rgba(0,0,0,0) 2px,
+          rgba(255,255,255,0.018) 2px,
+          rgba(255,255,255,0.018) 4px
+        );
+        z-index: 0;
+      }
+
+      .neon-corner {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .neon-corner-tl { top: 7px; left: 7px; border-top: 2px solid; border-left: 2px solid; }
+      .neon-corner-tr { top: 7px; right: 7px; border-top: 2px solid; border-right: 2px solid; }
+      .neon-corner-bl { bottom: 7px; left: 7px; border-bottom: 2px solid; border-left: 2px solid; }
+      .neon-corner-br { bottom: 7px; right: 7px; border-bottom: 2px solid; border-right: 2px solid; }
+
+      .neon-container {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 22px 16px 16px;
+        gap: 12px;
+      }
+
+      .neon-picture-wrapper {
+        position: relative;
+        width: 76px;
+        height: 76px;
+        flex-shrink: 0;
+      }
+
+      .neon-ring-outer {
+        position: absolute;
+        inset: -5px;
+        border-radius: 50%;
+        border: 2px solid;
+        animation: neon-ring-pulse 2.8s ease-in-out infinite;
+      }
+
+      .neon-photo {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .neon-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+      }
+
+      .neon-name {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Courier New', monospace;
+      }
+
+      .neon-status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+        animation: neon-status-blink 2.2s ease-in-out infinite;
+      }
+
+      .neon-location {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-family: 'Courier New', monospace;
+      }
+
+      .neon-time {
+        font-size: 10px;
+        color: rgba(255,255,255,0.3);
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+      }
+
+      .neon-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+      }
+
+      .neon-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 9px;
+        border-radius: 20px;
+        border: 1px solid;
+        background: rgba(0,0,0,0.5);
+        font-size: 11px;
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .neon-badge:hover {
+        transform: scale(1.08);
+      }
     `;
   }
 }
@@ -1718,7 +2010,7 @@ window.customCards.push({
 // otherwise serve the cached old version because the URL hasn't changed.
 // This ensures all users get the new version without manually clearing the cache.
 (async () => {
-  const CARD_VERSION = '1.3.0';
+  const CARD_VERSION = '1.3.1';
   const CARD_FILE = 'person-tracker-card.js';
 
   try {

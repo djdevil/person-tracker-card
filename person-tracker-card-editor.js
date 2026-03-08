@@ -838,6 +838,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="classic">Classic</mwc-list-item>
           <mwc-list-item value="compact">Compact</mwc-list-item>
           <mwc-list-item value="modern">Modern</mwc-list-item>
+          <mwc-list-item value="neon">Neon ✦</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -1398,6 +1399,17 @@ class PersonTrackerCardEditor extends LitElement {
         </div>
       ` : ''}
 
+      <!-- Neon Layout Options -->
+      ${this._config.layout === 'neon' ? html`
+        <div class="section">
+          <div class="section-title">Neon Layout Options</div>
+          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
+            Dark cyberpunk theme with animated glow ring and neon badges.
+            Colors adapt automatically to person state (green = home, red = away).
+          </p>
+        </div>
+      ` : ''}
+
       <!-- Modern Layout Options -->
       ${this._config.layout === 'modern' ? html`
         <div class="section">
@@ -1565,7 +1577,7 @@ class PersonTrackerCardEditor extends LitElement {
     const item = ev.target;
     const value = item && item.getAttribute ? item.getAttribute('value') : ev.target.value;
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern')) {
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -1603,7 +1615,7 @@ class PersonTrackerCardEditor extends LitElement {
     const validTriggerValues = ['all', 'entity', 'custom'];
 
     // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern'];
+    const validLayoutValues = ['classic', 'compact', 'modern', 'neon'];
 
     // Allowed values for positions
     const validPositions = [
