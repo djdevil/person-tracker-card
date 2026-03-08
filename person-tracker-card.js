@@ -2005,13 +2005,14 @@ window.customCards.push({
   preview: true
 });
 
-// Cache-busting: automatically update the Lovelace resource URL with the current
-// version query param (?v=X.X.X). When HACS updates the file the browser would
-// otherwise serve the cached old version because the URL hasn't changed.
+// Cache-busting: automatically update the Lovelace resource URLs with the current
+// version query param (?v=X.X.X). When HACS updates the files the browser would
+// otherwise serve the cached old versions because the URLs haven't changed.
 // This ensures all users get the new version without manually clearing the cache.
+// Both person-tracker-card.js and person-tracker-card-editor.js are updated.
 (async () => {
   const CARD_VERSION = '1.3.1';
-  const CARD_FILE = 'person-tracker-card.js';
+  const CARD_FILES = ['person-tracker-card.js', 'person-tracker-card-editor.js'];
 
   try {
     // Wait until home-assistant element is available
@@ -2034,20 +2035,29 @@ window.customCards.push({
     const resources = await hass.callWS({ type: 'lovelace/resources' });
     if (!Array.isArray(resources)) return;
 
-    const res = resources.find(r => r.url && r.url.includes(CARD_FILE));
-    if (!res) return;
+    let needsReload = false;
 
-    const baseUrl = res.url.split('?')[0];
-    const expectedUrl = `${baseUrl}?v=${CARD_VERSION}`;
+    for (const cardFile of CARD_FILES) {
+      const res = resources.find(r => r.url && r.url.includes(cardFile));
+      if (!res) continue;
 
-    if (res.url !== expectedUrl) {
-      await hass.callWS({
-        type: 'lovelace/resources/update',
-        resource_id: res.id,
-        res_type: res.type,
-        url: expectedUrl,
-      });
-      console.info(`[Person Tracker Card] Resource URL updated to v${CARD_VERSION}, reloading page to clear cache...`);
+      const baseUrl = res.url.split('?')[0];
+      const expectedUrl = `${baseUrl}?v=${CARD_VERSION}`;
+
+      if (res.url !== expectedUrl) {
+        await hass.callWS({
+          type: 'lovelace/resources/update',
+          resource_id: res.id,
+          res_type: res.type,
+          url: expectedUrl,
+        });
+        console.info(`[Person Tracker Card] Resource URL updated: ${cardFile} → v${CARD_VERSION}`);
+        needsReload = true;
+      }
+    }
+
+    if (needsReload) {
+      console.info('[Person Tracker Card] Reloading page to clear cache...');
       window.location.reload();
     }
   } catch (e) {
