@@ -3,6 +3,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-03-09
+
+### Added
+- 🏢 **Dual Travel Direction (Issue #22)** — Smart home/work dual-sensor system. Configure a second set of distance and travel time sensors (e.g. Waze/Google Routes towards home). Logic:
+  - When person is **at home** (`state = 'home'`) and sensor 2 is configured → sensor 1 (home→work direction) is hidden, sensor 2 (work→home direction) is shown
+  - When person is **at work** (`zone_2`) → sensor 2 is hidden, sensor 1 is shown
+  - All 4 layouts supported: Classic, Compact, Modern (ring indicators), Neon (neon badges)
+  - New config: `distance_sensor_2`, `travel_sensor_2`, `zone_2`, `show_distance_2`, `show_travel_time_2`
+  - Editor section added (Sensors tab) with entity pickers, toggle switches, and zone field in IT/EN/FR/DE
+- 🌦️ **Rich Weather Animations** — Complete rebuild of weather background system with fully animated scenes for every state:
+  - ☀️ **Sunny** — Glowing sun with 18 rotating rays and pulsing halo
+  - 🌙 **Clear Night** — Moon with craters, aurora borealis ribbons, twinkling stars and falling meteor (fixed direction: top-right → bottom-left)
+  - ⛅ **Partly Cloudy** — Day: sun + 2 clouds; Night: moon + stars + 2 night clouds
+  - ☁️ **Cloudy** — 5 animated grey clouds at different depths
+  - 🌫️ **Fog** — 8 drifting blur bands layered for depth effect
+  - 💨 **Windy / Windy-variant** — 10 wind sweep lines with fading gradient
+  - 🌧️ **Rainy** — Dark clouds + 26 rain drops with splash animations
+  - 🌨️ **Snowy-rainy** — Dark clouds + mixed rain + 8 Unicode snowflakes
+  - 🌧️ **Pouring** — Storm clouds + 40 heavy rain drops (accelerated animation)
+  - ❄️ **Snowy** — Grey clouds + 18 Unicode snowflakes (❄❅❆✻✼) + snow ground layer
+  - 🌩️ **Lightning** — Storm clouds + rain + SVG bolt paths + sky flash effect
+  - ⛈️ **Lightning-rainy** — Storm clouds + 36 heavy drops + SVG lightning + sky flash
+  - 🌪️ **Exceptional** — Dust swirl particles + hot wind lines
+  - 🧊 **Hail** — Dark clouds + 22 glossy sphere hail drops
+  - Vivid opaque gradients per state (sunny=blue-to-amber, night=deep navy, storm=dark purple…)
+  - Seeded deterministic PRNG (`_rng(seed)`) — same weather state always produces identical particles, preventing LitElement re-render loops
+- 📍 **Weather Temperature — layout-aware positioning**:
+  - **Classic layout**: temperature shown inline below the last-changed timestamp
+  - **Neon layout**: temperature shown inline below the last-changed timestamp, styled with monospace neon font
+  - **Modern/Compact layouts**: temperature shown as absolute bottom-right label
+
+### Fixed
+- 🐛 **Mobile App Auto-Detection** — sensors are now resolved from `person.attributes.device_trackers` instead of a guessed `sensor.phone_{name}_*` pattern. The card reads the actual device tracker (e.g. `device_tracker.iphonedavide`), extracts the prefix, and builds correct entity IDs (`sensor.iphonedavide_battery_level`, `sensor.iphonedavide_activity`, etc.). Falls back to name-scan if device_trackers attribute is absent.
+- 🐛 **Battery/Watch charging state auto-detection** — `sensor.{prefix}_battery_state` and `sensor.{prefix}_watch_battery_state` are now auto-detected without requiring manual config
+- 🐛 **Distance sensor** — now resolves to `sensor.{prefix}_distance` (mobile_app) instead of `sensor.waze_{name}`
+- 🐛 **Shooting star direction** — was moving horizontally left; now falls diagonally downward (top-right → bottom-left) with correct vertical gradient (bright head, fading tail)
+- 🐛 **Modern layout rings** — circular indicators now have a dark frosted-glass background (`rgba(0,0,0,0.45)` + `backdrop-filter: blur`) to remain readable over any weather background
+- 🐛 **Compact layout contrast** — when weather background is active (`.weather-active` class), badges get dark frosted background, name gets white text-shadow, icons get drop-shadow, profile picture gets contrast border
+
+### Changed
+- 🎨 **Classic layout default picture size** — reduced from 55% to 45% for better proportions
+- 🌍 **Editor auto-detection** — sensor fields now show the auto-detected value immediately (without requiring the auto-detect button). Pickers display `sensor.{prefix}_battery_level` etc. as soon as a person entity is selected
+- 🌍 **Sensor description text** — updated in all languages to reflect mobile_app prefix detection
+
+### Translations
+- 🌍 **New keys added in IT/EN/FR/DE**:
+  - `section.neon_options` — Neon Layout Options
+  - `section.neon_description` — Neon layout description
+  - `section.weather` — Weather section title
+  - `editor.show_weather` — Show weather background toggle
+  - `editor.weather_entity` — Weather entity picker label
+  - `section.weather_description` — Weather background description
+  - `section.travel_sensor_2` — Work Direction Sensors section title
+  - `section.travel_sensor_2_description` — Work direction sensors description
+  - `editor.distance_sensor_2` — Distance sensor 2 label
+  - `editor.travel_sensor_2` — Travel time sensor 2 label
+  - `editor.zone_2` — Work zone ID field label
+  - `editor.show_distance_2` — Show distance direction 2 toggle
+  - `editor.show_travel_time_2` — Show travel time direction 2 toggle
+- 🌍 **Updated key** `section.sensors_description` — now describes mobile_app prefix auto-detection in all 4 languages
+
+---
+
 ## [1.3.1] - 2026-03-08
 
 ### Added
@@ -343,10 +406,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Compact: `compact_icon_size` (12-32px) with proportional scaling
 - Modern: `modern_ring_size` (28-60px) with proportional scaling
 
-#### Neon Layout (v1.3.1) 🆕
+#### Neon Layout (v1.3.1)
 - Cyberpunk dark theme with animated glow ring and neon badges
 - Vivid state-colored glows, corner brackets, scanlines overlay
 - Adapts to person state (home/away/other) with matching neon color
+
+#### Weather Animations (v1.3.2) 🆕
+- Rich animated weather backgrounds for all 14 weather states
+- Seeded PRNG for stable rendering in LitElement
+- Layout-aware temperature display (inline in Classic/Neon, absolute in Modern/Compact)
+- Contrast-safe: frosted glass on Modern rings and Compact badges when weather is active
 
 #### Tap Action & Cache Busting (v1.3.0)
 - Configurable `tap_action` with 5 modes (more-info, navigate, url, call-service, none)
@@ -376,6 +445,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Version Links
+- [1.3.2]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.3.2
 - [1.3.1]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.3.1
 - [1.3.0]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.3.0
 - [1.2.4]: https://github.com/djdevil/person-tracker-card/releases/tag/v1.2.4
