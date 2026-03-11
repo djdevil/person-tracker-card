@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.3.4: Glass layout added (picker + translations IT/EN/FR/DE); distance_unit field added
 // v1.3.3: No editor changes
 // v1.3.2: Full IT/EN/FR/DE translations for neon/weather sections; auto-detect sensors via mobile_app prefix; editor fields auto-populated
 // v1.3.1: Animated weather background editor section (weather_entity + show_weather toggle)
@@ -114,6 +115,8 @@ class EditorLocalizationHelper {
         'section.compact_options': 'Opzioni Layout Compact',
         'section.neon_options': 'Opzioni Layout Neon',
         'section.neon_description': 'Tema cyberpunk scuro con anello luminoso animato e badge neon. I colori si adattano automaticamente allo stato della persona (verde = casa, rosso = fuori).',
+        'section.glass_options': 'Opzioni Layout Glass',
+        'section.glass_description': 'Tema glassmorphism scuro con chip traslucidi, orbs colorati e dot di stato animato. Il colore accent si adatta automaticamente alla zona corrente della persona.',
         'section.weather': '🌤 Meteo',
         'editor.show_weather': 'Mostra sfondo meteo',
         'editor.weather_entity': 'Entità meteo',
@@ -233,6 +236,8 @@ class EditorLocalizationHelper {
         'section.compact_options': 'Compact Layout Options',
         'section.neon_options': 'Neon Layout Options',
         'section.neon_description': 'Dark cyberpunk theme with animated glow ring and neon badges. Colors adapt automatically to person state (green = home, red = away).',
+        'section.glass_options': 'Glass Layout Options',
+        'section.glass_description': 'Dark glassmorphism theme with translucent chips, colored orbs and animated status dot. Accent color adapts automatically to the person\'s current zone.',
         'section.weather': '🌤 Weather',
         'editor.show_weather': 'Show weather background',
         'editor.weather_entity': 'Weather entity',
@@ -352,6 +357,8 @@ class EditorLocalizationHelper {
         'section.compact_options': 'Options Layout Compact',
         'section.neon_options': 'Options Layout Néon',
         'section.neon_description': 'Thème cyberpunk sombre avec anneau lumineux animé et badges neon. Les couleurs s\'adaptent automatiquement à l\'état de la personne (vert = maison, rouge = absent).',
+        'section.glass_options': 'Options Layout Glass',
+        'section.glass_description': 'Thème glassmorphisme sombre avec chips translucides, orbes colorés et point de statut animé. La couleur accent s\'adapte automatiquement à la zone actuelle.',
         'section.weather': '🌤 Météo',
         'editor.show_weather': 'Afficher fond météo',
         'editor.weather_entity': 'Entité météo',
@@ -471,6 +478,8 @@ class EditorLocalizationHelper {
         'section.compact_options': 'Compact Layout-Optionen',
         'section.neon_options': 'Neon Layout-Optionen',
         'section.neon_description': 'Dunkles Cyberpunk-Thema mit animiertem Leuchtring und Neon-Badges. Farben passen sich automatisch dem Personenstatus an (grün = zuhause, rot = abwesend).',
+        'section.glass_options': 'Glass Layout-Optionen',
+        'section.glass_description': 'Dunkles Glassmorphismus-Thema mit durchscheinenden Chips, farbigen Orbs und animiertem Statuspunkt. Die Akzentfarbe passt sich automatisch der aktuellen Zone an.',
         'section.weather': '🌤 Wetter',
         'editor.show_weather': 'Wetterhintergrund anzeigen',
         'editor.weather_entity': 'Wetterentität',
@@ -980,6 +989,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="compact">Compact</mwc-list-item>
           <mwc-list-item value="modern">Modern</mwc-list-item>
           <mwc-list-item value="neon">Neon ✦</mwc-list-item>
+          <mwc-list-item value="glass">Glass ◈</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -1640,6 +1650,16 @@ class PersonTrackerCardEditor extends LitElement {
         </div>
       ` : ''}
 
+      <!-- Glass Layout Options -->
+      ${this._config.layout === 'glass' ? html`
+        <div class="section">
+          <div class="section-title">${this._t('section.glass_options')}</div>
+          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
+            ${this._t('section.glass_description')}
+          </p>
+        </div>
+      ` : ''}
+
       <!-- Modern Layout Options -->
       ${this._config.layout === 'modern' ? html`
         <div class="section">
@@ -1844,7 +1864,7 @@ class PersonTrackerCardEditor extends LitElement {
     const item = ev.target;
     const value = item && item.getAttribute ? item.getAttribute('value') : ev.target.value;
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon')) {
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -1882,7 +1902,7 @@ class PersonTrackerCardEditor extends LitElement {
     const validTriggerValues = ['all', 'entity', 'custom'];
 
     // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern', 'neon'];
+    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass'];
 
     // Allowed values for positions
     const validPositions = [

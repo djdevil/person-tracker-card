@@ -1,6 +1,8 @@
-// Person Tracker Card v1.3.3 - Multilanguage Version
+// Person Tracker Card v1.3.4 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.3.4: New Glassmorphism layout; distance_unit config option; fix distance unit auto-detect
+//         for Waze/Google sensors; fix weather temp duplicate in glass layout
 // v1.3.3: Fix #24 distance sensors now read attributes.distance (Waze/Google Routes support);
 //         Fix modern layout pair-b ring overflow; Dual direction distance+travel alternating animation
 // v1.3.2: Rich weather animations (sun/moon/rain/snow/lightning/hail/fog/wind/exceptional);
@@ -17,7 +19,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.3 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.4 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -963,6 +965,13 @@ class PersonTrackerCard extends LitElement {
         .pair-b-neon{animation:pair-b-neon 8s ease-in-out infinite}
         .sensor-pair-neon{position:relative;flex-shrink:0;display:inline-flex}
         .sensor-pair-neon>*{position:absolute;top:0;left:0}`,
+      glass: `
+        @keyframes pair-a-glass{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+        @keyframes pair-b-glass{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
+        .pair-a-glass{animation:pair-a-glass 8s ease-in-out infinite}
+        .pair-b-glass{animation:pair-b-glass 8s ease-in-out infinite}
+        .sensor-pair-glass{position:relative;flex-shrink:0;display:inline-flex}
+        .sensor-pair-glass>*{position:absolute;top:0;left:0}`,
     };
     return styles[theme] || '';
   }
@@ -1012,7 +1021,7 @@ class PersonTrackerCard extends LitElement {
       : null;
     return html`
       <div class="${bgClass}" @click=${clickHandler}>${particles}</div>
-      ${this._weatherTemp && this.config.layout !== 'classic' && this.config.layout !== 'neon'
+      ${this._weatherTemp && this.config.layout !== 'classic' && this.config.layout !== 'neon' && this.config.layout !== 'glass'
         ? html`<span class="weather-bg-temp">${this._weatherTemp}</span>`
         : ''}
     `;
@@ -1268,6 +1277,8 @@ class PersonTrackerCard extends LitElement {
       return this._renderModernLayout();
     } else if (this.config.layout === 'neon') {
       return this._renderNeonLayout();
+    } else if (this.config.layout === 'glass') {
+      return this._renderGlassLayout();
     } else {
       return this._renderClassicLayout();
     }
@@ -2118,6 +2129,198 @@ class PersonTrackerCard extends LitElement {
     `;
   }
 
+  _renderGlassLayout() {
+    const entity = this.hass.states[this.config.entity];
+    const stateConfig = this._getCurrentStateConfig();
+    const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
+    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
+
+    const accentColor = stateConfig?.styles?.name?.color || this._getNeonStateColor(entity.state);
+    const batteryColor = this._getBatteryColor(this._batteryLevel);
+    const watchBatteryColor = this._getBatteryColor(this._watchBatteryLevel);
+    const travelTime = Math.round(this._travelTime);
+    const travelColor = this._getTravelTimeColor(travelTime);
+    const travelTime2 = Math.round(this._travelTime2);
+    const travelColor2 = this._getTravelTimeColor(travelTime2);
+    const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const connectionColor = this._isWifiConnection(this._connectionType) ? '#00d4ff' : '#ff9500';
+    const distPrecision = this.config.distance_precision ?? 1;
+
+    const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
+    const hasDir2 = !!(this.config.travel_sensor_2 || this.config.distance_sensor_2);
+    const isHome = entity.state === 'home';
+    const smartMode = this.config.smart_travel_mode !== false;
+    const zone2Name = this.config.zone_2
+      ? (this.hass.states[this.config.zone_2]?.attributes?.friendly_name || this.config.zone_2.replace('zone.', '').replace(/_/g, ' '))
+      : null;
+    const isZone2 = zone2Name && entity.state.toLowerCase() === zone2Name.toLowerCase();
+    const showDir1 = !smartMode || !hasDir2 || !isZone2;
+    const showDir2 = hasDir2 && (!smartMode || !isHome || !hasDir1);
+    const hasDist1 = showDir1 && this.config.show_distance && this._distanceSensorFound;
+    const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
+    const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
+    const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
+    const pairDir1 = hasDist1 && hasTravel1;
+    const pairDir2 = hasDist2 && hasTravel2;
+
+    return html`
+      <style>${this._getPairAnimationStyles('glass')}</style>
+      <ha-card style="
+        background: linear-gradient(135deg, #0f0f1a 0%, #1a0f2e 60%, #0a0f1a 100%);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: ${this.config.card_border_radius};
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+        position: relative;
+        overflow: hidden;
+      ">
+        <!-- Background orbs -->
+        <div style="position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,${accentColor}28 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+        <div style="position:absolute;bottom:-50px;left:-50px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(0,180,255,0.16) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+
+        ${this._renderWeatherBg()}
+
+        <div class="glass-container">
+
+          <!-- Header: avatar + name block + battery -->
+          <div class="glass-header">
+            ${this.config.show_entity_picture && entityPicture ? html`
+              <div class="glass-avatar clickable" @click=${() => this._handleTapAction()}
+                   style="box-shadow:0 0 0 2px ${accentColor},0 0 18px ${accentColor}50;">
+                <img src="${entityPicture}" alt="${personName}"
+                     style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;" />
+              </div>
+            ` : html`
+              <div class="glass-avatar glass-avatar-icon clickable" @click=${() => this._handleTapAction()}
+                   style="background:linear-gradient(135deg,${accentColor}55,rgba(0,180,255,0.35));box-shadow:0 0 0 2px ${accentColor},0 0 18px ${accentColor}50;">
+                👤
+              </div>
+            `}
+
+            <div class="glass-name-block clickable" @click=${() => this._handleTapAction()}>
+              ${this.config.show_person_name ? html`<div class="glass-name">${personName}</div>` : ''}
+              ${this.config.show_name ? html`
+                <div class="glass-zone-row">
+                  <span class="glass-dot" style="background:${accentColor};box-shadow:0 0 6px ${accentColor};"></span>
+                  <span class="glass-zone-text">${displayLocation}</span>
+                </div>
+              ` : ''}
+              ${this.config.show_last_changed ? html`<div class="glass-time">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
+              ${this.config.show_weather && this._weatherTemp ? html`<div class="glass-weather-inline">${this._weatherTemp}</div>` : ''}
+            </div>
+
+            ${this.config.show_battery ? html`
+              <div class="glass-battery-pill clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}>
+                <div class="glass-bat-pct" style="color:${batteryColor};">${this._batteryLevel}%</div>
+                <div class="glass-bat-bar">
+                  <div class="glass-bat-fill" style="width:${this._batteryLevel}%;background:${batteryColor};box-shadow:0 0 4px ${batteryColor};"></div>
+                </div>
+                ${this._batteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;"></ha-icon>` : ''}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Divider -->
+          <div class="glass-divider" style="background:linear-gradient(90deg,transparent,${accentColor}50,rgba(0,180,255,0.25),transparent);"></div>
+
+          <!-- Sensor chips -->
+          <div class="glass-chips">
+
+            ${this.config.show_watch_battery ? html`
+              <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))}>
+                ${this._watchBatteryCharging
+                  ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:13px;color:#4ade80;"></ha-icon>`
+                  : html`<span style="font-size:13px;">⌚</span>`}
+                <span style="color:${watchBatteryColor};">${this._watchBatteryLevel}%</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_connection ? html`
+              <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}>
+                <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:14px;color:${connectionColor};"></ha-icon>
+              </div>
+            ` : ''}
+
+            ${pairDir1 ? html`
+              <div class="sensor-pair-glass" style="min-width:90px;height:28px;">
+                <div class="glass-chip pair-a-glass clickable"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))}
+                     style="border-color:rgba(0,212,255,0.3);color:#00d4ff;">
+                  <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
+                </div>
+                <div class="glass-chip pair-b-glass clickable"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}
+                     style="border-color:${travelColor}50;color:${travelColor};position:absolute;top:0;left:0;">
+                  <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
+                  <span>${travelTime} min</span>
+                </div>
+              </div>
+            ` : html`
+              ${hasDist1 ? html`
+                <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="border-color:rgba(0,212,255,0.3);color:#00d4ff;">
+                  <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
+                </div>
+              ` : ''}
+              ${hasTravel1 ? html`
+                <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="border-color:${travelColor}50;color:${travelColor};">
+                  <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
+                  <span>${travelTime} min</span>
+                </div>
+              ` : ''}
+            `}
+
+            ${pairDir2 ? html`
+              <div class="sensor-pair-glass" style="min-width:90px;height:28px;">
+                <div class="glass-chip pair-a-glass clickable"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))}
+                     style="border-color:rgba(0,212,255,0.3);color:#00d4ff;">
+                  <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
+                </div>
+                <div class="glass-chip pair-b-glass clickable"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}
+                     style="border-color:${travelColor2}50;color:${travelColor2};position:absolute;top:0;left:0;">
+                  <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
+                  <span>${travelTime2} min</span>
+                </div>
+              </div>
+            ` : html`
+              ${hasDist2 ? html`
+                <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))} style="border-color:rgba(0,212,255,0.3);color:#00d4ff;">
+                  <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
+                </div>
+              ` : ''}
+              ${hasTravel2 ? html`
+                <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="border-color:${travelColor2}50;color:${travelColor2};">
+                  <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
+                  <span>${travelTime2} min</span>
+                </div>
+              ` : ''}
+            `}
+
+            ${this.config.show_activity && this._activity !== 'unknown' ? html`
+              <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))}>
+                <ha-icon icon="${this._activityIcon}" style="--mdc-icon-size:13px;color:#b44fff;"></ha-icon>
+                <span style="color:#b44fff;">${this._activity}</span>
+              </div>
+            ` : ''}
+
+            ${this.config.show_steps && this._steps > 0 ? html`
+              <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('steps'))}>
+                <ha-icon icon="mdi:shoe-sneaker" style="--mdc-icon-size:13px;color:rgba(255,255,255,0.55);"></ha-icon>
+                <span>${this._steps.toLocaleString()}</span>
+              </div>
+            ` : ''}
+
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
+
   static get styles() {
     return css`
       :host {
@@ -2917,6 +3120,156 @@ class PersonTrackerCard extends LitElement {
       .neon-badge:hover {
         transform: scale(1.08);
       }
+
+      /* ── GLASSMORPHISM LAYOUT ── */
+      .glass-container {
+        position: relative;
+        z-index: 1;
+        padding: 18px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .glass-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .glass-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .glass-avatar-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+      }
+
+      .glass-name-block {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        cursor: pointer;
+      }
+
+      .glass-name {
+        font-size: 17px;
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .glass-zone-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .glass-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        animation: glass-dot-pulse 2.2s ease-in-out infinite;
+      }
+
+      @keyframes glass-dot-pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.45; transform: scale(0.7); }
+      }
+
+      .glass-zone-text {
+        font-size: 12px;
+        color: rgba(255,255,255,0.5);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .glass-time {
+        font-size: 10px;
+        color: rgba(255,255,255,0.28);
+        letter-spacing: 0.3px;
+      }
+
+      .glass-weather-inline {
+        font-size: 11px;
+        color: rgba(255,255,255,0.45);
+        margin-top: 1px;
+      }
+
+      .glass-battery-pill {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .glass-bat-pct {
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1;
+      }
+
+      .glass-bat-bar {
+        width: 28px;
+        height: 4px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .glass-bat-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.5s ease;
+      }
+
+      .glass-divider {
+        height: 1px;
+        border-radius: 1px;
+      }
+
+      .glass-chips {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .glass-chip {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 100px;
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.70);
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+        white-space: nowrap;
+      }
+
+      .glass-chip:hover {
+        background: rgba(255,255,255,0.12);
+        transform: scale(1.05);
+      }
     `;
   }
 }
@@ -2925,7 +3278,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.3 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.3.4 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
@@ -2947,7 +3300,7 @@ window.customCards.push({
 // This ensures all users get the new version without manually clearing the cache.
 // Both person-tracker-card.js and person-tracker-card-editor.js are updated.
 (async () => {
-  const CARD_VERSION = '1.3.3';
+  const CARD_VERSION = '1.3.4';
   const CARD_FILES = ['person-tracker-card.js', 'person-tracker-card-editor.js'];
 
   try {
