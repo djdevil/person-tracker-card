@@ -1,7 +1,7 @@
-// Person Tracker Card v1.3.4 - Multilanguage Version
+// Person Tracker Card v1.3.5 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
-// v1.3.4: New Glassmorphism layout; distance_unit config option; fix distance unit auto-detect
+// v1.3.5: Glass layout improvements: SVG battery icon with fill animation, connection icon in header,
 //         for Waze/Google sensors; fix weather temp duplicate in glass layout
 // v1.3.3: Fix #24 distance sensors now read attributes.distance (Waze/Google Routes support);
 //         Fix modern layout pair-b ring overflow; Dual direction distance+travel alternating animation
@@ -19,7 +19,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.4 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.5 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -83,7 +83,22 @@ class LocalizationHelper {
         'time.hours': 'ore',
         'time.day': 'giorno',
         'time.days': 'giorni',
-        'time.ago': 'fa'
+        'time.ago': 'fa',
+        'weather.sunny': 'Soleggiato',
+        'weather.clear-night': 'Sereno',
+        'weather.cloudy': 'Nuvoloso',
+        'weather.partlycloudy': 'Parz. Nuvoloso',
+        'weather.fog': 'Nebbia',
+        'weather.hail': 'Grandine',
+        'weather.lightning': 'Fulmine',
+        'weather.lightning-rainy': 'Temporale',
+        'weather.pouring': 'Acquazzone',
+        'weather.rainy': 'Pioggia',
+        'weather.snowy': 'Neve',
+        'weather.snowy-rainy': 'Pioggia e Neve',
+        'weather.windy': 'Ventoso',
+        'weather.windy-variant': 'Molto Ventoso',
+        'weather.exceptional': 'Eccezionale',
       },
       'en': {
         'common.person_tracker': 'Person Tracker',
@@ -111,7 +126,22 @@ class LocalizationHelper {
         'time.hours': 'hours',
         'time.day': 'day',
         'time.days': 'days',
-        'time.ago': 'ago'
+        'time.ago': 'ago',
+        'weather.sunny': 'Sunny',
+        'weather.clear-night': 'Clear Night',
+        'weather.cloudy': 'Cloudy',
+        'weather.partlycloudy': 'Partly Cloudy',
+        'weather.fog': 'Foggy',
+        'weather.hail': 'Hail',
+        'weather.lightning': 'Lightning',
+        'weather.lightning-rainy': 'Thunderstorm',
+        'weather.pouring': 'Pouring',
+        'weather.rainy': 'Rainy',
+        'weather.snowy': 'Snowy',
+        'weather.snowy-rainy': 'Sleet',
+        'weather.windy': 'Windy',
+        'weather.windy-variant': 'Very Windy',
+        'weather.exceptional': 'Exceptional',
       },
       'fr': {
         'common.person_tracker': 'Suivi de Personne',
@@ -139,7 +169,22 @@ class LocalizationHelper {
         'time.hours': 'heures',
         'time.day': 'jour',
         'time.days': 'jours',
-        'time.ago': 'il y a'
+        'time.ago': 'il y a',
+        'weather.sunny': 'Ensoleillé',
+        'weather.clear-night': 'Nuit claire',
+        'weather.cloudy': 'Nuageux',
+        'weather.partlycloudy': 'Partiellement nuageux',
+        'weather.fog': 'Brouillard',
+        'weather.hail': 'Grêle',
+        'weather.lightning': 'Éclairs',
+        'weather.lightning-rainy': 'Orage',
+        'weather.pouring': 'Averse',
+        'weather.rainy': 'Pluvieux',
+        'weather.snowy': 'Neigeux',
+        'weather.snowy-rainy': 'Neige fondue',
+        'weather.windy': 'Venteux',
+        'weather.windy-variant': 'Très venteux',
+        'weather.exceptional': 'Exceptionnel',
       },
       'de': {
         'common.person_tracker': 'Personen-Tracker',
@@ -167,7 +212,22 @@ class LocalizationHelper {
         'time.hours': 'Stunden',
         'time.day': 'Tag',
         'time.days': 'Tage',
-        'time.ago': 'vor'
+        'time.ago': 'vor',
+        'weather.sunny': 'Sonnig',
+        'weather.clear-night': 'Klare Nacht',
+        'weather.cloudy': 'Bewölkt',
+        'weather.partlycloudy': 'Teils bewölkt',
+        'weather.fog': 'Neblig',
+        'weather.hail': 'Hagel',
+        'weather.lightning': 'Blitz',
+        'weather.lightning-rainy': 'Gewitter',
+        'weather.pouring': 'Starkregen',
+        'weather.rainy': 'Regnerisch',
+        'weather.snowy': 'Schnee',
+        'weather.snowy-rainy': 'Schneeregen',
+        'weather.windy': 'Windig',
+        'weather.windy-variant': 'Sehr windig',
+        'weather.exceptional': 'Außergewöhnlich',
       }
     };
   }
@@ -2146,6 +2206,8 @@ class PersonTrackerCard extends LitElement {
     const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
     const connectionColor = this._isWifiConnection(this._connectionType) ? '#00d4ff' : '#ff9500';
     const distPrecision = this.config.distance_precision ?? 1;
+    const weatherIconMap = {'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','partlycloudy':'mdi:weather-partly-cloudy','pouring':'mdi:weather-pouring','rainy':'mdi:weather-rainy','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','exceptional':'mdi:alert-circle'};
+    const weatherLabel = this._weatherState ? this._t(`weather.${this._weatherState}`) : '';
 
     const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
     const hasDir2 = !!(this.config.travel_sensor_2 || this.config.distance_sensor_2);
@@ -2206,16 +2268,27 @@ class PersonTrackerCard extends LitElement {
                 </div>
               ` : ''}
               ${this.config.show_last_changed ? html`<div class="glass-time">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
-              ${this.config.show_weather && this._weatherTemp ? html`<div class="glass-weather-inline">${this._weatherTemp}</div>` : ''}
             </div>
 
-            ${this.config.show_battery ? html`
-              <div class="glass-battery-pill clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}>
-                <div class="glass-bat-pct" style="color:${batteryColor};">${this._batteryLevel}%</div>
-                <div class="glass-bat-bar">
-                  <div class="glass-bat-fill" style="width:${this._batteryLevel}%;background:${batteryColor};box-shadow:0 0 4px ${batteryColor};"></div>
-                </div>
-                ${this._batteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;"></ha-icon>` : ''}
+            ${this.config.show_battery || this.config.show_connection ? html`
+              <div class="glass-battery-pill">
+                ${this.config.show_battery ? html`
+                  <div class="${this._batteryCharging ? 'glass-bat-svg-wrap glass-bat-charging clickable' : 'glass-bat-svg-wrap clickable'}" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}>
+                    <svg width="32" height="15" viewBox="0 0 32 15" style="display:block;">
+                      <rect x="0.5" y="0.5" width="27" height="14" rx="2.5" fill="rgba(255,255,255,0.07)" stroke="${batteryColor}99" stroke-width="1.2"/>
+                      <rect x="28" y="4.5" width="3.5" height="6" rx="1.5" fill="${batteryColor}99"/>
+                      <rect x="2" y="2" width="${Math.max(0,(this._batteryLevel/100)*23)}" height="11" rx="1.5" fill="${batteryColor}" style="filter:drop-shadow(0 0 2px ${batteryColor});"/>
+                      ${this._batteryCharging ? html`<text x="13.5" y="11" text-anchor="middle" font-size="8" font-weight="700" fill="#4ade80">⚡</text>` : ''}
+                    </svg>
+                    <span style="font-size:11px;font-weight:700;color:${batteryColor};margin-left:5px;">${this._batteryLevel}%</span>
+                  </div>
+                ` : ''}
+                ${this.config.show_connection ? html`
+                  <div class="glass-conn-pill clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}>
+                    <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:16px;color:${connectionColor};"></ha-icon>
+                    <span style="font-size:10px;color:${connectionColor};font-weight:600;">${this._connectionType}</span>
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
           </div>
@@ -2235,7 +2308,7 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
-            ${this.config.show_connection ? html`
+            ${this.config.show_connection && !this.config.show_battery ? html`
               <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}>
                 <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:14px;color:${connectionColor};"></ha-icon>
               </div>
@@ -2316,6 +2389,16 @@ class PersonTrackerCard extends LitElement {
             ` : ''}
 
           </div>
+
+          ${this.config.show_weather && this._weatherState ? html`
+            <div class="glass-weather-bar">
+              <div class="glass-weather-bar-left clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)}>
+                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:14px;color:rgba(255,255,255,0.45);"></ha-icon>
+                <span>${this._weatherTemp ? `${this._weatherTemp} · ` : ''}${weatherLabel}</span>
+              </div>
+            </div>
+          ` : ''}
+
         </div>
       </ha-card>
     `;
@@ -3212,30 +3295,57 @@ class PersonTrackerCard extends LitElement {
       .glass-battery-pill {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 3px;
+        align-items: flex-end;
+        gap: 4px;
         flex-shrink: 0;
+      }
+
+      .glass-bat-svg-wrap {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+
+      @keyframes bat-charge-pulse {
+        0%, 100% { filter: drop-shadow(0 0 2px #4ade8066); }
+        50% { filter: drop-shadow(0 0 7px #4ade80cc) drop-shadow(0 0 14px #4ade8055); }
+      }
+
+      .glass-bat-charging svg {
+        animation: bat-charge-pulse 1.6s ease-in-out infinite;
+      }
+
+      .glass-conn-pill {
+        display: flex;
+        align-items: center;
+        gap: 4px;
         cursor: pointer;
       }
 
-      .glass-bat-pct {
+      .glass-weather-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 14px 8px;
+        font-size: 11px;
+        color: rgba(255,255,255,0.38);
+        border-top: 1px solid rgba(255,255,255,0.06);
+        margin-top: 4px;
+      }
+
+      .glass-weather-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+
+      .glass-weather-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 4px;
         font-size: 11px;
         font-weight: 600;
-        line-height: 1;
-      }
-
-      .glass-bat-bar {
-        width: 28px;
-        height: 4px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 2px;
-        overflow: hidden;
-      }
-
-      .glass-bat-fill {
-        height: 100%;
-        border-radius: 2px;
-        transition: width 0.5s ease;
       }
 
       .glass-divider {
@@ -3278,7 +3388,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.4 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.3.5 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
@@ -3300,7 +3410,7 @@ window.customCards.push({
 // This ensures all users get the new version without manually clearing the cache.
 // Both person-tracker-card.js and person-tracker-card-editor.js are updated.
 (async () => {
-  const CARD_VERSION = '1.3.4';
+  const CARD_VERSION = '1.3.5';
   const CARD_FILES = ['person-tracker-card.js', 'person-tracker-card-editor.js'];
 
   try {

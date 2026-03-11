@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.3.4: Glass layout added (picker + translations IT/EN/FR/DE); distance_unit field added
+// v1.3.5: No editor changes
 // v1.3.3: No editor changes
 // v1.3.2: Full IT/EN/FR/DE translations for neon/weather sections; auto-detect sensors via mobile_app prefix; editor fields auto-populated
 // v1.3.1: Animated weather background editor section (weather_entity + show_weather toggle)

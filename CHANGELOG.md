@@ -3,16 +3,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5] - 2026-03-11
+
+### Changed (Glass layout)
+- 🔋 **Battery icon redesigned** — SVG battery that fills up based on level, with the percentage displayed as text next to it. When charging, the icon pulses with a green glow animation instead of showing a text label.
+- 📶 **Connection in header** — Connection type (Wi-Fi / cellular) moved to the header pill next to the battery, with icon + label. Chip removed from the bottom row when battery is shown.
+- 🌦️ **Weather bar at bottom** — New bottom strip showing weather icon, temperature and translated condition label (IT/EN/FR/DE). Replaces the inline temperature in the header.
+- 🌍 **Weather state translations** — All 15 HA weather states translated in Italian, English, French and German via the existing `_t()` system.
+
+---
+
 ## [1.3.4] - 2026-03-11
 
 ### Added
 - ✨ **New Glassmorphism Layout** — Dark frosted-glass card with translucent chips, colored gradient orbs, animated status dot, and per-state accent color. Select `glass` in the layout picker. Supports all sensors: battery, watch battery, connection, distance, travel time (both directions + smart mode), activity, steps.
 - 🔧 **`distance_unit` config option** — Override the distance unit displayed (e.g. `km`, `mi`). Leave empty for auto-detection: reads `attributes.distance` unit from HA unit system for Waze/Google sensors, or `unit_of_measurement` for native HA distance sensors.
 
-### Fixed
-- 🐛 **Distance unit auto-detection** — Distance sensors using `attributes.distance` (Waze, Google Routes) were showing `min` as unit because `unit_of_measurement` belongs to the sensor state (travel time). Now auto-detects using `hass.config.unit_system.length`.
-- 🐛 **Weather temperature duplicate in Glass layout** — Temperature was appearing both inline in the header and floating bottom-right. The floating `weather-bg-temp` is now suppressed for the glass layout.
-- 🐛 **Chip vertical alignment in Glass layout** — Added `align-items: center` to `.glass-chips` so chips with only an icon align on the same baseline as chips with text.
 
 ## [1.3.3] - 2026-03-11
 
