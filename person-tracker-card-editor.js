@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.3.5: No editor changes
+// v1.3.6: Version badge added to editor UI top-right
 // v1.3.3: No editor changes
 // v1.3.2: Full IT/EN/FR/DE translations for neon/weather sections; auto-detect sensors via mobile_app prefix; editor fields auto-populated
 // v1.3.1: Animated weather background editor section (weather_entity + show_weather toggle)
@@ -659,6 +659,18 @@ class PersonTrackerCardEditor extends LitElement {
         padding: 16px;
       }
 
+      .editor-version-badge {
+        font-size: 10px;
+        color: var(--secondary-text-color, #888);
+        text-align: right;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+      }
+      .editor-version-badge span {
+        font-weight: 700;
+        color: var(--primary-color, #03a9f4);
+      }
+
       .tabs {
         display: flex;
         margin-bottom: 20px;
@@ -917,6 +929,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
+        <div class="editor-version-badge">Person Tracker Card <span>v1.3.6</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"

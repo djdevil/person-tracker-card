@@ -1,8 +1,8 @@
-// Person Tracker Card v1.3.5 - Multilanguage Version
+// Person Tracker Card v1.3.6 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
-// v1.3.5: Glass layout improvements: SVG battery icon with fill animation, connection icon in header,
-//         for Waze/Google sensors; fix weather temp duplicate in glass layout
+// v1.3.6: Fix editor cache after HACS update: dynamic import now includes ?v= param; CARD_VERSION
+//         promoted to top-level constant; version badge added to editor UI
 // v1.3.3: Fix #24 distance sensors now read attributes.distance (Waze/Google Routes support);
 //         Fix modern layout pair-b ring overflow; Dual direction distance+travel alternating animation
 // v1.3.2: Rich weather animations (sun/moon/rain/snow/lightning/hail/fog/wind/exceptional);
@@ -19,7 +19,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.5 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.6 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -249,6 +249,8 @@ class LocalizationHelper {
   }
 }
 
+const CARD_VERSION = '1.3.6';
+
 class PersonTrackerCard extends LitElement {
   static get properties() {
     return {
@@ -333,7 +335,7 @@ class PersonTrackerCard extends LitElement {
   // Support for the visual editor
   static async getConfigElement() {
     try {
-      await import('./person-tracker-card-editor.js');
+      await import(`./person-tracker-card-editor.js?v=${CARD_VERSION}`);
       return document.createElement('person-tracker-card-editor');
     } catch (error) {
       console.error('Person Tracker Card Editor not found:', error);
@@ -3388,7 +3390,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.5 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.3.6 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
@@ -3410,7 +3412,6 @@ window.customCards.push({
 // This ensures all users get the new version without manually clearing the cache.
 // Both person-tracker-card.js and person-tracker-card-editor.js are updated.
 (async () => {
-  const CARD_VERSION = '1.3.5';
   const CARD_FILES = ['person-tracker-card.js', 'person-tracker-card-editor.js'];
 
   try {

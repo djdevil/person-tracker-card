@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.6] - 2026-03-11
+
+### Fixed
+- 🐛 **Editor non aggiornato dopo HACS update** — Il browser cachava il vecchio `person-tracker-card-editor.js` perché il `import()` dinamico non includeva il parametro `?v=`. Ora usa `import('./person-tracker-card-editor.js?v=1.3.6')`, che cambia ad ogni versione e forza il reload del file corretto.
+- 🔧 **`CARD_VERSION` promosso a costante top-level** — Precedentemente era dichiarata solo nell'IIFE di cache-busting. Ora è disponibile globalmente e riusata nell'import dinamico, eliminando la doppia dichiarazione.
+- 🏷️ **Version badge nell'editor** — In cima all'editor visuale compare `Person Tracker Card v1.3.6`, così è immediato verificare se l'editor è aggiornato.
+
+---
+
 ## [1.3.5] - 2026-03-11
 
 ### Changed (Glass layout)
