@@ -125,6 +125,8 @@ class EditorLocalizationHelper {
         'editor.show_travel_time_2': 'Mostra tempo di viaggio (Lavoro → Casa)',
         'editor.smart_travel_mode': 'Modalità smart (nascondi in base alla posizione)',
         'editor.distance_precision': 'Decimali distanza (0=intero, 1=un decimale, 2=due decimali)',
+        'editor.distance_unit': 'Unità distanza (es. km, mi)',
+        'editor.distance_unit_description': 'Lascia vuoto per rilevamento automatico. Per sensori Waze/Google usa km o mi.',
         'editor.direction_home_work': 'Casa → Lavoro',
         'editor.direction_work_home': 'Lavoro → Casa',
         'editor.travel_sensor_home_work': 'Sensore tempo viaggio (Casa → Lavoro)',
@@ -242,6 +244,8 @@ class EditorLocalizationHelper {
         'editor.show_travel_time_2': 'Show travel time (Work → Home)',
         'editor.smart_travel_mode': 'Smart mode (hide based on location)',
         'editor.distance_precision': 'Distance decimal places (0=integer, 1=one decimal, 2=two decimals)',
+        'editor.distance_unit': 'Distance unit (e.g. km, mi)',
+        'editor.distance_unit_description': 'Leave empty for auto-detection. For Waze/Google sensors use km or mi.',
         'editor.direction_home_work': 'Home → Work',
         'editor.direction_work_home': 'Work → Home',
         'editor.travel_sensor_home_work': 'Travel time sensor (Home → Work)',
@@ -359,6 +363,8 @@ class EditorLocalizationHelper {
         'editor.show_travel_time_2': 'Afficher temps trajet (Travail → Maison)',
         'editor.smart_travel_mode': 'Mode smart (masquer selon la position)',
         'editor.distance_precision': 'Décimales distance (0=entier, 1=une décimale, 2=deux décimales)',
+        'editor.distance_unit': 'Unité de distance (ex. km, mi)',
+        'editor.distance_unit_description': 'Laisser vide pour détection auto. Pour Waze/Google utiliser km ou mi.',
         'editor.direction_home_work': 'Maison → Travail',
         'editor.direction_work_home': 'Travail → Maison',
         'editor.travel_sensor_home_work': 'Capteur temps trajet (Maison → Travail)',
@@ -476,6 +482,8 @@ class EditorLocalizationHelper {
         'editor.show_travel_time_2': 'Reisezeit anzeigen (Arbeit → Zuhause)',
         'editor.smart_travel_mode': 'Smart-Modus (je nach Standort ausblenden)',
         'editor.distance_precision': 'Entfernungs-Dezimalstellen (0=ganz, 1=eine, 2=zwei)',
+        'editor.distance_unit': 'Entfernungseinheit (z.B. km, mi)',
+        'editor.distance_unit_description': 'Leer lassen für Auto-Erkennung. Für Waze/Google km oder mi verwenden.',
         'editor.direction_home_work': 'Zuhause → Arbeit',
         'editor.direction_work_home': 'Arbeit → Zuhause',
         'editor.travel_sensor_home_work': 'Reisezeitssensor (Zuhause → Arbeit)',
@@ -1389,6 +1397,14 @@ class PersonTrackerCardEditor extends LitElement {
           .value=${String(this._config.distance_precision ?? 1)}
           @input=${(e) => this._valueChanged(e, 'distance_precision')}>
         </ha-textfield>
+
+        <ha-textfield
+          label="${this._t('editor.distance_unit')}"
+          .value=${this._config.distance_unit || ''}
+          placeholder="km"
+          @input=${(e) => this._valueChanged(e, 'distance_unit')}>
+        </ha-textfield>
+        <div class="description">${this._t('editor.distance_unit_description')}</div>
       </div>
     `;
   }

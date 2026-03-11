@@ -576,9 +576,13 @@ class PersonTrackerCard extends LitElement {
         distanceEntity.state !== 'unavailable' &&
         distanceEntity.state !== 'unknown';
       if (validState) {
-        const distVal = distanceEntity.attributes?.distance ?? distanceEntity.state;
+        const hasDistAttr = distanceEntity.attributes?.distance !== undefined;
+        const distVal = hasDistAttr ? distanceEntity.attributes.distance : distanceEntity.state;
         this._distanceFromHome = parseFloat(distVal) || 0;
-        this._distanceUnit = distanceEntity.attributes?.unit_of_measurement || 'km';
+        const autoUnit = hasDistAttr
+          ? (this.hass.config?.unit_system?.length || 'km')
+          : (distanceEntity.attributes?.unit_of_measurement || 'km');
+        this._distanceUnit = this.config.distance_unit || autoUnit;
         this._distanceIcon = distanceEntity.attributes?.icon || 'mdi:map-marker-distance';
         this._distanceSensorFound = true;
       } else {
@@ -602,9 +606,13 @@ class PersonTrackerCard extends LitElement {
       const d2Entity = this.hass.states[this.config.distance_sensor_2];
       const valid2 = d2Entity && d2Entity.state !== 'unavailable' && d2Entity.state !== 'unknown';
       if (valid2) {
-        const distVal2 = d2Entity.attributes?.distance ?? d2Entity.state;
+        const hasDistAttr2 = d2Entity.attributes?.distance !== undefined;
+        const distVal2 = hasDistAttr2 ? d2Entity.attributes.distance : d2Entity.state;
         this._distanceFromHome2 = parseFloat(distVal2) || 0;
-        this._distanceUnit2 = d2Entity.attributes?.unit_of_measurement || 'km';
+        const autoUnit2 = hasDistAttr2
+          ? (this.hass.config?.unit_system?.length || 'km')
+          : (d2Entity.attributes?.unit_of_measurement || 'km');
+        this._distanceUnit2 = this.config.distance_unit || autoUnit2;
         this._distanceIcon2 = d2Entity.attributes?.icon || 'mdi:map-marker-distance';
         this._distanceSensorFound2 = true;
       } else {
