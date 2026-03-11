@@ -1,6 +1,8 @@
-// Person Tracker Card v1.3.2 - Multilanguage Version
+// Person Tracker Card v1.3.3 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.3.3: Fix #24 distance sensors now read attributes.distance (Waze/Google Routes support);
+//         Fix modern layout pair-b ring overflow; Dual direction distance+travel alternating animation
 // v1.3.2: Rich weather animations (sun/moon/rain/snow/lightning/hail/fog/wind/exceptional);
 //         Mobile app auto-detection via device_trackers attribute; Weather temp positioning
 //         per layout; Compact/Modern weather contrast fix; Shooting star fix; Translations
@@ -15,7 +17,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.2 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.3 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -574,7 +576,8 @@ class PersonTrackerCard extends LitElement {
         distanceEntity.state !== 'unavailable' &&
         distanceEntity.state !== 'unknown';
       if (validState) {
-        this._distanceFromHome = parseFloat(distanceEntity.state) || 0;
+        const distVal = distanceEntity.attributes?.distance ?? distanceEntity.state;
+        this._distanceFromHome = parseFloat(distVal) || 0;
         this._distanceUnit = distanceEntity.attributes?.unit_of_measurement || 'km';
         this._distanceIcon = distanceEntity.attributes?.icon || 'mdi:map-marker-distance';
         this._distanceSensorFound = true;
@@ -599,7 +602,8 @@ class PersonTrackerCard extends LitElement {
       const d2Entity = this.hass.states[this.config.distance_sensor_2];
       const valid2 = d2Entity && d2Entity.state !== 'unavailable' && d2Entity.state !== 'unknown';
       if (valid2) {
-        this._distanceFromHome2 = parseFloat(d2Entity.state) || 0;
+        const distVal2 = d2Entity.attributes?.distance ?? d2Entity.state;
+        this._distanceFromHome2 = parseFloat(distVal2) || 0;
         this._distanceUnit2 = d2Entity.attributes?.unit_of_measurement || 'km';
         this._distanceIcon2 = d2Entity.attributes?.icon || 'mdi:map-marker-distance';
         this._distanceSensorFound2 = true;
@@ -2913,7 +2917,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.2 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.3.3 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
@@ -2935,7 +2939,7 @@ window.customCards.push({
 // This ensures all users get the new version without manually clearing the cache.
 // Both person-tracker-card.js and person-tracker-card-editor.js are updated.
 (async () => {
-  const CARD_VERSION = '1.3.2';
+  const CARD_VERSION = '1.3.3';
   const CARD_FILES = ['person-tracker-card.js', 'person-tracker-card-editor.js'];
 
   try {

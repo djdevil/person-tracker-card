@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-03-11
+
+### Fixed
+- 🐛 **Fix #24 Distance sensor reads wrong value** — Distance sensors were reading `state` instead of `attributes.distance`. Waze and Google Routes sensors store travel time (minutes) in `state` and actual distance in `attributes.distance`. Now the card reads `attributes.distance` first, falling back to `state` for native HA distance sensors.
+- 🐛 **Modern layout pair-b ring overflow** — Second direction ring (travel_2) was appearing below the card during the alternating animation. Fixed by applying `position:absolute;top:0;left:0` as inline style to override the `.ring-container` CSS class.
+
 ## [1.3.2] - 2026-03-09
 
 ### Added
