@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.8] - 2026-03-13
+
+### Fixed
+- 🐛 **Editor cache with HACS** — The editor JS file now inherits the `hacstag` query parameter from the main card file via `import.meta.url`, ensuring HACS cache busting is correctly propagated to the editor on every update. Fallback to `?v=CARD_VERSION` for non-HACS installations.
+- 🌤️ **Neon layout: weather conditions added** — The neon layout now shows the weather icon, temperature and translated condition label (e.g. `☀ 14°C · Soleggiato`) instead of just the temperature value.
+
 ## [1.3.7] - 2026-03-13
 
 ### Added

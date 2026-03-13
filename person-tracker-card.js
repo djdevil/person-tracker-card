@@ -1,6 +1,8 @@
-// Person Tracker Card v1.3.7 - Multilanguage Version
+// Person Tracker Card v1.3.8 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.3.8: Editor cache fix: import.meta.url extracts hacstag from HACS and passes it to editor;
+//         Neon layout: weather conditions (icon + label) added next to temperature
 // v1.3.7: Fix editor cache after HACS update: dynamic import now includes ?v= param; CARD_VERSION
 //         promoted to top-level constant; version badge added to editor UI
 // v1.3.3: Fix #24 distance sensors now read attributes.distance (Waze/Google Routes support);
@@ -19,7 +21,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.7 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.8 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -249,7 +251,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.3.6';
+const CARD_VERSION = '1.3.8';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -335,7 +337,12 @@ class PersonTrackerCard extends LitElement {
   // Support for the visual editor
   static async getConfigElement() {
     try {
-      await import(`./person-tracker-card-editor.js?v=${CARD_VERSION}`);
+      const _mainUrl = new URL(import.meta.url);
+      const _hacstag = _mainUrl.searchParams.get('hacstag');
+      const _editorUrl = new URL('./person-tracker-card-editor.js', import.meta.url);
+      if (_hacstag) _editorUrl.searchParams.set('hacstag', _hacstag);
+      else _editorUrl.searchParams.set('v', CARD_VERSION);
+      await import(_editorUrl.href);
       return document.createElement('person-tracker-card-editor');
     } catch (error) {
       console.error('Person Tracker Card Editor not found:', error);
@@ -2052,6 +2059,8 @@ class PersonTrackerCard extends LitElement {
 
     const batteryColor = this._getBatteryColor(this._batteryLevel);
     const watchBatteryColor = this._getBatteryColor(this._watchBatteryLevel);
+    const neonWeatherLabel = this._weatherState ? this._t(`weather.${this._weatherState}`) : '';
+    const neonWeatherIconMap = {'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','partlycloudy':'mdi:weather-partly-cloudy','cloudy':'mdi:weather-cloudy','rainy':'mdi:weather-rainy','snowy':'mdi:weather-snowy','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','fog':'mdi:weather-fog','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','hail':'mdi:weather-hail','snowy-rainy':'mdi:weather-snowy-rainy','pouring':'mdi:weather-pouring','exceptional':'mdi:alert-circle-outline'};
     const travelTime = Math.round(this._travelTime);
     const travelColor = this._getTravelTimeColor(travelTime);
     const travelTime2 = Math.round(this._travelTime2);
@@ -2125,7 +2134,13 @@ class PersonTrackerCard extends LitElement {
             ${this.config.show_last_changed ? html`
               <div class="neon-time">${this._getRelativeTime(entity.last_changed)}</div>
             ` : ''}
-            ${this.config.show_weather && this.config.show_weather_temperature !== false && this._weatherTemp ? html`<div class="neon-temp">${this._weatherTemp}</div>` : ''}
+            ${this.config.show_weather && this.config.show_weather_temperature !== false && (this._weatherTemp || this._weatherState) ? html`
+              <div class="neon-temp" style="display:flex;align-items:center;gap:4px;">
+                ${this._weatherState ? html`<ha-icon icon="${neonWeatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:11px;opacity:0.7;"></ha-icon>` : ''}
+                ${this._weatherTemp ? html`<span>${this._weatherTemp}</span>` : ''}
+                ${neonWeatherLabel ? html`<span style="opacity:0.6;">· ${neonWeatherLabel}</span>` : ''}
+              </div>
+            ` : ''}
           </div>
 
           <!-- Sensor badges -->
@@ -3784,7 +3799,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.7 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.3.8 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
