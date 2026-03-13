@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.3.6: Version badge added to editor UI top-right
+// v1.3.7: Version badge added to editor UI top-right
 // v1.3.3: No editor changes
 // v1.3.2: Full IT/EN/FR/DE translations for neon/weather sections; auto-detect sensors via mobile_app prefix; editor fields auto-populated
 // v1.3.1: Animated weather background editor section (weather_entity + show_weather toggle)
@@ -117,9 +117,13 @@ class EditorLocalizationHelper {
         'section.neon_description': 'Tema cyberpunk scuro con anello luminoso animato e badge neon. I colori si adattano automaticamente allo stato della persona (verde = casa, rosso = fuori).',
         'section.glass_options': 'Opzioni Layout Glass',
         'section.glass_description': 'Tema glassmorphism scuro con chip traslucidi, orbs colorati e dot di stato animato. Il colore accent si adatta automaticamente alla zona corrente della persona.',
+        'section.bio_options': 'Opzioni Layout Bioluminescenza',
+        'section.bio_description': 'Tema oceano profondo con orbs bioluminescenti animati, particelle che salgono dal basso e doppio anello pulsante attorno all\'avatar. Il colore accent cambia automaticamente con la zona.',
         'section.weather': '🌤 Meteo',
-        'editor.show_weather': 'Mostra sfondo meteo',
+        'editor.show_weather': 'Mostra meteo',
         'editor.weather_entity': 'Entità meteo',
+        'editor.show_weather_background': 'Mostra sfondo meteo animato',
+        'editor.show_weather_temperature': 'Mostra condizioni e temperatura',
         'section.weather_description': 'Aggiunge uno sfondo animato alla card (pioggia, neve, sole, stelle, fulmini…). Funziona su tutti i layout.',
         'section.travel_sensor_2': '🏢 Sensori Casa ↔ Lavoro',
         'section.travel_sensor_2_description': 'Sensori 1 (casa→lavoro): visibili a casa e in transito, nascosti al lavoro. Sensori 2 (lavoro→casa): visibili al lavoro e in transito, nascosti a casa. Disattiva la modalità smart per mostrare sempre entrambi.',
@@ -238,9 +242,13 @@ class EditorLocalizationHelper {
         'section.neon_description': 'Dark cyberpunk theme with animated glow ring and neon badges. Colors adapt automatically to person state (green = home, red = away).',
         'section.glass_options': 'Glass Layout Options',
         'section.glass_description': 'Dark glassmorphism theme with translucent chips, colored orbs and animated status dot. Accent color adapts automatically to the person\'s current zone.',
+        'section.bio_options': 'Bioluminescence Layout Options',
+        'section.bio_description': 'Deep ocean theme with animated bioluminescent orbs, rising particles and double pulse ring around the avatar. Accent color changes automatically with the zone.',
         'section.weather': '🌤 Weather',
-        'editor.show_weather': 'Show weather background',
+        'editor.show_weather': 'Show weather',
         'editor.weather_entity': 'Weather entity',
+        'editor.show_weather_background': 'Show animated weather background',
+        'editor.show_weather_temperature': 'Show conditions and temperature',
         'section.weather_description': 'Adds an animated weather background to the card (rain, snow, sun, stars, lightning…). Works on all layouts.',
         'section.travel_sensor_2': '🏢 Home ↔ Work Sensors',
         'section.travel_sensor_2_description': 'Sensor 1 (home→work): visible at home and in transit, hidden at work. Sensor 2 (work→home): visible at work and in transit, hidden at home. Disable smart mode to always show both.',
@@ -359,9 +367,13 @@ class EditorLocalizationHelper {
         'section.neon_description': 'Thème cyberpunk sombre avec anneau lumineux animé et badges neon. Les couleurs s\'adaptent automatiquement à l\'état de la personne (vert = maison, rouge = absent).',
         'section.glass_options': 'Options Layout Glass',
         'section.glass_description': 'Thème glassmorphisme sombre avec chips translucides, orbes colorés et point de statut animé. La couleur accent s\'adapte automatiquement à la zone actuelle.',
+        'section.bio_options': 'Options Layout Bioluminescence',
+        'section.bio_description': 'Thème océan profond avec orbes bioluminescents animés, particules montantes et double anneau pulsant autour de l\'avatar. La couleur accent change automatiquement avec la zone.',
         'section.weather': '🌤 Météo',
-        'editor.show_weather': 'Afficher fond météo',
+        'editor.show_weather': 'Afficher météo',
         'editor.weather_entity': 'Entité météo',
+        'editor.show_weather_background': 'Afficher fond météo animé',
+        'editor.show_weather_temperature': 'Afficher conditions et température',
         'section.weather_description': 'Ajoute un fond animé à la carte (pluie, neige, soleil, étoiles, foudre…). Fonctionne sur tous les layouts.',
         'section.travel_sensor_2': '🏢 Capteurs Maison ↔ Travail',
         'section.travel_sensor_2_description': 'Capteur 1 (maison→travail): visible à la maison et en transit, masqué au travail. Capteur 2 (travail→maison): visible au travail et en transit, masqué à la maison. Désactivez le mode smart pour toujours afficher les deux.',
@@ -480,9 +492,13 @@ class EditorLocalizationHelper {
         'section.neon_description': 'Dunkles Cyberpunk-Thema mit animiertem Leuchtring und Neon-Badges. Farben passen sich automatisch dem Personenstatus an (grün = zuhause, rot = abwesend).',
         'section.glass_options': 'Glass Layout-Optionen',
         'section.glass_description': 'Dunkles Glassmorphismus-Thema mit durchscheinenden Chips, farbigen Orbs und animiertem Statuspunkt. Die Akzentfarbe passt sich automatisch der aktuellen Zone an.',
+        'section.bio_options': 'Biolumineszenz Layout-Optionen',
+        'section.bio_description': 'Tiefsee-Thema mit animierten biolumineszenten Orbs, aufsteigenden Partikeln und doppeltem Pulsring um den Avatar. Die Akzentfarbe ändert sich automatisch mit der Zone.',
         'section.weather': '🌤 Wetter',
-        'editor.show_weather': 'Wetterhintergrund anzeigen',
+        'editor.show_weather': 'Wetter anzeigen',
         'editor.weather_entity': 'Wetterentität',
+        'editor.show_weather_background': 'Animierten Wetterhintergrund anzeigen',
+        'editor.show_weather_temperature': 'Bedingungen und Temperatur anzeigen',
         'section.weather_description': 'Fügt der Karte einen animierten Wetterhintergrund hinzu (Regen, Schnee, Sonne, Sterne, Blitze…). Funktioniert auf allen Layouts.',
         'section.travel_sensor_2': '🏢 Zuhause ↔ Arbeit Sensoren',
         'section.travel_sensor_2_description': 'Sensor 1 (zuhause→arbeit): sichtbar zuhause und unterwegs, versteckt bei der Arbeit. Sensor 2 (arbeit→zuhause): sichtbar bei der Arbeit und unterwegs, versteckt zuhause. Smart-Modus deaktivieren um immer beide anzuzeigen.',
@@ -929,7 +945,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.3.6</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.3.7</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1003,6 +1019,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="modern">Modern</mwc-list-item>
           <mwc-list-item value="neon">Neon ✦</mwc-list-item>
           <mwc-list-item value="glass">Glass ◈</mwc-list-item>
+          <mwc-list-item value="bio">Bioluminescence ◉</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -1673,6 +1690,15 @@ class PersonTrackerCardEditor extends LitElement {
         </div>
       ` : ''}
 
+      ${this._config.layout === 'bio' ? html`
+        <div class="section">
+          <div class="section-title">${this._t('section.bio_options')}</div>
+          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
+            ${this._t('section.bio_description')}
+          </p>
+        </div>
+      ` : ''}
+
       <!-- Modern Layout Options -->
       ${this._config.layout === 'modern' ? html`
         <div class="section">
@@ -1750,6 +1776,24 @@ class PersonTrackerCardEditor extends LitElement {
           <p style="font-size:11px; color: var(--secondary-text-color); margin: 4px 0 0 0;">
             ${this._t('section.weather_description')}
           </p>
+          <div class="sensor-group" style="margin-top:8px;">
+            <div class="sensor-header">
+              <span class="sensor-title">${this._t('editor.show_weather_background')}</span>
+              <ha-switch
+                .checked=${this._config.show_weather_background !== false}
+                @change=${(e) => this._valueChanged(e, 'show_weather_background')}>
+              </ha-switch>
+            </div>
+          </div>
+          <div class="sensor-group">
+            <div class="sensor-header">
+              <span class="sensor-title">${this._t('editor.show_weather_temperature')}</span>
+              <ha-switch
+                .checked=${this._config.show_weather_temperature !== false}
+                @change=${(e) => this._valueChanged(e, 'show_weather_temperature')}>
+              </ha-switch>
+            </div>
+          </div>
         ` : ''}
       </div>
     `;
@@ -1877,7 +1921,7 @@ class PersonTrackerCardEditor extends LitElement {
     const item = ev.target;
     const value = item && item.getAttribute ? item.getAttribute('value') : ev.target.value;
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass')) {
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -1915,7 +1959,7 @@ class PersonTrackerCardEditor extends LitElement {
     const validTriggerValues = ['all', 'entity', 'custom'];
 
     // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass'];
+    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio'];
 
     // Allowed values for positions
     const validPositions = [

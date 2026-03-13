@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.7] - 2026-03-13
+
+### Added
+- 🌊 **New Bioluminescence Layout (`bio`)** — Deep ocean theme inspired by bioluminescent deep-sea life. Features three animated glowing orbs, five rising particles, a double pulsing ring around the avatar, SVG battery fill, chip-glow animation and a weather footer bar. Accent color (rings, chips, particles) changes automatically based on the person's zone and supports custom state colors defined in the card config.
+- 🌤️ **Weather background/temperature split controls** — Two new toggles in the editor weather section: "Show animated background" and "Show temperature". Allows showing only the animated scene, only the temperature text, or both independently. Available for all layouts (classic, compact, modern, neon, glass, bio).
+- 🌡️ **Weather condition label in all layouts** — Compact and modern now show weather icon + temperature + translated condition (e.g. `☀ 14°C · Soleggiato`) directly below the location name instead of a floating overlay. Classic layout also shows condition label next to the temperature.
+
+### Fixed
+- 🐛 **State color picker not applying to avatar border** — In classic and compact layouts, changing a state color in the editor now correctly updates the border color of the circular avatar photo.
+- 🐛 **Bio layout: accent color not applied to avatar border** — The avatar ring border was using a hardcoded sensor color instead of the custom state accent color. Now correctly follows the state color picker.
+- 🐛 **Dir2 pair animation desync** — When smart travel mode is disabled and both directions are visible simultaneously, direction-2 animated chips were in perfect sync with direction-1 (making them look static). Fixed with a `−4 s` animation offset so both pairs alternate independently.
+- 🐛 **Weather text unreadable on light backgrounds** — States like `sunny`, `snowy`, `fog` and `partlycloudy` used very bright gradients that made text invisible. Fixed with darker gradient stops and a universal dark scrim overlay (`::after`) on all weather backgrounds.
+- 🐛 **Weather contrast missing in classic and modern layouts** — `weather-active` class (which applies frosted-glass badges and text-shadow) was only applied to the compact layout. Now extends to classic and modern as well.
+
+
+---
+
 ## [1.3.6] - 2026-03-11
 
 ### Fixed
