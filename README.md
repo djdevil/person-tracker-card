@@ -3,28 +3,21 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![Version](https://img.shields.io/badge/version-1.3.9-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **seven layout modes**.
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor and three layout modes.
+## Layout Gallery
 
+| Classic | Compact | Modern |
+|---------|---------|--------|
+| ![Classic](images/preview.png) | ![Compact](images/compact2.png) | ![Modern](images/modern.png) |
 
-## 📑 All Theme With Meteo 🆕
-![Person Tracker Card](images/alltheme.png)
-
-## 📑 Classic Layout
-![Person Tracker Card](images/preview.png)
-
-## 📑 Compact Layout
-![Person Tracker Card](images/compact2.png)
-
-## 📑 Modern Layout 🆕
-![Person Tracker Card](images/modern.png)
-
-
+| Neon ✦ | Glass ◈ | Bioluminescence ◉ | Holographic 3D ◈ |
+|--------|---------|-------------------|-----------------|
+| ![Neon](images/neon.png) | ![Glass](images/glass.png) | ![Bio](images/bio.png) | ![Holo](images/holo.png) |
 
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
 ---
-
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)
 
@@ -33,43 +26,39 @@ Advanced card for Home Assistant that displays detailed information about people
 
 - [✨ Key Features](#-key-features)
 - [🎨 Layout Modes](#-layout-modes)
+- [🌦️ Weather Animations](#️-weather-animations)
 - [📦 Installation](#-installation)
 - [🔧 Configuration](#-configuration)
 - [📱 Mobile App Integration](#-mobile-app-integration)
+- [🗺️ Smart Travel Mode](#️-smart-travel-mode)
 - [🎭 Examples](#-examples)
 - [🔍 Troubleshooting](#-troubleshooting)
+- [📝 Changelog](#-changelog)
 
 ---
 
 ## ✨ Key Features
 
-- 🎨 **Three Layout Modes**
-  - **Classic**: Fully customizable with positionable elements
-  - **Compact**: Space-efficient horizontal grid layout
-  - **Modern**: Sleek design with circular progress indicators 🆕
-- 📱 **Battery Monitoring** - Phone battery with dynamic icon and color
-- ⌚ **Watch Battery** - Apple Watch and smartwatch support
-- 🚶 **Activity Tracking** - Walking, Running, Automotive, Stationary, Cycling
-- 📍 **Distance from Home** - Waze integration
-- ⏱️ **Travel Time** - Estimated time to reach home/work
-- 📶 **Connection Type** - WiFi or mobile network indicator
-- 🎨 **Customizable States** - Different colors and images for each location
-- 🖼️ **Custom Images** - PNG/GIF with transparency support
-- 🎯 **Complete Visual Editor** - User-friendly GUI configuration
-- 🎨 **Highly Customizable** - Fonts, colors, sizes, background
+- 🎨 **Seven Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D
+- 🌦️ **Rich Weather Animations** — 15 fully animated weather states as card background
+- 📱 **Auto Sensor Detection** — Automatically finds battery, activity, connection sensors from the HA Companion App
+- 🔋 **Battery Monitoring** — Phone battery with dynamic icon and color
+- ⌚ **Watch Battery** — Apple Watch and smartwatch support
+- 🚶 **Activity Tracking** — Walking, Running, Automotive, Stationary, Cycling
+- 📍 **Distance from Home** — Waze / Google Routes integration
+- ⏱️ **Smart Travel Mode** — Two-direction sensor system (home↔work)
+- 📶 **Connection Type** — WiFi or mobile network indicator
+- 🎨 **Customizable States** — Different colors and images for each location
+- 🖼️ **Custom Images** — PNG/GIF with transparency support
+- 🎯 **Complete Visual Editor** — User-friendly GUI configuration in 4 languages
+- 🌍 **Multilanguage** — Italian, English, French, German
 
 ---
 
 ## 🎨 Layout Modes
 
-### Classic Layout
-Full-size card with customizable element positioning.
-
-**Perfect for:**
-- Large dashboard cards
-- Maximum customization
-- Custom aspect ratios
-- Freely positionable elements
+### Classic
+Full-size card with freely positionable elements. Ideal for large dashboard cards.
 
 ```yaml
 type: custom:person-tracker-card
@@ -81,40 +70,18 @@ battery_position: top-right
 activity_position: bottom-left
 ```
 
-### Compact Layout
-Horizontal grid layout with fixed structure.
-
-**Perfect for:**
-- Multiple people tracking
-- Space-limited dashboards
-- Mobile interfaces
-- Dense information display
+### Compact
+Horizontal grid layout with fixed structure. Perfect for tracking multiple people side by side.
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
 layout: compact
-compact_width: 300  # 200-500px
+compact_width: 300
 ```
 
-**Layout structure:**
-```
-┌────────────────────────────┐
-│ 🖼️  Person Name           │
-│ 40px  📍 Location         │
-├────────────────────────────┤
-│ 🚶 📶 📱 ⌚ 🏠         │
-└────────────────────────────┘
-```
-
-### Modern Layout 🆕
-Sleek horizontal design with circular progress indicators.
-
-**Perfect for:**
-- Modern, minimal dashboards
-- Visual battery/distance representation
-- Clean and elegant interfaces
-- Auto-expanding responsive cards
+### Modern
+Sleek horizontal card with SVG circular progress rings for battery, distance, and travel time.
 
 ```yaml
 type: custom:person-tracker-card
@@ -125,51 +92,99 @@ modern_name_font_size: '16px'
 modern_state_font_size: '13px'
 ```
 
-**Layout structure:**
-```
-┌──────────────────────────────────────────────┐
-│  ┌───┐                                       │
-│  │🖼️│  PERSON NAME    ⭕ ⭕ 🚶 📶 ⭕ ⭕  │
-│  └───┘  📍 Location    📱 ⌚ 🏃 📡 🏠 🚗  │
-└──────────────────────────────────────────────┘
-     ▲         ▲                    ▲
-   Photo    Name/State      Circular Indicators
-  (colored                  (Battery, Watch,
-   border)                   Distance, Travel)
+### Neon ✦
+Dark cyberpunk theme with glowing neon badges, monospace font, and scanline overlay.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: neon
 ```
 
-**Modern Layout Features:**
-- 🔵 **Circular Progress Rings** - Visual representation of battery %, distance, travel time
-- 🟢 **State-Colored Border** - Picture border changes based on state (green=home, red=away, orange=other)
-- 🎯 **Icon Badges** - Activity and connection shown as icon circles
-- 📐 **Auto-Expanding** - Card width adapts to number of visible indicators
-- 🎨 **Customizable Fonts** - Separate font sizes for name and state
+### Glass ◈
+Frosted glassmorphism card with translucent chips, gradient orbs, and animated status dot. Accent color adapts to the person's state.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: glass
+```
+
+### Bioluminescence ◉
+Deep-ocean theme with animated glowing orbs, rising particles, double pulsing avatar ring, SVG battery fill, and weather footer bar.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: bio
+```
+
+### Holographic 3D ◈
+Futuristic card with real CSS 3D perspective — the card floats and tilts continuously in 3D space. Features rotating rings + orbital dots around the avatar, iridescent conic-gradient shimmer, animated scan bar, corner tech decorations, and metric chips. Hover flattens to front view.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: holo
+```
+
+---
+
+## 🌦️ Weather Animations
+
+Enable animated weather backgrounds by providing a `weather` entity:
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: modern          # works on all 7 layouts
+weather_entity: weather.home
+show_weather: true
+show_weather_background: true   # animated scene
+show_weather_temperature: true  # temperature label
+```
+
+### Supported Weather States
+
+| State | Animation |
+|-------|-----------|
+| ☀️ `sunny` | Glowing sun with 18 rotating rays and pulsing halo |
+| 🌙 `clear-night` | Moon with craters, aurora ribbons, stars, falling meteor |
+| ⛅ `partlycloudy` | Day: sun + clouds · Night: moon + stars + clouds |
+| ☁️ `cloudy` | 5 animated grey clouds at different depths |
+| 🌫️ `fog` | 8 drifting blur bands layered for depth |
+| 💨 `windy` / `windy-variant` | 10 wind sweep lines with fading gradient |
+| 🌧️ `rainy` | Dark clouds + 26 rain drops with splash animations |
+| 🌨️ `snowy-rainy` | Dark clouds + mixed rain + 8 Unicode snowflakes |
+| 🌧️ `pouring` | Storm clouds + 40 heavy rain drops (accelerated) |
+| ❄️ `snowy` | Clouds + 18 snowflakes (❄❅❆✻✼) + snow ground layer |
+| 🌩️ `lightning` | Storm clouds + SVG bolt + sky flash |
+| ⛈️ `lightning-rainy` | Storm clouds + 36 drops + lightning + sky flash |
+| 🌪️ `exceptional` | Dust swirl particles + hot wind lines |
+| 🧊 `hail` | Dark clouds + 22 glossy hail spheres |
+
+> **Note:** Gradients are vivid and opaque — weather IS the card background. A deterministic seeded PRNG ensures the same particle positions on every render, preventing LitElement re-render loops.
 
 ---
 
 ## 📦 Installation
 
-### Installation via HACS (Recommended)
-
-Have [HACS](https://hacs.xyz/) installed, this will allow you to update easily.
-
-* Adding Person Tracker Card to HACS can be done using this button:
+### Via HACS (Recommended)
 
 [![image](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)
 
 > [!NOTE]
 > If the button above doesn't work, add `https://github.com/djdevil/person-tracker-card` as a custom repository of type **Dashboard** in HACS.
 
-* Click Install on the `Person Tracker Card` card.
-* Restart Home Assistant.
+1. Click Install on the `Person Tracker Card` card.
+2. Restart Home Assistant.
 
 ### Manual Installation
 
 1. Download `person-tracker-card.js` and `person-tracker-card-editor.js`
 2. Copy to `config/www/person-tracker-card/`
 3. Add resource:
-   - Settings → Dashboards → ⋮ → Resources
-   - **+ ADD RESOURCE**
+   - Settings → Dashboards → ⋮ → Resources → **+ ADD RESOURCE**
    - URL: `/local/person-tracker-card/person-tracker-card.js`
    - Type: **JavaScript Module**
 4. Hard refresh browser (Ctrl+Shift+R)
@@ -182,144 +197,80 @@ Have [HACS](https://hacs.xyz/) installed, this will allow you to update easily.
 
 1. Edit dashboard → Add card
 2. Search **Person Tracker Card**
-3. Select **person** entity
-4. Choose **layout** (classic/compact/modern)
-5. Configure sensors and style
+3. Select a **person** entity
+4. Choose a **layout**
+5. Configure sensors and style — sensors are auto-detected from the Companion App
 
-### Basic YAML
+### Common Options
 
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-layout: modern  # or 'classic' or 'compact'
-```
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `entity` | string | required | `person.xxx` entity |
+| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` |
+| `show_entity_picture` | bool | `true` | Show avatar |
+| `show_name` | bool | `true` | Show person name |
+| `show_last_changed` | bool | `true` | Show last state change time |
+| `show_battery` | bool | `true` | Show phone battery |
+| `show_watch_battery` | bool | `true` | Show watch battery |
+| `show_activity` | bool | `true` | Show activity sensor |
+| `show_connection` | bool | `true` | Show connection type |
+| `show_distance` | bool | `true` | Show distance from home |
+| `show_travel_time` | bool | `true` | Show estimated travel time |
+| `show_weather` | bool | `false` | Enable weather section |
+| `show_weather_background` | bool | `true` | Animated weather background |
+| `show_weather_temperature` | bool | `true` | Temperature label |
+| `weather_entity` | string | — | `weather.xxx` entity |
+| `card_background` | string | — | CSS background value |
+| `card_border_radius` | string | — | CSS border-radius value |
+| `distance_unit` | string | auto | Override distance unit (`km`, `mi`) |
 
-### Modern Layout Configuration 🆕
+### Sensor Options
 
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-layout: modern
+| Option | Description |
+|--------|-------------|
+| `battery_sensor` | Phone battery sensor (auto-detected) |
+| `watch_battery_sensor` | Watch battery sensor (auto-detected) |
+| `activity_sensor` | Activity sensor (auto-detected) |
+| `connection_sensor` | Connection type sensor (auto-detected) |
+| `distance_sensor` | Distance/travel time sensor (Waze/Google Routes) |
+| `travel_sensor` | Travel time sensor (may be same as distance) |
+| `distance_sensor_2` | Second direction sensor (smart travel mode) |
+| `travel_sensor_2` | Second direction travel time sensor |
+| `zone_2` | Zone name for second direction (e.g. `work`) |
 
-# Display options
-show_entity_picture: true
-show_person_name: true
-show_name: true
-show_battery: true
-show_watch_battery: true
-show_activity: true
-show_connection: true
-show_distance: true
-show_travel_time: true
-
-# Modern layout specific
-modern_picture_size: 45           # Picture size in px (30-80)
-modern_name_font_size: '16px'     # Name font size
-modern_state_font_size: '13px'    # State/location font size
-modern_travel_max_time: 60        # Max travel time for ring calculation
-
-# Custom sensors (optional)
-battery_sensor: sensor.phone_davide_battery_level
-watch_battery_sensor: sensor.watch_davide_battery_level
-activity_sensor: sensor.phone_davide_activity
-connection_sensor: sensor.phone_davide_connection_type
-distance_sensor: sensor.waze_davide
-travel_sensor: sensor.waze_davide
-
-# Styling
-card_background: 'rgba(255,255,255,0.05)'
-card_border_radius: '15px'
-
-# Custom states with colors (border color follows state)
-state:
-  - value: home
-    name: 🏡 Home
-    styles:
-      name:
-        color: '#50A14F'
-  - value: not_home
-    name: 🚗 Away
-    styles:
-      name:
-        color: '#e45649'
-  - value: work
-    name: 🏢 Office
-    styles:
-      name:
-        color: '#ffa229'
-```
-
-### Compact Layout Configuration
+### Classic Layout — Specific Options
 
 ```yaml
-type: custom:person-tracker-card
-entity: person.davide
-layout: compact
-compact_width: 300        # Width in pixels (200-500)
-show_entity_picture: true
-show_name: true
-show_battery: true
-show_watch_battery: true
-show_activity: true
-show_connection: true
-show_distance: true
-show_travel_time: true
-
-# Custom sensors (optional)
-battery_sensor: sensor.phone_davide_battery_level
-watch_battery_sensor: sensor.watch_davide_battery_level
-activity_sensor: sensor.phone_davide_activity
-connection_sensor: sensor.phone_davide_connection_type
-distance_sensor: sensor.waze_davide
-
-# Styling
-card_background: 'rgba(255,255,255,0.05)'
-card_border_radius: '12px'
-```
-
-### Classic Layout Configuration
-
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-layout: classic
-aspect_ratio: '1/0.7'
-picture_size: 55
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_watch_battery: true
-show_activity: true
-show_connection: true
-show_distance: true
-show_travel_time: true
-
-# Element positioning
-battery_position: top-right
+aspect_ratio: '1/0.7'        # Card aspect ratio
+picture_size: 60              # Avatar size in px
+battery_position: top-right   # top-left/right, bottom-left/right, *-2 variants
 watch_battery_position: top-right-2
 activity_position: bottom-left
 distance_position: top-left
 travel_position: top-left-2
 connection_position: bottom-right
-
-# Font sizes
 name_font_size: '20px'
 state_font_size: '14px'
 battery_font_size: '13px'
 activity_font_size: '13px'
-
-# Styling
-card_background: 'rgba(255,255,255,0.05)'
-card_border_radius: '15px'
 ```
 
-### Available Positions (Classic only)
+**Available positions:** `top-left`, `top-right`, `bottom-left`, `bottom-right`, `top-left-2`, `top-right-2`, `bottom-left-2`, `bottom-right-2`
 
-- `top-left`, `top-right`
-- `bottom-left`, `bottom-right`
-- `top-left-2`, `top-right-2`
-- `bottom-left-2`, `bottom-right-2`
+### Compact Layout — Specific Options
+
+```yaml
+compact_width: 300            # Width in pixels (200–500)
+```
+
+### Modern Layout — Specific Options
+
+```yaml
+modern_picture_size: 45       # Avatar size in px (30–80)
+modern_name_font_size: '16px'
+modern_state_font_size: '13px'
+modern_travel_max_time: 60    # Max travel time for ring % calculation
+```
 
 ### Custom States with Colors
 
@@ -329,14 +280,14 @@ state:
     name: 🏡 Home
     styles:
       name:
-        color: '#7DDA9F'
-  
+        color: '#50A14F'
+
   - value: not_home
-    name: 🏃‍♂️ Away
+    name: 🚗 Away
     styles:
       name:
-        color: '#93ADCB'
-  
+        color: '#e45649'
+
   - value: work
     name: 🏢 Office
     entity_picture: /local/images/office.png
@@ -345,47 +296,39 @@ state:
         color: '#FFD700'
 ```
 
+> The accent color (avatar border, rings, glow effects) in Neon, Glass, Bio, and Holo layouts automatically follows the state color defined here.
+
 ---
 
 ## 📱 Mobile App Integration
 
 ### Required Permissions
 
-**iOS - Home Assistant Companion App:**
+**iOS — Home Assistant Companion App:**
 1. Location: Settings → App → Location → **Always**
 2. Motion & Fitness: Settings → Privacy → Motion & Fitness → **ON**
 
-**Android - Home Assistant Companion App:**
+**Android — Home Assistant Companion App:**
 1. Location: Always allow
 2. Physical Activity: Enable in app settings
 
-### Automatic Sensor Detection
+### Auto-Detection
 
-The card automatically finds these sensors:
+The card automatically detects sensors from the HA Companion App by reading `person.attributes.device_trackers`, finding the first device tracker with a `sensor.{prefix}_battery_level`, and using that prefix for all other sensors.
 
+**Example for `person.davide` with iPhone (`iphonedavide`):**
 ```
-sensor.phone_[name]_battery_level
-sensor.phone_[name]_activity
-sensor.phone_[name]_connection_type
-sensor.watch_[name]_battery_level
-```
-
-Where `[name]` is your person entity name without `person.` prefix.
-
-Example for `person.davide`:
-```
-sensor.phone_davide_battery_level
-sensor.phone_davide_activity
-sensor.phone_davide_connection_type
-sensor.watch_davide_battery_level
+sensor.iphonedavide_battery_level   → phone battery
+sensor.iphonedavide_activity        → activity
+sensor.iphonedavide_connection_type → connection type
 ```
 
-### Waze Integration
+The visual editor pre-fills all sensor pickers automatically — no manual configuration needed.
 
-For distance tracking:
+### Waze / Google Routes Integration
 
 1. Settings → Devices & Services → Add Integration
-2. Search **Waze Travel Time**
+2. Search **Waze Travel Time** (or Google Routes)
 3. Configure:
    - Origin: `zone.home`
    - Destination: `person.name`
@@ -393,9 +336,43 @@ For distance tracking:
 
 ---
 
+## 🗺️ Smart Travel Mode
+
+Configure two travel sensors for automatic direction switching:
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: modern
+
+# Direction 1: home → work
+distance_sensor: sensor.waze_davide_to_work
+travel_sensor: sensor.waze_davide_to_work
+show_distance: true
+show_travel_time: true
+
+# Direction 2: work → home
+distance_sensor_2: sensor.waze_davide_to_home
+travel_sensor_2: sensor.waze_davide_to_home
+show_distance_2: true
+show_travel_time_2: true
+
+# Zone name for direction 1
+zone_2: work
+```
+
+**Logic:**
+- Person **at home** → show direction 2 (home→work), hide direction 1
+- Person **at `zone_2`** (work) → show direction 1 (work→home), hide direction 2
+- Person **elsewhere** → both directions visible (with alternating animation)
+
+Supported in all 7 layouts.
+
+---
+
 ## 🎭 Examples
 
-### Modern Layout - Family Dashboard 🆕
+### Family Dashboard — Modern Layout
 
 ```yaml
 type: vertical-stack
@@ -403,39 +380,30 @@ cards:
   - type: custom:person-tracker-card
     entity: person.davide
     layout: modern
+    weather_entity: weather.home
+    show_weather: true
     modern_picture_size: 50
-    modern_name_font_size: '16px'
     state:
       - value: home
-        name: 🏡 Casa
+        name: 🏡 Home
         styles:
           name:
             color: '#50A14F'
       - value: not_home
-        name: 🚗 Fuori
+        name: 🚗 Away
         styles:
           name:
             color: '#e45649'
-    
+
   - type: custom:person-tracker-card
     entity: person.nunzia
     layout: modern
+    weather_entity: weather.home
+    show_weather: true
     modern_picture_size: 50
-    modern_name_font_size: '16px'
-    state:
-      - value: home
-        name: 🏡 Casa
-        styles:
-          name:
-            color: '#50A14F'
-      - value: not_home
-        name: 🚗 Fuori
-        styles:
-          name:
-            color: '#e45649'
 ```
 
-### Compact Grid - Multiple People
+### Multiple People — Compact Grid
 
 ```yaml
 type: grid
@@ -445,59 +413,45 @@ cards:
     entity: person.davide
     layout: compact
     compact_width: 280
-    
+
   - type: custom:person-tracker-card
     entity: person.nunzia
     layout: compact
     compact_width: 280
-    
+
   - type: custom:person-tracker-card
     entity: person.child
     layout: compact
     compact_width: 280
-    
+
   - type: custom:person-tracker-card
     entity: person.grandpa
     layout: compact
     compact_width: 280
 ```
 
-### Vertical Stack - Mobile View
+### Futuristic — Holographic 3D with Weather
 
 ```yaml
-type: vertical-stack
-cards:
-  - type: custom:person-tracker-card
-    entity: person.davide
-    layout: modern
-    
-  - type: custom:person-tracker-card
-    entity: person.nunzia
-    layout: modern
+type: custom:person-tracker-card
+entity: person.davide
+layout: holo
+weather_entity: weather.home
+show_weather: true
+state:
+  - value: home
+    name: 🏡 Home
+    styles:
+      name:
+        color: '#00ff88'
+  - value: not_home
+    name: 🚀 Away
+    styles:
+      name:
+        color: '#ff6b35'
 ```
 
-### Mixed Layout
-
-```yaml
-type: vertical-stack
-cards:
-  - type: custom:person-tracker-card
-    entity: person.davide
-    layout: classic
-    aspect_ratio: '1/1'
-    
-  - type: horizontal-stack
-    cards:
-      - type: custom:person-tracker-card
-        entity: person.child1
-        layout: modern
-        
-      - type: custom:person-tracker-card
-        entity: person.child2
-        layout: modern
-```
-
-### Minimal Modern (Sidebar)
+### Minimal Sidebar Card
 
 ```yaml
 type: custom:person-tracker-card
@@ -516,94 +470,129 @@ show_connection: false
 
 ### Card doesn't appear
 - Check browser console (F12) for errors
-- Verify resource is loaded in Dashboard → Resources
+- Verify resource is loaded: Settings → Dashboards → ⋮ → Resources
 - Hard refresh: Ctrl+Shift+R
 
 ### Sensors not found
-- Check Companion App is installed
+- Check Companion App is installed and has permissions
 - Verify sensor names in Developer Tools → States
 - Manually specify sensors in configuration
+
+### Editor shows old version after HACS update
+- The editor is loaded with a version-specific cache-busting parameter (`?v=1.3.9`)
+- Hard refresh the browser after any update
 
 ### Images don't show
 - Place files in `config/www/`
 - Use correct path: `/local/folder/file.png`
 - Restart Home Assistant if needed
 
-### Editor doesn't open
-- Ensure both JS files are loaded
-- Clear browser cache
-- Restart Home Assistant
+### Weather background not visible
+- Ensure `weather_entity` is set and `show_weather: true`
+- Check that `show_weather_background: true`
+- Verify the weather entity is in Developer Tools → States
 
 ### Layout doesn't change
-- Verify `layout: 'modern'` or `layout: 'compact'` or `layout: 'classic'`
-- Values are case-sensitive
+- Values are case-sensitive: `classic`, `compact`, `modern`, `neon`, `glass`, `bio`, `holo`
 - Clear cache and reload
-
-### Modern layout rings overlap text
-- Update to latest version (v1.2.0+)
-- Card now auto-expands based on indicators
 
 ---
 
 ## 📝 Changelog
 
-### v1.2.0 (2025-05-30) 🆕
-- ✨ **New Modern Layout** with circular progress indicators
-- 🔵 Circular SVG rings for battery, watch, distance, travel time
-- 🟢 State-colored picture border (green/red/orange)
+### v1.3.9 (2026-03-14)
+- ✨ **New Holographic 3D Layout (`holo`)** — Futuristic card with CSS 3D perspective, rotating rings + orbital dots, iridescent shimmer overlay, animated scan bar, corner tech decorations, and metric chips. Accent color adapts to state. Hover flattens to front view.
+- 🐛 Fixed holo layout picker not applying on click
+- 🐛 Fixed holo metric chips empty space (height alignment)
+- 🐛 Fixed holo pair animation overlap on travel/distance chips
+- 🐛 Fixed holo weather background z-index (now visible above shimmer)
+- 🐛 Fixed holo distance reading wrong property
+- 🐛 Fixed editor cache with HACS — editor now inherits `hacstag` from `import.meta.url`
+- 🌤️ Neon layout now shows weather icon + temperature + translated condition label
+
+### v1.3.7 (2026-03-13)
+- 🌊 **New Bioluminescence Layout (`bio`)** — Deep ocean theme with glowing orbs, rising particles, double pulsing ring, SVG battery fill, weather footer
+- 🌤️ Weather background/temperature split controls — show animated scene and temperature independently
+- 🌡️ Weather condition label in compact and modern layouts (icon + temp + translated state)
+- 🐛 Fixed state color picker not updating avatar border in classic/compact
+- 🐛 Fixed bio layout accent color not applied to avatar border
+- 🐛 Fixed dir2 pair animation desync
+- 🐛 Fixed weather text unreadable on light/bright backgrounds
+- 🐛 Fixed weather-active contrast class now applied to classic and modern
+
+### v1.3.6 (2026-03-11)
+- 🐛 Fixed editor not updating after HACS update (dynamic import now includes `?v=` parameter)
+- 🔧 `CARD_VERSION` promoted to top-level constant
+- 🏷️ Version badge added to visual editor header
+
+### v1.3.5 (2026-03-11)
+- 🔋 Glass layout: battery icon redesigned as SVG fill with percentage text; charging pulsing glow
+- 📶 Glass layout: connection type moved to header pill next to battery
+- 🌦️ Glass layout: weather bar at bottom with icon + temp + translated condition
+
+### v1.3.4 (2026-03-11)
+- ✨ **New Glassmorphism Layout (`glass`)** — Dark frosted-glass card with translucent chips, gradient orbs, animated status dot, per-state accent color
+- 🔧 `distance_unit` config option — override displayed unit (`km`, `mi`)
+
+### v1.3.3 (2026-03-11)
+- 🐛 Fixed distance sensor reading `state` instead of `attributes.distance` (Waze/Google Routes)
+- 🐛 Fixed modern layout pair-b ring overflow during alternating animation
+
+### v1.3.2 (2026-03-09)
+- 🏢 **Dual Travel Direction** — Smart home/work two-sensor system with automatic direction switching
+- 🌦️ **Rich Weather Animations** — 15 fully animated weather states (sunny, clear-night, cloudy, rainy, snowy, lightning, hail, fog, windy, and more)
+- 📍 Weather temperature positioning per layout
+- Seeded PRNG (`_rng(seed)`) for deterministic particle rendering
+
+### v1.3.1 (2026-03-07)
+- ✨ **New Neon Layout (`neon`)** — Cyberpunk dark theme with glowing neon badges and monospace font
+
+### v1.2.0 (2025-05-30)
+- ✨ **New Modern Layout** with circular SVG progress rings
+- 🟢 State-colored picture border
 - 🎯 Icon badges for activity and connection
-- ⚙️ Customizable font sizes for Modern layout
 - 📐 Auto-expanding responsive design
-- 🎨 Improved activity icon mapping with entity attribute support
 
 ### v1.1.2 (2025-01-25)
 - 📏 Dynamic distance unit from entity attributes
-- 🎯 Dynamic activity icon from entity attributes
-- 🔤 State and last changed font customization
+- 🔤 State and last-changed font customization
 - 🤖 Fixed Android WiFi detection
 
 ### v1.1.1 (2024-11-24)
 - 🌍 Complete multilanguage support (EN, IT, FR, DE)
-- 🔄 Automatic language detection from Home Assistant
 
 ### v1.1.0 (2024-11-23)
 - ✨ New compact layout mode
-- 📏 Configurable width for compact layout (200-500px)
 - ⌚ Watch battery support
 
 ### v1.0.0 (2024-11-22)
-- 🎉 Initial public release
-- ✨ Complete visual editor
-- 📱 Full Companion App support
-- 🎨 Customizable states
-- 📍 Waze integration
+- 🎉 Initial release — visual editor, Companion App support, custom states, Waze integration
 
 ---
 
 ## 🤝 Contributing
 
-Contributions welcome! Please:
+Contributions welcome!
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit changes (`git commit -m 'Add AmazingFeature'`)
 4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-MIT License - See [LICENSE](LICENSE) file
+MIT License — see [LICENSE](LICENSE)
 
 ---
 
 ## 💝 Support
 
 If you find this card useful:
-
 - ⭐ Star the repository
-- 🐛 Report bugs
+- 🐛 Report bugs via GitHub Issues
 - 💡 Suggest features
 - 🤝 Contribute code
 
@@ -630,33 +619,26 @@ If you find this card useful:
 
 ## ✨ Caratteristiche Principali
 
-- 🎨 **Tre Modalità di Layout**
-  - **Classic**: Completamente personalizzabile con elementi posizionabili
-  - **Compact**: Layout a griglia orizzontale per risparmiare spazio
-  - **Modern**: Design elegante con indicatori circolari di progresso 🆕
-- 📱 **Monitoraggio Batteria** - Batteria telefono con icona e colore dinamici
-- ⌚ **Batteria Smartwatch** - Supporto Apple Watch e altri smartwatch
-- 🚶 **Tracciamento Attività** - Walking, Running, Automotive, Stationary, Cycling
-- 📍 **Distanza da Casa** - Integrazione Waze
-- ⏱️ **Tempo di Viaggio** - Tempo stimato per raggiungere casa/lavoro
-- 📶 **Tipo Connessione** - Indicatore WiFi o rete mobile
-- 🎨 **Stati Personalizzabili** - Colori e immagini diverse per ogni posizione
-- 🖼️ **Immagini Personalizzate** - Supporto PNG/GIF con trasparenza
-- 🎯 **Editor Visuale Completo** - Configurazione tramite GUI
-- 🎨 **Altamente Personalizzabile** - Font, colori, dimensioni, background
+- 🎨 **Sette Modalità di Layout** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D
+- 🌦️ **Animazioni Meteo Ricche** — 15 stati meteo completamente animati come sfondo della card
+- 📱 **Rilevamento Automatico Sensori** — Trova automaticamente batteria, attività, connessione dall'app Companion
+- 🔋 **Monitoraggio Batteria** — Batteria telefono con icona e colore dinamici
+- ⌚ **Batteria Smartwatch** — Supporto Apple Watch e altri smartwatch
+- 🚶 **Tracciamento Attività** — Walking, Running, Automotive, Stationary, Cycling
+- 📍 **Distanza da Casa** — Integrazione Waze / Google Routes
+- ⏱️ **Modalità Viaggio Intelligente** — Sistema a due sensori bidirezionale (casa↔lavoro)
+- 📶 **Tipo Connessione** — Indicatore WiFi o rete mobile
+- 🎨 **Stati Personalizzabili** — Colori e immagini diverse per ogni posizione
+- 🖼️ **Immagini Personalizzate** — Supporto PNG/GIF con trasparenza
+- 🎯 **Editor Visuale Completo** — Configurazione tramite GUI in 4 lingue
+- 🌍 **Multilingua** — Italiano, Inglese, Francese, Tedesco
 
 ---
 
 ## 🎨 Modalità Layout
 
-### Layout Classic
-Card a dimensione intera con posizionamento elementi personalizzabile.
-
-**Perfetto per:**
-- Card dashboard grandi
-- Massima personalizzazione
-- Aspect ratio personalizzati
-- Elementi posizionabili liberamente
+### Classic
+Card a dimensione intera con elementi posizionabili liberamente.
 
 ```yaml
 type: custom:person-tracker-card
@@ -668,40 +650,18 @@ battery_position: top-right
 activity_position: bottom-left
 ```
 
-### Layout Compact
-Layout a griglia orizzontale con struttura fissa.
-
-**Perfetto per:**
-- Tracciamento di più persone
-- Dashboard con spazio limitato
-- Interfacce mobile
-- Visualizzazione densa di informazioni
+### Compact
+Layout a griglia orizzontale. Ideale per più persone affiancate.
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
 layout: compact
-compact_width: 300  # 200-500px
+compact_width: 300
 ```
 
-**Struttura layout:**
-```
-┌────────────────────────────┐
-│ 🖼️  Nome Persona          │
-│ 40px  📍 Posizione        │
-├────────────────────────────┤
-│ 🚶 📶 📱 ⌚ 🏠         │
-└────────────────────────────┘
-```
-
-### Layout Modern 🆕
-Design orizzontale elegante con indicatori circolari di progresso.
-
-**Perfetto per:**
-- Dashboard moderne e minimali
-- Rappresentazione visiva batteria/distanza
-- Interfacce pulite ed eleganti
-- Card responsive che si espandono automaticamente
+### Modern
+Card orizzontale elegante con anelli SVG circolari di progresso per batteria, distanza e tempo di viaggio.
 
 ```yaml
 type: custom:person-tracker-card
@@ -712,51 +672,80 @@ modern_name_font_size: '16px'
 modern_state_font_size: '13px'
 ```
 
-**Struttura layout:**
-```
-┌──────────────────────────────────────────────┐
-│  ┌───┐                                       │
-│  │🖼️│  NOME PERSONA   ⭕ ⭕ 🚶 📶 ⭕ ⭕  │
-│  └───┘  📍 Posizione   📱 ⌚ 🏃 📡 🏠 🚗  │
-└──────────────────────────────────────────────┘
-     ▲         ▲                    ▲
-   Foto    Nome/Stato       Indicatori Circolari
-  (bordo                    (Batteria, Watch,
-  colorato)                  Distanza, Viaggio)
+### Neon ✦
+Tema cyberpunk scuro con badge neon luminosi e font monospace.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: neon
 ```
 
-**Funzionalità Layout Modern:**
-- 🔵 **Anelli di Progresso Circolari** - Rappresentazione visiva di batteria %, distanza, tempo viaggio
-- 🟢 **Bordo Colorato per Stato** - Il bordo foto cambia in base allo stato (verde=casa, rosso=fuori, arancione=altro)
-- 🎯 **Badge Icone** - Attività e connessione mostrate come cerchi con icone
-- 📐 **Auto-Espandibile** - La larghezza card si adatta al numero di indicatori visibili
-- 🎨 **Font Personalizzabili** - Dimensioni font separate per nome e stato
+### Glass ◈
+Card glassmorphism con chip traslucidi, orb a gradiente e punto di stato animato. Il colore accentato si adatta allo stato della persona.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: glass
+```
+
+### Bioluminescence ◉
+Tema oceano profondo con orb luminosi animati, particelle ascendenti, doppio anello pulsante intorno all'avatar, riempimento batteria SVG e barra meteo in basso.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: bio
+```
+
+### Holographic 3D ◈
+Card futuristica con prospettiva CSS 3D reale — la card fluttua e si inclina nello spazio 3D con animazione continua. Anelli rotanti + punti orbitali intorno all'avatar, shimmer iridescente, barra di scansione animata, decorazioni tech agli angoli e chip metrici. Al passaggio del mouse si appiattisce.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: holo
+```
+
+---
+
+## 🌦️ Animazioni Meteo
+
+Abilita lo sfondo meteo animato fornendo un'entità `weather`:
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: modern
+weather_entity: weather.home
+show_weather: true
+show_weather_background: true
+show_weather_temperature: true
+```
+
+Funziona su tutti e 7 i layout. Le opzioni `show_weather_background` e `show_weather_temperature` sono indipendenti — puoi mostrare solo la scena animata, solo la temperatura, o entrambe.
 
 ---
 
 ## 📦 Installazione
 
-### Installazione via HACS (Consigliato)
-
-Assicurati di avere [HACS](https://hacs.xyz/) installato, questo ti permetterà di aggiornare facilmente.
-
-* Puoi aggiungere Person Tracker Card a HACS usando questo pulsante:
+### Via HACS (Consigliato)
 
 [![image](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)
 
 > [!NOTE]
-> Se il pulsante sopra non funziona, aggiungi `https://github.com/djdevil/person-tracker-card` come repository personalizzata di tipo **Dashboard** in HACS.
+> Se il pulsante non funziona, aggiungi `https://github.com/djdevil/person-tracker-card` come repository personalizzata di tipo **Dashboard** in HACS.
 
-* Clicca Installa sulla card `Person Tracker Card`.
-* Riavvia Home Assistant.
+1. Clicca Installa su `Person Tracker Card`.
+2. Riavvia Home Assistant.
 
 ### Installazione Manuale
 
 1. Scarica `person-tracker-card.js` e `person-tracker-card-editor.js`
 2. Copia in `config/www/person-tracker-card/`
 3. Aggiungi risorsa:
-   - Impostazioni → Dashboard → ⋮ → Risorse
-   - **+ AGGIUNGI RISORSA**
+   - Impostazioni → Dashboard → ⋮ → Risorse → **+ AGGIUNGI RISORSA**
    - URL: `/local/person-tracker-card/person-tracker-card.js`
    - Tipo: **Modulo JavaScript**
 4. Ricarica forzata browser (Ctrl+Shift+R)
@@ -770,27 +759,32 @@ Assicurati di avere [HACS](https://hacs.xyz/) installato, questo ti permetterà 
 1. Modifica dashboard → Aggiungi card
 2. Cerca **Person Tracker Card**
 3. Seleziona entità **person**
-4. Scegli **layout** (classic/compact/modern)
-5. Configura sensori e stile
+4. Scegli il **layout**
+5. Configura sensori e stile — i sensori vengono rilevati automaticamente dall'app Companion
 
 ### YAML Base
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-layout: modern  # oppure 'classic' o 'compact'
+layout: holo   # classic / compact / modern / neon / glass / bio / holo
 ```
 
-### Configurazione Layout Modern 🆕
+### Configurazione Completa con Meteo
 
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
 layout: modern
 
-# Opzioni visualizzazione
+# Meteo
+weather_entity: weather.home
+show_weather: true
+show_weather_background: true
+show_weather_temperature: true
+
+# Visualizzazione
 show_entity_picture: true
-show_person_name: true
 show_name: true
 show_battery: true
 show_watch_battery: true
@@ -799,25 +793,18 @@ show_connection: true
 show_distance: true
 show_travel_time: true
 
-# Specifiche layout modern
-modern_picture_size: 45           # Dimensione foto in px (30-80)
-modern_name_font_size: '16px'     # Dimensione font nome
-modern_state_font_size: '13px'    # Dimensione font stato/posizione
-modern_travel_max_time: 60        # Tempo max viaggio per calcolo anello
-
-# Sensori personalizzati (opzionale)
-battery_sensor: sensor.phone_davide_battery_level
+# Sensori personalizzati (opzionale — rilevati automaticamente)
+battery_sensor: sensor.iphonedavide_battery_level
 watch_battery_sensor: sensor.watch_davide_battery_level
-activity_sensor: sensor.phone_davide_activity
-connection_sensor: sensor.phone_davide_connection_type
+activity_sensor: sensor.iphonedavide_activity
+connection_sensor: sensor.iphonedavide_connection_type
 distance_sensor: sensor.waze_davide
-travel_sensor: sensor.waze_davide
 
 # Stile
 card_background: 'rgba(255,255,255,0.05)'
 card_border_radius: '15px'
 
-# Stati personalizzati con colori (il colore bordo segue lo stato)
+# Stati personalizzati
 state:
   - value: home
     name: 🏡 Casa
@@ -830,106 +817,10 @@ state:
       name:
         color: '#e45649'
   - value: work
-    name: 🏢 Ufficio
+    name: 🏢 Lavoro
     styles:
       name:
         color: '#ffa229'
-```
-
-### Configurazione Layout Compact
-
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-layout: compact
-compact_width: 300        # Larghezza in pixel (200-500)
-show_entity_picture: true
-show_name: true
-show_battery: true
-show_watch_battery: true
-show_activity: true
-show_connection: true
-show_distance: true
-show_travel_time: true
-
-# Sensori personalizzati (opzionale)
-battery_sensor: sensor.iphonedavide_battery_level
-watch_battery_sensor: sensor.watch_davide_battery_level
-activity_sensor: sensor.iphonedavide_activity
-connection_sensor: sensor.iphonedavide_connection_type
-distance_sensor: sensor.waze_davide
-
-# Stile
-card_background: 'rgba(255,255,255,0.05)'
-card_border_radius: '12px'
-```
-
-### Configurazione Layout Classic
-
-```yaml
-type: custom:person-tracker-card
-entity: person.davide
-layout: classic
-aspect_ratio: '1/0.7'
-picture_size: 55
-show_entity_picture: true
-show_name: true
-show_last_changed: true
-show_battery: true
-show_watch_battery: true
-show_activity: true
-show_connection: true
-show_distance: true
-show_travel_time: true
-
-# Posizionamento elementi
-battery_position: top-right
-watch_battery_position: top-right-2
-activity_position: bottom-left
-distance_position: top-left
-travel_position: top-left-2
-connection_position: bottom-right
-
-# Dimensioni font
-name_font_size: '20px'
-state_font_size: '14px'
-battery_font_size: '13px'
-activity_font_size: '13px'
-
-# Stile
-card_background: 'rgba(255,255,255,0.05)'
-card_border_radius: '15px'
-```
-
-### Posizioni Disponibili (Solo Classic)
-
-- `top-left`, `top-right`
-- `bottom-left`, `bottom-right`
-- `top-left-2`, `top-right-2`
-- `bottom-left-2`, `bottom-right-2`
-
-### Stati Personalizzati con Colori
-
-```yaml
-state:
-  - value: home
-    name: 🏡 Casa
-    styles:
-      name:
-        color: '#7DDA9F'
-  
-  - value: not_home
-    name: 🏃‍♂️ Fuori
-    styles:
-      name:
-        color: '#93ADCB'
-  
-  - value: Lavoro Davide
-    name: 🏢 Ufficio
-    entity_picture: /local/foto-pkg/davidelavoro.gif
-    styles:
-      name:
-        color: '#FFD700'
 ```
 
 ---
@@ -938,41 +829,31 @@ state:
 
 ### Permessi Richiesti
 
-**iOS - App Home Assistant Companion:**
+**iOS — App Home Assistant Companion:**
 1. Posizione: Impostazioni → App → Posizione → **Sempre**
 2. Movimento e Fitness: Impostazioni → Privacy → Movimento e Fitness → **ON**
 
-**Android - App Home Assistant Companion:**
+**Android — App Home Assistant Companion:**
 1. Posizione: Consenti sempre
 2. Attività Fisica: Abilita nelle impostazioni app
 
-### Rilevamento Automatico Sensori
+### Rilevamento Automatico
 
-La card trova automaticamente questi sensori:
+La card rileva automaticamente i sensori leggendo `person.attributes.device_trackers`, trovando il primo tracker con `sensor.{prefisso}_battery_level` e usando quel prefisso per tutti gli altri sensori.
 
+**Esempio per `person.davide` con iPhone (`iphonedavide`):**
 ```
-sensor.phone_[nome]_battery_level
-sensor.phone_[nome]_activity
-sensor.phone_[nome]_connection_type
-sensor.watch_[nome]_battery_level
-```
-
-Dove `[nome]` è il nome della tua entità person senza `person.`
-
-Esempio per `person.davide`:
-```
-sensor.phone_davide_battery_level
-sensor.phone_davide_activity
-sensor.phone_davide_connection_type
-sensor.watch_davide_battery_level
+sensor.iphonedavide_battery_level   → batteria telefono
+sensor.iphonedavide_activity        → attività
+sensor.iphonedavide_connection_type → tipo connessione
 ```
 
-### Integrazione Waze
+L'editor visuale pre-compila tutti i picker automaticamente.
 
-Per il tracciamento distanza:
+### Integrazione Waze / Google Routes
 
 1. Impostazioni → Dispositivi e Servizi → Aggiungi Integrazione
-2. Cerca **Waze Travel Time**
+2. Cerca **Waze Travel Time** (o Google Routes)
 3. Configura:
    - Origine: `zone.home`
    - Destinazione: `person.nome`
@@ -980,9 +861,39 @@ Per il tracciamento distanza:
 
 ---
 
+## 🗺️ Modalità Viaggio Intelligente
+
+Configura due sensori per il cambio automatico di direzione:
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+
+# Direzione 1: casa → lavoro
+distance_sensor: sensor.waze_davide_al_lavoro
+travel_sensor: sensor.waze_davide_al_lavoro
+show_distance: true
+show_travel_time: true
+
+# Direzione 2: lavoro → casa
+distance_sensor_2: sensor.waze_davide_a_casa
+travel_sensor_2: sensor.waze_davide_a_casa
+show_distance_2: true
+show_travel_time_2: true
+
+zone_2: work
+```
+
+**Logica:**
+- Persona **a casa** → mostra direzione 2 (casa→lavoro), nasconde direzione 1
+- Persona **a `zone_2`** (lavoro) → mostra direzione 1 (lavoro→casa), nasconde direzione 2
+- Persona **altrove** → entrambe le direzioni visibili con animazione alternata
+
+---
+
 ## 🎭 Esempi
 
-### Layout Modern - Dashboard Famiglia 🆕
+### Dashboard Famiglia — Modern con Meteo
 
 ```yaml
 type: vertical-stack
@@ -990,8 +901,9 @@ cards:
   - type: custom:person-tracker-card
     entity: person.davide
     layout: modern
+    weather_entity: weather.home
+    show_weather: true
     modern_picture_size: 50
-    modern_name_font_size: '16px'
     state:
       - value: home
         name: 🏡 Casa
@@ -1003,26 +915,16 @@ cards:
         styles:
           name:
             color: '#e45649'
-    
+
   - type: custom:person-tracker-card
     entity: person.nunzia
     layout: modern
+    weather_entity: weather.home
+    show_weather: true
     modern_picture_size: 50
-    modern_name_font_size: '16px'
-    state:
-      - value: home
-        name: 🏡 Casa
-        styles:
-          name:
-            color: '#50A14F'
-      - value: not_home
-        name: 🚗 Fuori
-        styles:
-          name:
-            color: '#e45649'
 ```
 
-### Griglia Compact - Più Persone
+### Griglia Compact — Più Persone
 
 ```yaml
 type: grid
@@ -1032,59 +934,24 @@ cards:
     entity: person.davide
     layout: compact
     compact_width: 280
-    
+
   - type: custom:person-tracker-card
     entity: person.nunzia
     layout: compact
     compact_width: 280
-    
+
   - type: custom:person-tracker-card
     entity: person.bambino
     layout: compact
     compact_width: 280
-    
+
   - type: custom:person-tracker-card
     entity: person.nonno
     layout: compact
     compact_width: 280
 ```
 
-### Stack Verticale - Vista Mobile
-
-```yaml
-type: vertical-stack
-cards:
-  - type: custom:person-tracker-card
-    entity: person.davide
-    layout: modern
-    
-  - type: custom:person-tracker-card
-    entity: person.nunzia
-    layout: modern
-```
-
-### Layout Misto
-
-```yaml
-type: vertical-stack
-cards:
-  - type: custom:person-tracker-card
-    entity: person.davide
-    layout: classic
-    aspect_ratio: '1/1'
-    
-  - type: horizontal-stack
-    cards:
-      - type: custom:person-tracker-card
-        entity: person.figlio1
-        layout: modern
-        
-      - type: custom:person-tracker-card
-        entity: person.figlio2
-        layout: modern
-```
-
-### Modern Minimale (Sidebar)
+### Card Minimal Sidebar
 
 ```yaml
 type: custom:person-tracker-card
@@ -1103,94 +970,102 @@ show_connection: false
 
 ### La card non appare
 - Controlla console browser (F12) per errori
-- Verifica risorsa caricata in Dashboard → Risorse
+- Verifica risorsa caricata in Impostazioni → Dashboard → Risorse
 - Ricarica forzata: Ctrl+Shift+R
 
 ### Sensori non trovati
-- Controlla Companion App installata
+- Controlla che l'app Companion sia installata e abbia i permessi
 - Verifica nomi sensori in Strumenti Sviluppatore → Stati
 - Specifica manualmente i sensori nella configurazione
+
+### Editor mostra versione vecchia dopo aggiornamento HACS
+- Il file editor viene caricato con parametro cache-busting (`?v=1.3.9`)
+- Esegui ricarica forzata del browser dopo ogni aggiornamento
 
 ### Immagini non appaiono
 - Inserisci file in `config/www/`
 - Usa percorso corretto: `/local/cartella/file.png`
 - Riavvia Home Assistant se necessario
 
-### Editor non si apre
-- Assicurati che entrambi i file JS siano caricati
-- Svuota cache browser
-- Riavvia Home Assistant
+### Sfondo meteo non visibile
+- Verifica che `weather_entity` sia impostata e `show_weather: true`
+- Controlla `show_weather_background: true`
+- Verifica l'entità meteo in Strumenti Sviluppatore → Stati
 
 ### Layout non cambia
-- Verifica `layout: 'modern'` o `layout: 'compact'` o `layout: 'classic'`
-- I valori sono case-sensitive
+- I valori sono case-sensitive: `classic`, `compact`, `modern`, `neon`, `glass`, `bio`, `holo`
 - Svuota cache e ricarica
-
-### I cerchi del layout Modern si sovrappongono al testo
-- Aggiorna all'ultima versione (v1.2.0+)
-- La card ora si espande automaticamente in base agli indicatori
 
 ---
 
 ## 📝 Changelog
 
-### v1.2.0 (2025-05-30) 🆕
-- ✨ **Nuovo Layout Modern** con indicatori circolari di progresso
-- 🔵 Anelli SVG circolari per batteria, watch, distanza, tempo viaggio
-- 🟢 Bordo foto colorato in base allo stato (verde/rosso/arancione)
-- 🎯 Badge icone per attività e connessione
-- ⚙️ Dimensioni font personalizzabili per layout Modern
-- 📐 Design responsive auto-espandibile
-- 🎨 Mapping icone attività migliorato con supporto attributi entità
+### v1.3.9 (2026-03-14)
+- ✨ **Nuovo Layout Holographic 3D (`holo`)** — Card futuristica con prospettiva CSS 3D, anelli rotanti, shimmer iridescente, barra di scansione e chip metrici
+- 🐛 Vari fix per il layout holo (picker, chip, animazioni, meteo, distanza)
+- 🐛 Fix cache editor con HACS
+- 🌤️ Neon: ora mostra icona meteo + temperatura + etichetta condizione tradotta
 
-### v1.1.2 (2025-01-25)
-- 📏 Unità distanza dinamica dagli attributi entità
-- 🎯 Icona attività dinamica dagli attributi entità
-- 🔤 Personalizzazione font stato e last changed
-- 🤖 Corretto rilevamento WiFi Android
+### v1.3.7 (2026-03-13)
+- 🌊 **Nuovo Layout Bioluminescence (`bio`)** — Tema oceano profondo con orb luminosi, particelle, anello pulsante, batteria SVG, barra meteo
+- 🌤️ Controlli separati per sfondo meteo e temperatura
+- 🌡️ Etichetta condizione meteo in compact e modern
+- 🐛 Vari fix (colore stato su bordo avatar, desync animazione dir2, contrasto testo meteo)
 
-### v1.1.1 (2024-11-24)
-- 🌍 Supporto multilingua completo (EN, IT, FR, DE)
-- 🔄 Rilevamento automatico lingua da Home Assistant
+### v1.3.6 (2026-03-11)
+- 🐛 Fix editor non aggiornato dopo HACS update
+- 🏷️ Badge versione nell'editor visuale
 
-### v1.1.0 (2024-11-23)
-- ✨ Nuova modalità layout compact
-- 📏 Larghezza configurabile per layout compact (200-500px)
-- ⌚ Supporto batteria smartwatch
+### v1.3.5 (2026-03-11)
+- 🔋 Glass: icona batteria SVG con percentuale; barra meteo in basso
+
+### v1.3.4 (2026-03-11)
+- ✨ **Nuovo Layout Glassmorphism (`glass`)** — Card vetro satinato con chip traslucidi e accento per stato
+
+### v1.3.3 (2026-03-11)
+- 🐛 Fix lettura distanza da `attributes.distance` (Waze/Google Routes)
+
+### v1.3.2 (2026-03-09)
+- 🏢 **Modalità Viaggio Doppia Direzione** — Sistema automatico casa↔lavoro
+- 🌦️ **Animazioni Meteo Ricche** — 15 stati animati (sole, notte, pioggia, neve, fulmine, grandine, nebbia, vento…)
+
+### v1.3.1 (2026-03-07)
+- ✨ **Nuovo Layout Neon (`neon`)** — Tema cyberpunk scuro con badge neon e font monospace
+
+### v1.2.0 (2025-05-30)
+- ✨ **Nuovo Layout Modern** con anelli SVG circolari di progresso
+
+### v1.1.x (2024–2025)
+- Multilingua (EN, IT, FR, DE), layout compact, supporto smartwatch, rilevamento WiFi Android
 
 ### v1.0.0 (2024-11-22)
-- 🎉 Prima release pubblica
-- ✨ Editor visuale completo
-- 📱 Supporto completo Companion App
-- 🎨 Stati personalizzabili
-- 📍 Integrazione Waze
+- 🎉 Prima release — editor visuale, supporto Companion App, stati personalizzabili, integrazione Waze
 
 ---
 
 ## 🤝 Contribuire
 
-Contributi benvenuti! Per favore:
+Contributi benvenuti!
 
 1. Fai Fork del repository
-2. Crea feature branch (`git checkout -b feature/FunzionalitàFica`)
-3. Committa modifiche (`git commit -m 'Aggiungi FunzionalitàFica'`)
-4. Push al branch (`git push origin feature/FunzionalitàFica`)
-5. Apri Pull Request
+2. Crea un feature branch (`git checkout -b feature/FunzionalitàFica`)
+3. Committa (`git commit -m 'Aggiungi FunzionalitàFica'`)
+4. Push (`git push origin feature/FunzionalitàFica`)
+5. Apri una Pull Request
 
 ---
 
 ## 📄 Licenza
 
-Licenza MIT - Vedi file [LICENSE](LICENSE)
+Licenza MIT — vedi file [LICENSE](LICENSE)
 
 ---
 
 ## 💝 Supporto
 
 Se trovi utile questa card:
-
 - ⭐ Stella il repository
-- 🐛 Segnala bug
+- 🐛 Segnala bug tramite GitHub Issues
 - 💡 Suggerisci funzionalità
 - 🤝 Contribuisci al codice
 
