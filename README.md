@@ -1,10 +1,14 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.3.8-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.3.9-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and three layout modes.
+
+
+## 📑 All Theme With Meteo 🆕
+![Person Tracker Card](images/Screenshot 2026-03-14 153952.png)
 
 ## 📑 Classic Layout
 ![Person Tracker Card](images/preview.png)
@@ -14,6 +18,8 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ## 📑 Modern Layout 🆕
 ![Person Tracker Card](images/modern.png)
+
+
 
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
