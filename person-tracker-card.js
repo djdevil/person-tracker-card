@@ -1,7 +1,7 @@
-// Person Tracker Card v1.3.8 - Multilanguage Version
+// Person Tracker Card v1.3.9 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
-// v1.3.8: Editor cache fix: import.meta.url extracts hacstag from HACS and passes it to editor;
+// v1.3.9: Editor cache fix: import.meta.url extracts hacstag from HACS and passes it to editor;
 //         Neon layout: weather conditions (icon + label) added next to temperature
 // v1.3.7: Fix editor cache after HACS update: dynamic import now includes ?v= param; CARD_VERSION
 //         promoted to top-level constant; version badge added to editor UI
@@ -21,7 +21,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.8 Multilanguage loading...");
+console.log("Person Tracker Card v1.3.9 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -251,7 +251,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.3.8';
+const CARD_VERSION = '1.3.9';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -1050,6 +1050,13 @@ class PersonTrackerCard extends LitElement {
         .pair-b-bio{animation:pair-b-bio 8s ease-in-out infinite}
         .sensor-pair-bio{position:relative;flex-shrink:0;display:inline-flex}
         .sensor-pair-bio>*{position:absolute;top:0;left:0}`,
+      holo: `
+        @keyframes pair-a-holo{0%,48%{opacity:1}50%,98%{opacity:0}100%{opacity:1}}
+        @keyframes pair-b-holo{0%,48%{opacity:0}50%,98%{opacity:1}100%{opacity:0}}
+        .pair-a-holo{animation:pair-a-holo 8s linear infinite}
+        .pair-b-holo{animation:pair-b-holo 8s linear infinite}
+        .sensor-pair-holo{position:relative;flex-shrink:0;min-width:44px;height:42px}
+        .sensor-pair-holo>*{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}`,
     };
     return styles[theme] || '';
   }
@@ -1102,7 +1109,8 @@ class PersonTrackerCard extends LitElement {
     const floatingTemp = showTemp && this._weatherTemp
       && this.config.layout !== 'classic' && this.config.layout !== 'neon'
       && this.config.layout !== 'glass' && this.config.layout !== 'bio'
-      && this.config.layout !== 'modern' && this.config.layout !== 'compact';
+      && this.config.layout !== 'modern' && this.config.layout !== 'compact'
+      && this.config.layout !== 'holo';
     return html`
       ${showBg ? html`<div class="${bgClass}" @click=${clickHandler}>${particles}</div>` : ''}
       ${floatingTemp ? html`<span class="weather-bg-temp">${this._weatherTemp}</span>` : ''}
@@ -1363,6 +1371,8 @@ class PersonTrackerCard extends LitElement {
       return this._renderGlassLayout();
     } else if (this.config.layout === 'bio') {
       return this._renderBioLayout();
+    } else if (this.config.layout === 'holo') {
+      return this._renderHoloLayout();
     } else {
       return this._renderClassicLayout();
     }
@@ -2682,6 +2692,207 @@ class PersonTrackerCard extends LitElement {
     `;
   }
 
+  _renderHoloLayout() {
+    const entity = this.hass.states[this.config.entity];
+    const stateConfig = this._getCurrentStateConfig();
+    const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
+    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
+
+    const stateAccent = entity.state === 'home' ? '#00d4ff' : entity.state === 'not_home' ? '#7f50ff' : '#00d4ff';
+    const accentColor = stateConfig?.styles?.name?.color || stateAccent;
+    const _hexRgb = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); return m ? `${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)}` : null; };
+    const accentRgb = _hexRgb(accentColor) || '0,212,255';
+
+    const batteryLevel = Math.round(this._batteryLevel);
+    const batteryColor = this._getBatteryColor(this._batteryLevel);
+    const watchBatteryLevel = Math.round(this._watchBatteryLevel);
+    const watchBatteryColor = this._getBatteryColor(this._watchBatteryLevel);
+    const travelTime = Math.round(this._travelTime);
+    const travelTime2 = Math.round(this._travelTime2);
+    const travelColor = this._getTravelTimeColor(travelTime);
+    const travelColor2 = this._getTravelTimeColor(travelTime2);
+    const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const distPrecision = this.config.distance_precision ?? 1;
+
+    const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
+    const hasDir2 = !!(this.config.travel_sensor_2 || this.config.distance_sensor_2);
+    const isHome = entity.state === 'home';
+    const smartMode = this.config.smart_travel_mode !== false;
+    const zone2Name = this.config.zone_2
+      ? (this.hass.states[this.config.zone_2]?.attributes?.friendly_name || this.config.zone_2.replace('zone.', '').replace(/_/g, ' '))
+      : null;
+    const isZone2 = zone2Name && entity.state.toLowerCase() === zone2Name.toLowerCase();
+    const showDir1 = !smartMode || !hasDir2 || !isZone2;
+    const showDir2 = hasDir2 && (!smartMode || !isHome || !hasDir1);
+    const hasDist1 = showDir1 && this.config.show_distance && this._distanceSensorFound;
+    const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
+    const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
+    const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
+    const pairDir1 = hasDist1 && hasTravel1;
+    const pairDir2 = hasDist2 && hasTravel2;
+
+    const weatherLabel = this._weatherState ? this._t(`weather.${this._weatherState}`) : '';
+    const weatherLine = (this.config.show_weather && this.config.show_weather_temperature !== false && (this._weatherTemp || weatherLabel))
+      ? [this._weatherTemp, weatherLabel].filter(Boolean).join(' · ')
+      : '';
+    const lastChanged = this.config.show_last_changed ? this._getRelativeTime(entity.last_changed) : '';
+
+    return html`
+      <style>${this._getPairAnimationStyles('holo')}</style>
+      <ha-card style="
+        background: transparent;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 40px rgba(${accentRgb},0.07);
+        border-radius: ${this.config.card_border_radius};
+        overflow: visible;
+        perspective: 900px;
+        perspective-origin: 50% 40%;
+      ">
+        <div class="holo-scene" style="border-radius:${this.config.card_border_radius};">
+          <!-- Card body -->
+          <div class="holo-body">
+            <!-- Weather background (above shimmer, below content) -->
+            <div style="position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none;">${this._renderWeatherBg()}</div>
+            <!-- Shimmer -->
+            <div class="holo-shimmer"></div>
+            <!-- Top glow line -->
+            <div class="holo-topline" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.55) 30%,rgba(${accentRgb},0.65) 50%,rgba(${accentRgb},0.55) 70%,transparent);"></div>
+            <!-- Scan -->
+            <div class="holo-scan"><div class="holo-scan-bar"></div></div>
+            <!-- Left grid deco -->
+            <div class="holo-grid-deco">
+              <div class="holo-grid" style="background-image:linear-gradient(rgba(${accentRgb},0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(${accentRgb},0.04) 1px,transparent 1px);background-size:14px 14px;"></div>
+              <div class="holo-corner holo-tl" style="border-color:rgba(${accentRgb},0.5);"></div>
+              <div class="holo-corner holo-br" style="border-color:rgba(${accentRgb},0.5);"></div>
+            </div>
+            <!-- Vertical separator -->
+            <div class="holo-sep" style="background:linear-gradient(180deg,transparent,rgba(${accentRgb},0.28) 20%,rgba(${accentRgb},0.22) 80%,transparent);"></div>
+
+            <!-- Main layout -->
+            <div class="holo-main">
+              <!-- Left: Avatar -->
+              <div class="holo-left">
+                <div class="holo-avatar-wrap" style="transform:translateZ(22px);">
+                  <div class="holo-ring-outer" style="background:linear-gradient(#0c0c1e,#0c0c1e) padding-box,linear-gradient(135deg,${accentColor},#7f50ff,${accentColor}) border-box;"></div>
+                  <div class="holo-ring-mid" style="border-color:rgba(${accentRgb},0.22);"></div>
+                  <div class="holo-avatar-pic clickable" @click=${()=>this._handleTapAction()}
+                       style="border-color:rgba(${accentRgb},0.38);box-shadow:0 0 20px rgba(${accentRgb},0.22),0 0 40px rgba(127,80,255,0.12);">
+                    ${this.config.show_entity_picture && entityPicture
+                      ? html`<img src="${entityPicture}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">`
+                      : html`<span style="font-size:28px;">👤</span>`}
+                  </div>
+                  <div class="holo-orbit-dot" style="background:rgba(${accentRgb},1);box-shadow:0 0 6px rgba(${accentRgb},1),0 0 12px rgba(${accentRgb},0.8);animation:holo-orbit-go 3s linear infinite;"></div>
+                  <div class="holo-orbit-dot" style="background:#7f50ff;box-shadow:0 0 6px #7f50ff,0 0 12px #7f50ff;animation:holo-orbit-go2 5s linear infinite;"></div>
+                </div>
+              </div>
+
+              <!-- Right: Text + Metrics -->
+              <div class="holo-right">
+                <div style="transform:translateZ(30px);">
+                  <div class="holo-live-chip" style="background:rgba(${accentRgb},0.08);border-color:rgba(${accentRgb},0.28);color:rgba(${accentRgb},0.85);">
+                    <div class="holo-live-dot" style="background:rgba(${accentRgb},1);"></div>
+                    LIVE
+                  </div>
+                  ${this.config.show_person_name ? html`
+                    <div class="holo-name" style="text-shadow:0 0 20px rgba(${accentRgb},0.35),0 0 40px rgba(127,80,255,0.2);">${personName.toUpperCase()}</div>
+                  ` : ''}
+                  ${this.config.show_name ? html`
+                    <div class="holo-loc" style="background:linear-gradient(90deg,${accentColor},#7f50ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${displayLocation}</div>
+                  ` : ''}
+                  <div class="holo-sub">
+                    ${lastChanged ? html`<span>${lastChanged}</span>` : ''}
+                    ${weatherLine ? html`${lastChanged ? html`<span style="opacity:0.3">·</span>` : ''}<span>🌤 ${weatherLine}</span>` : ''}
+                  </div>
+                </div>
+
+                <div class="holo-metrics" style="transform:translateZ(26px);">
+                  ${this.config.show_battery && batteryLevel > 0 ? html`
+                    <div class="holo-metric">
+                      <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                      <div class="holo-mv" style="color:${batteryColor};">${batteryLevel}%</div>
+                      <div class="holo-mu">🔋</div>
+                    </div>
+                  ` : ''}
+                  ${this.config.show_watch_battery && watchBatteryLevel > 0 ? html`
+                    <div class="holo-metric">
+                      <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                      <div class="holo-mv" style="color:${watchBatteryColor};">${watchBatteryLevel}%</div>
+                      <div class="holo-mu">⌚</div>
+                    </div>
+                  ` : ''}
+                  ${this.config.show_connection && this._connectionType ? html`
+                    <div class="holo-metric">
+                      <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                      <ha-icon icon="${connectionIcon}" style="--mdc-icon-size:13px;color:rgba(${accentRgb},0.75);"></ha-icon>
+                      <div class="holo-mu">${this._isWifiConnection(this._connectionType) ? 'WiFi' : 'LTE'}</div>
+                    </div>
+                  ` : ''}
+                  ${pairDir1 ? html`
+                    <div class="holo-metric sensor-pair-holo">
+                      <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                      <div class="pair-a-holo">
+                        <div class="holo-mv" style="color:${travelColor};">${travelTime}m</div>
+                        <div class="holo-mu">🚗</div>
+                      </div>
+                      <div class="pair-b-holo">
+                        <div class="holo-mv">${parseFloat(this._distanceFromHome?.toFixed(distPrecision))} ${this._distanceUnit}</div>
+                        <div class="holo-mu">📍</div>
+                      </div>
+                    </div>
+                  ` : html`
+                    ${hasTravel1 ? html`
+                      <div class="holo-metric">
+                        <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                        <div class="holo-mv" style="color:${travelColor};">${travelTime}m</div>
+                        <div class="holo-mu">🚗</div>
+                      </div>
+                    ` : ''}
+                    ${hasDist1 ? html`
+                      <div class="holo-metric">
+                        <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                        <div class="holo-mv">${parseFloat(this._distanceFromHome?.toFixed(distPrecision))} ${this._distanceUnit}</div>
+                        <div class="holo-mu">📍</div>
+                      </div>
+                    ` : ''}
+                  `}
+                  ${pairDir2 ? html`
+                    <div class="holo-metric sensor-pair-holo">
+                      <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                      <div class="pair-a-holo" style="animation-delay:-4s;">
+                        <div class="holo-mv" style="color:${travelColor2};">${travelTime2}m</div>
+                        <div class="holo-mu">🚗</div>
+                      </div>
+                      <div class="pair-b-holo" style="animation-delay:-4s;">
+                        <div class="holo-mv">${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))} ${this._distanceUnit2}</div>
+                        <div class="holo-mu">📍</div>
+                      </div>
+                    </div>
+                  ` : html`
+                    ${hasTravel2 ? html`
+                      <div class="holo-metric">
+                        <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                        <div class="holo-mv" style="color:${travelColor2};">${travelTime2}m</div>
+                        <div class="holo-mu">🚗</div>
+                      </div>
+                    ` : ''}
+                    ${hasDist2 ? html`
+                      <div class="holo-metric">
+                        <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                        <div class="holo-mv">${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))} ${this._distanceUnit2}</div>
+                        <div class="holo-mu">📍</div>
+                      </div>
+                    ` : ''}
+                  `}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
+
   static get styles() {
     return css`
       :host {
@@ -3791,6 +4002,170 @@ class PersonTrackerCard extends LitElement {
       .bio-bat-charging svg {
         animation: bio-bat-pulse 1.6s ease-in-out infinite;
       }
+
+      /* ── Holographic 3D Theme ─────────────────────────── */
+      @keyframes holo-float {
+        0%,100% { transform: rotateX(8deg)  rotateY(-6deg) translateZ(0px); }
+        25%      { transform: rotateX(4deg)  rotateY(-10deg) translateZ(8px); }
+        50%      { transform: rotateX(10deg) rotateY(-3deg)  translateZ(4px); }
+        75%      { transform: rotateX(5deg)  rotateY(-8deg)  translateZ(10px); }
+      }
+      @keyframes holo-shimmer-spin { to { transform: rotate(360deg); } }
+      @keyframes holo-scan-move { 0%{top:-60px} 100%{top:110%} }
+      @keyframes holo-ring-spin  { to { transform: rotate(360deg); } }
+      @keyframes holo-ring-spin-rev { to { transform: rotate(-360deg); } }
+      @keyframes holo-orbit-go  {
+        0%  { transform: rotate(0deg)   translateX(42px); }
+        100%{ transform: rotate(360deg) translateX(42px); }
+      }
+      @keyframes holo-orbit-go2 {
+        0%  { transform: rotate(120deg) translateX(42px); }
+        100%{ transform: rotate(480deg) translateX(42px); }
+      }
+      @keyframes holo-live-pulse { 0%,100%{opacity:1} 50%{opacity:0.15} }
+      @keyframes holo-top-shine  { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+      .holo-scene {
+        width: 100%;
+        transform-style: preserve-3d;
+        animation: holo-float 6s ease-in-out infinite;
+        position: relative;
+        transition: transform 0.3s ease;
+      }
+      .holo-scene:hover {
+        animation: none;
+        transform: rotateX(0deg) rotateY(0deg) translateZ(0px);
+      }
+      .holo-body {
+        border-radius: inherit;
+        background: linear-gradient(155deg, rgba(12,12,30,0.97) 0%, rgba(8,8,20,0.99) 100%);
+        border: 1px solid rgba(255,255,255,0.07);
+        overflow: hidden;
+        position: relative;
+      }
+      .holo-shimmer {
+        position: absolute; inset: -50%;
+        background: conic-gradient(
+          from 0deg at 60% 40%,
+          rgba(127,80,255,0.07) 0deg,
+          rgba(0,212,255,0.09) 60deg,
+          rgba(125,218,159,0.07) 120deg,
+          rgba(255,100,150,0.05) 180deg,
+          rgba(255,200,50,0.06) 240deg,
+          rgba(0,150,255,0.08) 300deg,
+          rgba(127,80,255,0.07) 360deg
+        );
+        animation: holo-shimmer-spin 8s linear infinite;
+        pointer-events: none; z-index: 0;
+      }
+      .holo-topline {
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        animation: holo-top-shine 4s ease-in-out infinite;
+        pointer-events: none; z-index: 2;
+      }
+      .holo-scan {
+        position: absolute; inset: 0;
+        pointer-events: none; overflow: hidden; z-index: 1;
+      }
+      .holo-scan-bar {
+        position: absolute; left: 0; right: 0; height: 60px;
+        background: linear-gradient(180deg, transparent, rgba(0,212,255,0.022), transparent);
+        animation: holo-scan-move 5s linear infinite;
+      }
+      .holo-grid-deco {
+        position: absolute; left: 0; top: 0; bottom: 0; width: 110px;
+        pointer-events: none; z-index: 0;
+      }
+      .holo-grid { position: absolute; inset: 0; }
+      .holo-corner {
+        position: absolute; width: 14px; height: 14px;
+        border-style: solid; border-width: 0;
+      }
+      .holo-tl { top: 10px; left: 10px; border-top-width: 1.5px; border-left-width: 1.5px; }
+      .holo-br { bottom: 10px; right: 0;  border-bottom-width: 1.5px; border-right-width: 1.5px; }
+      .holo-sep {
+        position: absolute; left: 110px; top: 12px; bottom: 12px; width: 1px;
+        pointer-events: none; z-index: 1;
+      }
+      .holo-main {
+        position: relative; z-index: 2;
+        display: flex; flex-direction: row;
+        padding: 14px 14px 14px 0;
+        gap: 0; align-items: center;
+      }
+      .holo-left {
+        width: 110px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .holo-avatar-wrap {
+        position: relative; width: 68px; height: 68px;
+      }
+      .holo-ring-outer {
+        position: absolute; inset: -12px; border-radius: 50%;
+        border: 1.5px solid transparent;
+        animation: holo-ring-spin 4s linear infinite;
+      }
+      .holo-ring-mid {
+        position: absolute; inset: -6px; border-radius: 50%;
+        border: 1px solid rgba(0,212,255,0.18);
+        animation: holo-ring-spin-rev 6s linear infinite;
+      }
+      .holo-avatar-pic {
+        position: absolute; inset: 0; border-radius: 50%;
+        background: linear-gradient(135deg,#1a1a35,#0d0d20);
+        border: 2px solid rgba(0,212,255,0.3);
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      .holo-orbit-dot {
+        position: absolute;
+        width: 6px; height: 6px; border-radius: 50%;
+        top: 50%; left: 50%;
+        margin-left: -3px; margin-top: -3px;
+        transform-origin: 0 0;
+      }
+      .holo-right {
+        flex: 1; padding-left: 12px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        gap: 8px;
+      }
+      .holo-live-chip {
+        display: inline-flex; align-items: center; gap: 4px;
+        border: 1px solid; border-radius: 20px; padding: 2px 8px;
+        font-size: 8px; letter-spacing: 0.12em;
+        margin-bottom: 4px;
+      }
+      .holo-live-dot {
+        width: 4px; height: 4px; border-radius: 50%;
+        animation: holo-live-pulse 1.2s ease-in-out infinite;
+      }
+      .holo-name {
+        font-size: 16px; font-weight: 800; color: #fff;
+        letter-spacing: 0.04em; line-height: 1.1;
+      }
+      .holo-loc {
+        font-size: 11px; font-weight: 500; margin-top: 3px;
+      }
+      .holo-sub {
+        font-size: 9px; color: rgba(255,255,255,0.28); margin-top: 2px;
+        display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+      }
+      .holo-metrics {
+        display: flex; gap: 5px; flex-wrap: wrap; align-items: flex-start;
+      }
+      .holo-metric {
+        border-radius: 8px; padding: 0; height: 42px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        position: relative; overflow: hidden;
+        min-width: 44px; flex-shrink: 0;
+      }
+      .holo-metric-line {
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      }
+      .holo-mv { font-size: 12px; font-weight: 700; color: #fff; line-height: 1; }
+      .holo-mu { font-size: 8px; color: rgba(255,255,255,0.32); line-height: 1; }
     `;
   }
 }
@@ -3799,7 +4174,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.8 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.3.9 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

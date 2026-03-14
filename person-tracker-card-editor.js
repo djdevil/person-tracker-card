@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.3.8: No editor changes
+// v1.3.9: Added Holographic 3D layout (holo) to picker, validation and translations
 // v1.3.7: Version badge added to editor UI top-right
 // v1.3.3: No editor changes
 // v1.3.2: Full IT/EN/FR/DE translations for neon/weather sections; auto-detect sensors via mobile_app prefix; editor fields auto-populated
@@ -120,6 +120,8 @@ class EditorLocalizationHelper {
         'section.glass_description': 'Tema glassmorphism scuro con chip traslucidi, orbs colorati e dot di stato animato. Il colore accent si adatta automaticamente alla zona corrente della persona.',
         'section.bio_options': 'Opzioni Layout Bioluminescenza',
         'section.bio_description': 'Tema oceano profondo con orbs bioluminescenti animati, particelle che salgono dal basso e doppio anello pulsante attorno all\'avatar. Il colore accent cambia automaticamente con la zona.',
+        'section.holo_options': 'Opzioni Layout Holographic 3D',
+        'section.holo_description': 'Tema olografico con card inclinata in 3D, anelli rotanti attorno all\'avatar, scanner animato e sfondo shimmer iridescente. Il colore accent cambia con lo stato della persona.',
         'section.weather': '🌤 Meteo',
         'editor.show_weather': 'Mostra meteo',
         'editor.weather_entity': 'Entità meteo',
@@ -245,6 +247,8 @@ class EditorLocalizationHelper {
         'section.glass_description': 'Dark glassmorphism theme with translucent chips, colored orbs and animated status dot. Accent color adapts automatically to the person\'s current zone.',
         'section.bio_options': 'Bioluminescence Layout Options',
         'section.bio_description': 'Deep ocean theme with animated bioluminescent orbs, rising particles and double pulse ring around the avatar. Accent color changes automatically with the zone.',
+        'section.holo_options': 'Holographic 3D Layout Options',
+        'section.holo_description': 'Holographic theme with a 3D tilted card, rotating rings around the avatar, animated scanner and iridescent shimmer background. Accent color changes with person state.',
         'section.weather': '🌤 Weather',
         'editor.show_weather': 'Show weather',
         'editor.weather_entity': 'Weather entity',
@@ -370,6 +374,8 @@ class EditorLocalizationHelper {
         'section.glass_description': 'Thème glassmorphisme sombre avec chips translucides, orbes colorés et point de statut animé. La couleur accent s\'adapte automatiquement à la zone actuelle.',
         'section.bio_options': 'Options Layout Bioluminescence',
         'section.bio_description': 'Thème océan profond avec orbes bioluminescents animés, particules montantes et double anneau pulsant autour de l\'avatar. La couleur accent change automatiquement avec la zone.',
+        'section.holo_options': 'Options Layout Holographique 3D',
+        'section.holo_description': 'Thème holographique avec carte inclinée en 3D, anneaux rotatifs autour de l\'avatar, scanner animé et fond shimmer iridescent. La couleur accent change avec l\'état de la personne.',
         'section.weather': '🌤 Météo',
         'editor.show_weather': 'Afficher météo',
         'editor.weather_entity': 'Entité météo',
@@ -495,6 +501,8 @@ class EditorLocalizationHelper {
         'section.glass_description': 'Dunkles Glassmorphismus-Thema mit durchscheinenden Chips, farbigen Orbs und animiertem Statuspunkt. Die Akzentfarbe passt sich automatisch der aktuellen Zone an.',
         'section.bio_options': 'Biolumineszenz Layout-Optionen',
         'section.bio_description': 'Tiefsee-Thema mit animierten biolumineszenten Orbs, aufsteigenden Partikeln und doppeltem Pulsring um den Avatar. Die Akzentfarbe ändert sich automatisch mit der Zone.',
+        'section.holo_options': 'Holographic 3D Layout-Optionen',
+        'section.holo_description': 'Holografisches Thema mit 3D-geneigter Karte, rotierenden Ringen um den Avatar, animiertem Scanner und irisierendem Shimmer-Hintergrund. Die Akzentfarbe ändert sich mit dem Personenstatus.',
         'section.weather': '🌤 Wetter',
         'editor.show_weather': 'Wetter anzeigen',
         'editor.weather_entity': 'Wetterentität',
@@ -946,7 +954,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.3.8</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.3.9</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1021,6 +1029,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="neon">Neon ✦</mwc-list-item>
           <mwc-list-item value="glass">Glass ◈</mwc-list-item>
           <mwc-list-item value="bio">Bioluminescence ◉</mwc-list-item>
+          <mwc-list-item value="holo">Holographic 3D ◈</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -1700,6 +1709,15 @@ class PersonTrackerCardEditor extends LitElement {
         </div>
       ` : ''}
 
+      ${this._config.layout === 'holo' ? html`
+        <div class="section">
+          <div class="section-title">${this._t('section.holo_options')}</div>
+          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
+            ${this._t('section.holo_description')}
+          </p>
+        </div>
+      ` : ''}
+
       <!-- Modern Layout Options -->
       ${this._config.layout === 'modern' ? html`
         <div class="section">
@@ -1917,12 +1935,19 @@ class PersonTrackerCardEditor extends LitElement {
 
     ev.stopPropagation();
 
-    // HA 2025: ha-select emette request-selected sull'item cliccato
-    // Leggiamo il valore dall'item (ev.target) invece che da target.value
-    const item = ev.target;
-    const value = item && item.getAttribute ? item.getAttribute('value') : ev.target.value;
+    // Skip deselect events — request-selected fires twice: once for the newly
+    // selected item (selected=true) and once for the previously selected item
+    // (selected=false). Processing the second event would reset the layout back.
+    if (ev.detail && ev.detail.selected === false) return;
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio')) {
+    // HA 2025: ha-select emette request-selected sull'item cliccato
+    // Try multiple value sources for robustness
+    const item = ev.target;
+    const value = ev.detail?.value
+      || item?.value
+      || (item && item.getAttribute ? item.getAttribute('value') : null);
+
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -1960,7 +1985,7 @@ class PersonTrackerCardEditor extends LitElement {
     const validTriggerValues = ['all', 'entity', 'custom'];
 
     // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio'];
+    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio', 'holo'];
 
     // Allowed values for positions
     const validPositions = [
@@ -2035,6 +2060,7 @@ class PersonTrackerCardEditor extends LitElement {
   }
 
   _updateStateColor(index, color) {
+    if (!color || !/^#[0-9A-Fa-f]{6}$/.test(color)) return;
     const states = [...(this._config.state || [])];
     states[index] = {
       ...states[index],

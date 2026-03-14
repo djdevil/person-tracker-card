@@ -3,9 +3,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.8] - 2026-03-13
+## [1.3.9] - 2026-03-14
+
+### Added
+- ✨ **New Holographic 3D Layout (`holo`)** — Futuristic holographic card with real CSS 3D perspective: the card floats and tilts in 3D space with a continuous animation. Features rotating rings + orbital dots around the avatar, iridescent shimmer overlay (conic gradient), animated scan bar, corner tech decorations, metric chips with top glow lines, and a weather/time subline. Accent color (rings, shimmer tint, separator) adapts automatically to the person's state and supports custom state colors. Hover flattens the card to front view.
 
 ### Fixed
+- 🐛 **Holo layout picker not applying on click** — `request-selected` fires twice (select + deselect); the deselect event was resetting the layout back to the previous value. Fixed with a guard on `ev.detail.selected === false`. Also added `'holo'` to the whitelist and improved value reading with multiple fallback sources.
+- 🐛 **Holo metric chips empty space** — Chips were stretching to match the tallest sibling due to flex default `align-items:stretch`. Fixed with explicit `height:42px` on all chips and `align-items:flex-start` on the metrics row.
+- 🐛 **Holo pair animation overlap ("613km")** — Both travel and distance values were briefly visible during keyframe crossover. Tightened keyframes to 2% overlap and switched to `linear` timing for near-instant transition.
+- 🐛 **Holo weather background not visible** — Weather animation was rendered at `z-index:0`, same layer as the shimmer overlay. Raised to `z-index:2` so it shows above the shimmer but below the card content.
+- 🐛 **Holo distance showing wrong property** — Used non-existent `this._distance1/2` instead of `this._distanceFromHome` / `this._distanceFromHome2` + `_distanceUnit`.
 - 🐛 **Editor cache with HACS** — The editor JS file now inherits the `hacstag` query parameter from the main card file via `import.meta.url`, ensuring HACS cache busting is correctly propagated to the editor on every update. Fallback to `?v=CARD_VERSION` for non-HACS installations.
 - 🌤️ **Neon layout: weather conditions added** — The neon layout now shows the weather icon, temperature and translated condition label (e.g. `☀ 14°C · Soleggiato`) instead of just the temperature value.
 
