@@ -8,7 +8,7 @@ Advanced card for Home Assistant that displays detailed information about people
 
 
 ## 📑 All Theme With Meteo 🆕
-![Person Tracker Card](images/Screenshot 2026-03-14 153952.png)
+![Person Tracker Card](images/alltheme.png)
 
 ## 📑 Classic Layout
 ![Person Tracker Card](images/preview.png)
