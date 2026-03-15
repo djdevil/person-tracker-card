@@ -1,19 +1,46 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.3.9-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **seven layout modes**.
 
-## Layout Gallery
+---
 
-| Classic | Compact | Modern |
-|---------|---------|--------|
-| ![Classic](images/preview.png) | ![Compact](images/compact2.png) | ![Modern](images/modern.png) |
+### 📐 Classic
+![Classic Layout](images/preview.png)
 
-| Neon ✦ | Glass ◈ | Bioluminescence ◉ | Holographic 3D ◈ |
-|--------|---------|-------------------|-----------------|
-| ![Neon](images/neon.png) | ![Glass](images/glass.png) | ![Bio](images/bio.png) | ![Holo](images/holo.png) |
+---
+
+### 📦 Compact
+![Compact Layout](images/compact2.png)
+
+---
+
+### ✨ Modern
+![Modern Layout](images/modern.png)
+
+---
+
+### ✦ Neon
+![Neon Layout](images/neon.png)
+
+---
+
+### ◈ Glass
+![Glass Layout](images/glass.png)
+
+---
+
+### ◉ Bioluminescence
+![Bioluminescence Layout](images/bio.png)
+
+---
+
+### ◈ Holographic 3D
+![Holographic 3D Layout](images/holo.png)
+
+---
 
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
@@ -499,6 +526,11 @@ show_connection: false
 ---
 
 ## 📝 Changelog
+
+### v1.4.0 (2026-03-15)
+- 🎨 **`weather_text_color`** — New option to override the color of weather text (temperature, icon, condition label) across all 7 layouts
+- 🎨 **`last_changed_color`** — New option to override the color of the last-updated timestamp (classic, neon, holo)
+- 🖊️ Both colors exposed in the visual editor's Weather section (color swatch + hex input, 4 languages)
 
 ### v1.3.9 (2026-03-14)
 - ✨ **New Holographic 3D Layout (`holo`)** — Futuristic card with CSS 3D perspective, rotating rings + orbital dots, iridescent shimmer overlay, animated scan bar, corner tech decorations, and metric chips. Accent color adapts to state. Hover flattens to front view.
@@ -999,6 +1031,11 @@ show_connection: false
 ---
 
 ## 📝 Changelog
+
+### v1.4.0 (2026-03-15)
+- 🎨 **`weather_text_color`** — Nuova opzione per sovrascrivere il colore del testo meteo (temperatura, icona, condizione) su tutti e 7 i layout
+- 🎨 **`last_changed_color`** — Nuova opzione per sovrascrivere il colore del timestamp di aggiornamento (classic, neon, holo)
+- 🖊️ Entrambi i colori esposti nell'editor visuale nella sezione Meteo (swatch + input hex, 4 lingue)
 
 ### v1.3.9 (2026-03-14)
 - ✨ **Nuovo Layout Holographic 3D (`holo`)** — Card futuristica con prospettiva CSS 3D, anelli rotanti, shimmer iridescente, barra di scansione e chip metrici
