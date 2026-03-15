@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-15
+
+### Added
+- 🎨 **`weather_text_color`** — New config option to override the color of weather text (temperature, icon and condition label) across all 7 layouts. Leave empty to use the layout's default color.
+- 🎨 **`last_changed_color`** — New config option to override the color of the last-updated timestamp (classic, neon, holo). Leave empty to use the layout's default color.
+- 🖊️ **Editor color pickers** — `weather_text_color` in the Weather section; `last_changed_color` in the Style tab. Color swatch + hex input, translations in IT/EN/FR/DE.
+
+### Fixed
+- 🐛 **`weather_text_color` / `last_changed_color` not applying in neon and holo** — Invalid lit-html v2 pattern: conditional attribute injection (`<div${condition ? ' style="..."' : ''}>`) is silently ignored. Changed to valid expression inside existing attribute value (`style="${...}"`).
+- 🐛 **Classic `last_changed_color` overridden by weather** — `.weather-active .entity-last-changed` had `color: #fff !important` which overrode any inline style. Removed `!important` so custom color wins.
+- 🐛 **Classic layout: clicking weather text did nothing** — `.weather-bg-temp-classic` had `pointer-events: none`. Added `@click` handler, `pointer-events: auto` and `cursor: pointer` to the weather div.
+- 🐛 **Holo layout: metric chips not clickable** — Battery, watch battery, connection, travel and distance chips had no `@click` handlers. All chips now open their respective entity's more-info panel on click.
+- 🐛 **Bio layout: `last_changed_color` not applied** — The timestamp div had a hardcoded `rgba` color in the inline style, ignoring `last_changed_color`. Now uses the config value with the accent-based rgba as fallback.
+- 🐛 **Glass layout: `last_changed_color` not applied** — The `glass-time` div had no inline style. Now applies `last_changed_color` when set.
+- 🐛 **Compact layout: last-changed timestamp missing** — `show_last_changed` was not rendered at all in the compact layout. Now shows as a small sub-line below the location, respecting `last_changed_color` and `show_last_changed` toggle.
+
+---
+
 ## [1.3.9] - 2026-03-14
 
 ### Added

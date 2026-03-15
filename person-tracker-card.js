@@ -1,6 +1,8 @@
-// Person Tracker Card v1.3.9 - Multilanguage Version
+// Person Tracker Card v1.4.0 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.0: weather_text_color and last_changed_color options (card + editor) — custom text colors
+//         for weather label and last-updated timestamp across all 7 layouts
 // v1.3.9: Editor cache fix: import.meta.url extracts hacstag from HACS and passes it to editor;
 //         Neon layout: weather conditions (icon + label) added next to temperature
 // v1.3.7: Fix editor cache after HACS update: dynamic import now includes ?v= param; CARD_VERSION
@@ -21,7 +23,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.3.9 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.0 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -251,7 +253,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.3.9';
+const CARD_VERSION = '1.4.0';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -432,6 +434,8 @@ class PersonTrackerCard extends LitElement {
       weather_entity: null,
       show_weather_background: true,
       show_weather_temperature: true,
+      weather_text_color: null,
+      last_changed_color: null,
       // Modern layout options
       modern_picture_size: 40,
       modern_ring_size: 38,
@@ -1451,13 +1455,13 @@ class PersonTrackerCard extends LitElement {
               <div class="content-bottom">
                 ${this.config.show_last_changed ? html`
                   <div class="entity-last-changed"
-                       style="font-size: ${this.config.last_changed_font_size};">
+                       style="font-size: ${this.config.last_changed_font_size};${this.config.last_changed_color ? ` color: ${this.config.last_changed_color};` : ''}">
                     ${this._getRelativeTime(entity.last_changed)}
                   </div>
                 ` : ''}
                 ${this.config.show_weather && this.config.show_weather_temperature !== false && this._weatherTemp ? html`
-                  <div class="weather-bg-temp-classic" style="display:flex;align-items:center;gap:4px;">
-                    <ha-icon icon="${({'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','partlycloudy':'mdi:weather-partly-cloudy','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','rainy':'mdi:weather-rainy','snowy-rainy':'mdi:weather-snowy-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','exceptional':'mdi:alert-circle-outline'})[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:12px;color:rgba(255,255,255,0.8);"></ha-icon>
+                  <div class="weather-bg-temp-classic clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)} style="display:flex;align-items:center;gap:4px;cursor:pointer;pointer-events:auto;${this.config.weather_text_color ? `color:${this.config.weather_text_color};` : ''}">
+                    <ha-icon icon="${({'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','partlycloudy':'mdi:weather-partly-cloudy','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','rainy':'mdi:weather-rainy','snowy-rainy':'mdi:weather-snowy-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','exceptional':'mdi:alert-circle-outline'})[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:12px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.8)'};"></ha-icon>
                     <span>${this._weatherTemp}${this._weatherState ? ' · ' + this._t('weather.' + this._weatherState) : ''}</span>
                   </div>
                 ` : ''}
@@ -1650,11 +1654,14 @@ class PersonTrackerCard extends LitElement {
 
           <div class="compact-location clickable" @click=${() => this._handleTapAction()} style="color: ${stateStyles.color || 'var(--secondary-text-color)'}; cursor: pointer; font-size: ${locationFontSize}px;">
             ${displayLocation}
+            ${this.config.show_last_changed ? html`
+              <div style="font-size:9px;color:${this.config.last_changed_color || 'rgba(255,255,255,0.45)'};margin-top:1px;letter-spacing:0.3px;line-height:1.2;">${this._getRelativeTime(entity.last_changed)}</div>
+            ` : ''}
           </div>
           ${this.config.show_weather && this._weatherState && this.config.show_weather_temperature !== false ? html`
             <div style="grid-area:weather;display:flex;align-items:center;gap:3px;opacity:0.7;align-self:start;">
-              <ha-icon icon="${({'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','partlycloudy':'mdi:weather-partly-cloudy','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','rainy':'mdi:weather-rainy','snowy-rainy':'mdi:weather-snowy-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','exceptional':'mdi:alert-circle-outline'})[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:11px;color:rgba(255,255,255,0.75);"></ha-icon>
-              <span style="font-size:10px;color:rgba(255,255,255,0.75);line-height:1;">${this._weatherTemp ? `${this._weatherTemp}` : ''}${this._weatherTemp && this._t(`weather.${this._weatherState}`) ? ' · ' : ''}${this._t(`weather.${this._weatherState}`)}</span>
+              <ha-icon icon="${({'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','partlycloudy':'mdi:weather-partly-cloudy','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','rainy':'mdi:weather-rainy','snowy-rainy':'mdi:weather-snowy-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','exceptional':'mdi:alert-circle-outline'})[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:11px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.75)'};"></ha-icon>
+              <span style="font-size:10px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.75)'};line-height:1;">${this._weatherTemp ? `${this._weatherTemp}` : ''}${this._weatherTemp && this._t(`weather.${this._weatherState}`) ? ' · ' : ''}${this._t(`weather.${this._weatherState}`)}</span>
             </div>
           ` : ''}
 
@@ -1892,8 +1899,8 @@ class PersonTrackerCard extends LitElement {
             ` : ''}
             ${this.config.show_weather && this._weatherState && this.config.show_weather_temperature !== false ? html`
               <div style="display:flex;align-items:center;gap:3px;margin-top:3px;opacity:0.75;">
-                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:12px;color:rgba(255,255,255,0.7);"></ha-icon>
-                <span style="font-size:10px;color:rgba(255,255,255,0.7);line-height:1;">${this._weatherTemp ? `${this._weatherTemp}` : ''}${this._weatherTemp && modernWeatherLabel ? ' · ' : ''}${modernWeatherLabel}</span>
+                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:12px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.7)'};"></ha-icon>
+                <span style="font-size:10px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.7)'};line-height:1;">${this._weatherTemp ? `${this._weatherTemp}` : ''}${this._weatherTemp && modernWeatherLabel ? ' · ' : ''}${modernWeatherLabel}</span>
               </div>
             ` : ''}
           </div>
@@ -2142,10 +2149,10 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
             ${this.config.show_last_changed ? html`
-              <div class="neon-time">${this._getRelativeTime(entity.last_changed)}</div>
+              <div class="neon-time" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${this._getRelativeTime(entity.last_changed)}</div>
             ` : ''}
             ${this.config.show_weather && this.config.show_weather_temperature !== false && (this._weatherTemp || this._weatherState) ? html`
-              <div class="neon-temp" style="display:flex;align-items:center;gap:4px;">
+              <div class="neon-temp" style="display:flex;align-items:center;gap:4px;${this.config.weather_text_color ? `color:${this.config.weather_text_color};text-shadow:none;` : ''}">
                 ${this._weatherState ? html`<ha-icon icon="${neonWeatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:11px;opacity:0.7;"></ha-icon>` : ''}
                 ${this._weatherTemp ? html`<span>${this._weatherTemp}</span>` : ''}
                 ${neonWeatherLabel ? html`<span style="opacity:0.6;">· ${neonWeatherLabel}</span>` : ''}
@@ -2331,7 +2338,7 @@ class PersonTrackerCard extends LitElement {
                   <span class="glass-zone-text">${displayLocation}</span>
                 </div>
               ` : ''}
-              ${this.config.show_last_changed ? html`<div class="glass-time">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
+              ${this.config.show_last_changed ? html`<div class="glass-time" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
 
             ${this.config.show_battery || this.config.show_connection ? html`
@@ -2456,8 +2463,9 @@ class PersonTrackerCard extends LitElement {
 
           ${this.config.show_weather && this._weatherState && this.config.show_weather_temperature !== false ? html`
             <div class="glass-weather-bar">
-              <div class="glass-weather-bar-left clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)}>
-                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:14px;color:rgba(255,255,255,0.45);"></ha-icon>
+              <div class="glass-weather-bar-left clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)}
+                   style="${this.config.weather_text_color ? `color:${this.config.weather_text_color};` : ''}">
+                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:14px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.45)'};"></ha-icon>
                 <span>${this._weatherTemp ? `${this._weatherTemp} · ` : ''}${weatherLabel}</span>
               </div>
             </div>
@@ -2561,7 +2569,7 @@ class PersonTrackerCard extends LitElement {
             <div class="clickable" @click=${() => this._handleTapAction()} style="flex:1;min-width:0;">
               ${this.config.show_person_name ? html`<div class="bio-name">${personName}</div>` : ''}
               ${this.config.show_name ? html`<div class="bio-zone" style="color:rgba(${sensorRgb},0.65);">◉ ${displayLocation}</div>` : ''}
-              ${this.config.show_last_changed ? html`<div style="font-size:10px;color:rgba(${sensorRgb},0.35);margin-top:2px;letter-spacing:0.5px;">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
+              ${this.config.show_last_changed ? html`<div style="font-size:10px;color:${this.config.last_changed_color || `rgba(${sensorRgb},0.35)`};margin-top:2px;letter-spacing:0.5px;">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
 
             ${this.config.show_battery || this.config.show_connection ? html`
@@ -2679,8 +2687,9 @@ class PersonTrackerCard extends LitElement {
           <!-- Weather footer -->
           ${this.config.show_weather && this._weatherState && this.config.show_weather_temperature !== false ? html`
             <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(${sensorRgb},0.1);display:flex;justify-content:space-between;align-items:center;">
-              <div class="clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)} style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:rgba(${sensorRgb},0.35);">
-                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:13px;color:rgba(${sensorRgb},0.35);"></ha-icon>
+              <div class="clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)}
+                   style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;color:${this.config.weather_text_color || `rgba(${sensorRgb},0.35)`};">
+                <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:13px;color:${this.config.weather_text_color || `rgba(${sensorRgb},0.35)`};"></ha-icon>
                 <span>${this._weatherTemp ? `${this._weatherTemp} · ` : ''}${weatherLabel}</span>
               </div>
               <span style="font-size:9px;color:rgba(${sensorRgb},0.2);letter-spacing:1px;">◎ LIVE</span>
@@ -2801,35 +2810,35 @@ class PersonTrackerCard extends LitElement {
                     <div class="holo-loc" style="background:linear-gradient(90deg,${accentColor},#7f50ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${displayLocation}</div>
                   ` : ''}
                   <div class="holo-sub">
-                    ${lastChanged ? html`<span>${lastChanged}</span>` : ''}
-                    ${weatherLine ? html`${lastChanged ? html`<span style="opacity:0.3">·</span>` : ''}<span>🌤 ${weatherLine}</span>` : ''}
+                    ${lastChanged ? html`<span style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${lastChanged}</span>` : ''}
+                    ${weatherLine ? html`${lastChanged ? html`<span style="opacity:0.3">·</span>` : ''}<span class="clickable" style="cursor:pointer;${this.config.weather_text_color ? `color:${this.config.weather_text_color};` : ''}" @click=${() => this._showMoreInfo(this.config.weather_entity)}>🌤 ${weatherLine}</span>` : ''}
                   </div>
                 </div>
 
                 <div class="holo-metrics" style="transform:translateZ(26px);">
                   ${this.config.show_battery && batteryLevel > 0 ? html`
-                    <div class="holo-metric">
+                    <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <div class="holo-mv" style="color:${batteryColor};">${batteryLevel}%</div>
                       <div class="holo-mu">🔋</div>
                     </div>
                   ` : ''}
                   ${this.config.show_watch_battery && watchBatteryLevel > 0 ? html`
-                    <div class="holo-metric">
+                    <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <div class="holo-mv" style="color:${watchBatteryColor};">${watchBatteryLevel}%</div>
                       <div class="holo-mu">⌚</div>
                     </div>
                   ` : ''}
                   ${this.config.show_connection && this._connectionType ? html`
-                    <div class="holo-metric">
+                    <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <ha-icon icon="${connectionIcon}" style="--mdc-icon-size:13px;color:rgba(${accentRgb},0.75);"></ha-icon>
                       <div class="holo-mu">${this._isWifiConnection(this._connectionType) ? 'WiFi' : 'LTE'}</div>
                     </div>
                   ` : ''}
                   ${pairDir1 ? html`
-                    <div class="holo-metric sensor-pair-holo">
+                    <div class="holo-metric sensor-pair-holo clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <div class="pair-a-holo">
                         <div class="holo-mv" style="color:${travelColor};">${travelTime}m</div>
@@ -2842,14 +2851,14 @@ class PersonTrackerCard extends LitElement {
                     </div>
                   ` : html`
                     ${hasTravel1 ? html`
-                      <div class="holo-metric">
+                      <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                         <div class="holo-mv" style="color:${travelColor};">${travelTime}m</div>
                         <div class="holo-mu">🚗</div>
                       </div>
                     ` : ''}
                     ${hasDist1 ? html`
-                      <div class="holo-metric">
+                      <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                         <div class="holo-mv">${parseFloat(this._distanceFromHome?.toFixed(distPrecision))} ${this._distanceUnit}</div>
                         <div class="holo-mu">📍</div>
@@ -2857,7 +2866,7 @@ class PersonTrackerCard extends LitElement {
                     ` : ''}
                   `}
                   ${pairDir2 ? html`
-                    <div class="holo-metric sensor-pair-holo">
+                    <div class="holo-metric sensor-pair-holo clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;animation-delay:-4s;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <div class="pair-a-holo" style="animation-delay:-4s;">
                         <div class="holo-mv" style="color:${travelColor2};">${travelTime2}m</div>
@@ -2870,14 +2879,14 @@ class PersonTrackerCard extends LitElement {
                     </div>
                   ` : html`
                     ${hasTravel2 ? html`
-                      <div class="holo-metric">
+                      <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                         <div class="holo-mv" style="color:${travelColor2};">${travelTime2}m</div>
                         <div class="holo-mu">🚗</div>
                       </div>
                     ` : ''}
                     ${hasDist2 ? html`
-                      <div class="holo-metric">
+                      <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                         <div class="holo-mv">${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))} ${this._distanceUnit2}</div>
                         <div class="holo-mu">📍</div>
@@ -3202,9 +3211,12 @@ class PersonTrackerCard extends LitElement {
 
       /* ── Classic weather contrast ── */
       .weather-active .entity-person-name,
-      .weather-active .entity-state-name,
-      .weather-active .entity-last-changed {
+      .weather-active .entity-state-name {
         color: #fff !important;
+        text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
+      }
+      .weather-active .entity-last-changed {
+        color: #fff;
         text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
       }
       .weather-active .entity-picture img {

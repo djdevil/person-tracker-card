@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.3.9: Added Holographic 3D layout (holo) to picker, validation and translations
+// v1.4.0: weather_text_color picker in weather section; last_changed_color picker in style section
 // v1.3.7: Version badge added to editor UI top-right
 // v1.3.3: No editor changes
 // v1.3.2: Full IT/EN/FR/DE translations for neon/weather sections; auto-detect sensors via mobile_app prefix; editor fields auto-populated
@@ -127,6 +127,10 @@ class EditorLocalizationHelper {
         'editor.weather_entity': 'Entità meteo',
         'editor.show_weather_background': 'Mostra sfondo meteo animato',
         'editor.show_weather_temperature': 'Mostra condizioni e temperatura',
+        'editor.weather_text_color': 'Colore testo meteo',
+        'editor.weather_text_color_description': 'Colore di temperatura, icona e condizione. Lascia vuoto per usare il colore predefinito del layout.',
+        'editor.last_changed_color': 'Colore testo aggiornamento',
+        'editor.last_changed_color_description': 'Colore del timestamp di ultimo aggiornamento. Lascia vuoto per usare il colore predefinito.',
         'section.weather_description': 'Aggiunge uno sfondo animato alla card (pioggia, neve, sole, stelle, fulmini…). Funziona su tutti i layout.',
         'section.travel_sensor_2': '🏢 Sensori Casa ↔ Lavoro',
         'section.travel_sensor_2_description': 'Sensori 1 (casa→lavoro): visibili a casa e in transito, nascosti al lavoro. Sensori 2 (lavoro→casa): visibili al lavoro e in transito, nascosti a casa. Disattiva la modalità smart per mostrare sempre entrambi.',
@@ -254,6 +258,10 @@ class EditorLocalizationHelper {
         'editor.weather_entity': 'Weather entity',
         'editor.show_weather_background': 'Show animated weather background',
         'editor.show_weather_temperature': 'Show conditions and temperature',
+        'editor.weather_text_color': 'Weather text color',
+        'editor.weather_text_color_description': 'Color of temperature, icon and condition label. Leave empty to use the layout default.',
+        'editor.last_changed_color': 'Last updated text color',
+        'editor.last_changed_color_description': 'Color of the last-updated timestamp. Leave empty to use the layout default.',
         'section.weather_description': 'Adds an animated weather background to the card (rain, snow, sun, stars, lightning…). Works on all layouts.',
         'section.travel_sensor_2': '🏢 Home ↔ Work Sensors',
         'section.travel_sensor_2_description': 'Sensor 1 (home→work): visible at home and in transit, hidden at work. Sensor 2 (work→home): visible at work and in transit, hidden at home. Disable smart mode to always show both.',
@@ -381,6 +389,10 @@ class EditorLocalizationHelper {
         'editor.weather_entity': 'Entité météo',
         'editor.show_weather_background': 'Afficher fond météo animé',
         'editor.show_weather_temperature': 'Afficher conditions et température',
+        'editor.weather_text_color': 'Couleur du texte météo',
+        'editor.weather_text_color_description': 'Couleur de la température, de l\'icône et de la condition. Laissez vide pour la couleur par défaut du layout.',
+        'editor.last_changed_color': 'Couleur du texte de mise à jour',
+        'editor.last_changed_color_description': 'Couleur du timestamp de dernière mise à jour. Laissez vide pour la couleur par défaut.',
         'section.weather_description': 'Ajoute un fond animé à la carte (pluie, neige, soleil, étoiles, foudre…). Fonctionne sur tous les layouts.',
         'section.travel_sensor_2': '🏢 Capteurs Maison ↔ Travail',
         'section.travel_sensor_2_description': 'Capteur 1 (maison→travail): visible à la maison et en transit, masqué au travail. Capteur 2 (travail→maison): visible au travail et en transit, masqué à la maison. Désactivez le mode smart pour toujours afficher les deux.',
@@ -508,6 +520,10 @@ class EditorLocalizationHelper {
         'editor.weather_entity': 'Wetterentität',
         'editor.show_weather_background': 'Animierten Wetterhintergrund anzeigen',
         'editor.show_weather_temperature': 'Bedingungen und Temperatur anzeigen',
+        'editor.weather_text_color': 'Wettertext-Farbe',
+        'editor.weather_text_color_description': 'Farbe für Temperatur, Symbol und Wetterbedingung. Leer lassen für die Standard-Layout-Farbe.',
+        'editor.last_changed_color': 'Farbe des Aktualisierungstexts',
+        'editor.last_changed_color_description': 'Farbe des Zeitstempels der letzten Aktualisierung. Leer lassen für die Standard-Farbe.',
         'section.weather_description': 'Fügt der Karte einen animierten Wetterhintergrund hinzu (Regen, Schnee, Sonne, Sterne, Blitze…). Funktioniert auf allen Layouts.',
         'section.travel_sensor_2': '🏢 Zuhause ↔ Arbeit Sensoren',
         'section.travel_sensor_2_description': 'Sensor 1 (zuhause→arbeit): sichtbar zuhause und unterwegs, versteckt bei der Arbeit. Sensor 2 (arbeit→zuhause): sichtbar bei der Arbeit und unterwegs, versteckt zuhause. Smart-Modus deaktivieren um immer beide anzuzeigen.',
@@ -954,7 +970,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.3.9</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.0</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1607,6 +1623,29 @@ class PersonTrackerCardEditor extends LitElement {
           </ha-textfield>
         ` : ''}
 
+        ${this._config.layout !== 'modern' ? html`
+          <div class="config-row" style="margin-top:8px;">
+            <span class="config-label">${this._t('editor.last_changed_color')}</span>
+            <div class="color-picker">
+              <div class="color-preview"
+                   style="background-color:${this._config.last_changed_color || '#888888'}">
+                <input type="color"
+                       .value=${this._config.last_changed_color || '#888888'}
+                       @input=${(e) => this._updateConfigColor('last_changed_color', e.target.value)}>
+              </div>
+              <ha-textfield
+                .value=${this._config.last_changed_color || ''}
+                placeholder="#888888"
+                @input=${(e) => this._updateConfigColor('last_changed_color', e.target.value)}
+                pattern="^#[0-9A-Fa-f]{6}$">
+              </ha-textfield>
+            </div>
+          </div>
+          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
+            ${this._t('editor.last_changed_color_description')}
+          </p>
+        ` : ''}
+
         <ha-textfield
           label="${this._t('editor.card_background')}"
           .value=${this._config.card_background || 'rgba(255,255,255,0.05)'}
@@ -1626,7 +1665,7 @@ class PersonTrackerCardEditor extends LitElement {
             type="number"
             min="10"
             max="100"
-            .value=${this._config.picture_size || '45'}
+            .value=${this._config.picture_size || '40'}
             @input=${(e) => this._valueChanged(e, 'picture_size')}>
           </ha-textfield>
         ` : ''}
@@ -1813,6 +1852,29 @@ class PersonTrackerCardEditor extends LitElement {
               </ha-switch>
             </div>
           </div>
+
+          <!-- Weather text color -->
+          <div class="config-row" style="margin-top:8px;">
+            <span class="config-label">${this._t('editor.weather_text_color')}</span>
+            <div class="color-picker">
+              <div class="color-preview"
+                   style="background-color:${this._config.weather_text_color || '#cccccc'}">
+                <input type="color"
+                       .value=${this._config.weather_text_color || '#cccccc'}
+                       @input=${(e) => this._updateConfigColor('weather_text_color', e.target.value)}>
+              </div>
+              <ha-textfield
+                .value=${this._config.weather_text_color || ''}
+                placeholder="#cccccc"
+                @input=${(e) => this._updateConfigColor('weather_text_color', e.target.value)}
+                pattern="^#[0-9A-Fa-f]{6}$">
+              </ha-textfield>
+            </div>
+          </div>
+          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
+            ${this._t('editor.weather_text_color_description')}
+          </p>
+
         ` : ''}
       </div>
     `;
@@ -2074,6 +2136,20 @@ class PersonTrackerCardEditor extends LitElement {
     };
 
     this._config = { ...this._config, state: states };
+    this._fireEvent('config-changed', { config: this._config });
+    this.requestUpdate();
+  }
+
+  _updateConfigColor(key, color) {
+    // Allow empty string to clear the color (restore layout default)
+    if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) return;
+    if (!color) {
+      const newConfig = { ...this._config };
+      delete newConfig[key];
+      this._config = newConfig;
+    } else {
+      this._config = { ...this._config, [key]: color };
+    }
     this._fireEvent('config-changed', { config: this._config });
     this.requestUpdate();
   }
