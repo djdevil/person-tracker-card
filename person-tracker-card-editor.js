@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.1: pair_travel_animation toggle (near smart mode); transparent_background toggle for Glass/Bio
 // v1.4.0: weather_text_color picker in weather section; last_changed_color picker in style section
 // v1.3.7: Version badge added to editor UI top-right
 // v1.3.3: No editor changes
@@ -83,6 +84,7 @@ class EditorLocalizationHelper {
         'editor.state_font_size': 'Dimensione font stato',
         'editor.last_changed_font_size': 'Dimensione font ultimo aggiornamento',
         'editor.card_background': 'Sfondo card',
+        'editor.transparent_background': 'Sfondo trasparente (solo Glass/Bio)',
         'editor.border_radius': 'Raggio bordo',
         'editor.image_size': 'Dimensione immagine (%)',
         'editor.modern_picture_size': 'Dimensione immagine (px)',
@@ -138,6 +140,7 @@ class EditorLocalizationHelper {
         'editor.zone_2': 'Zona lavoro',
         'editor.show_travel_time_2': 'Mostra tempo di viaggio (Lavoro → Casa)',
         'editor.smart_travel_mode': 'Modalità smart (nascondi in base alla posizione)',
+        'editor.pair_travel_animation': 'Animazione alternata distanza/tempo (se disattivata, mostra entrambi separati)',
         'editor.distance_precision': 'Decimali distanza (0=intero, 1=un decimale, 2=due decimali)',
         'editor.distance_unit': 'Unità distanza (es. km, mi)',
         'editor.distance_unit_description': 'Lascia vuoto per rilevamento automatico. Per sensori Waze/Google usa km o mi.',
@@ -214,6 +217,7 @@ class EditorLocalizationHelper {
         'editor.state_font_size': 'State font size',
         'editor.last_changed_font_size': 'Last changed font size',
         'editor.card_background': 'Card background',
+        'editor.transparent_background': 'Transparent background (Glass/Bio only)',
         'editor.border_radius': 'Border radius',
         'editor.image_size': 'Image size (%)',
         'editor.modern_picture_size': 'Picture size (px)',
@@ -269,6 +273,7 @@ class EditorLocalizationHelper {
         'editor.zone_2': 'Work zone',
         'editor.show_travel_time_2': 'Show travel time (Work → Home)',
         'editor.smart_travel_mode': 'Smart mode (hide based on location)',
+        'editor.pair_travel_animation': 'Alternating distance/time animation (if disabled, shows both separately)',
         'editor.distance_precision': 'Distance decimal places (0=integer, 1=one decimal, 2=two decimals)',
         'editor.distance_unit': 'Distance unit (e.g. km, mi)',
         'editor.distance_unit_description': 'Leave empty for auto-detection. For Waze/Google sensors use km or mi.',
@@ -345,6 +350,7 @@ class EditorLocalizationHelper {
         'editor.state_font_size': 'Taille police état',
         'editor.last_changed_font_size': 'Taille police dernière mise à jour',
         'editor.card_background': 'Fond carte',
+        'editor.transparent_background': 'Fond transparent (Glass/Bio uniquement)',
         'editor.border_radius': 'Rayon bordure',
         'editor.image_size': 'Taille image (%)',
         'editor.modern_picture_size': 'Taille image (px)',
@@ -400,6 +406,7 @@ class EditorLocalizationHelper {
         'editor.zone_2': 'Zone travail',
         'editor.show_travel_time_2': 'Afficher temps trajet (Travail → Maison)',
         'editor.smart_travel_mode': 'Mode smart (masquer selon la position)',
+        'editor.pair_travel_animation': 'Animation alternée distance/temps (si désactivée, affiche les deux séparément)',
         'editor.distance_precision': 'Décimales distance (0=entier, 1=une décimale, 2=deux décimales)',
         'editor.distance_unit': 'Unité de distance (ex. km, mi)',
         'editor.distance_unit_description': 'Laisser vide pour détection auto. Pour Waze/Google utiliser km ou mi.',
@@ -476,6 +483,7 @@ class EditorLocalizationHelper {
         'editor.state_font_size': 'Schriftgröße Status',
         'editor.last_changed_font_size': 'Schriftgröße Letzte Änderung',
         'editor.card_background': 'Kartenhintergrund',
+        'editor.transparent_background': 'Transparenter Hintergrund (nur Glass/Bio)',
         'editor.border_radius': 'Randradius',
         'editor.image_size': 'Bildgröße (%)',
         'editor.modern_picture_size': 'Bildgröße (px)',
@@ -531,6 +539,7 @@ class EditorLocalizationHelper {
         'editor.zone_2': 'Arbeitszone',
         'editor.show_travel_time_2': 'Reisezeit anzeigen (Arbeit → Zuhause)',
         'editor.smart_travel_mode': 'Smart-Modus (je nach Standort ausblenden)',
+        'editor.pair_travel_animation': 'Abwechselnde Entfernung/Zeit-Animation (deaktiviert = beide separat anzeigen)',
         'editor.distance_precision': 'Entfernungs-Dezimalstellen (0=ganz, 1=eine, 2=zwei)',
         'editor.distance_unit': 'Entfernungseinheit (z.B. km, mi)',
         'editor.distance_unit_description': 'Leer lassen für Auto-Erkennung. Für Waze/Google km oder mi verwenden.',
@@ -970,7 +979,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.0</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.1</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1361,6 +1370,18 @@ class PersonTrackerCardEditor extends LitElement {
           </div>
         </div>
 
+        <!-- Pair travel animation toggle -->
+        <div class="sensor-group">
+          <div class="sensor-header">
+            <ha-icon icon="mdi:animation-play" class="sensor-icon"></ha-icon>
+            <span class="sensor-title">${this._t('editor.pair_travel_animation')}</span>
+            <ha-switch
+              .checked=${this._config.pair_travel_animation !== false}
+              @change=${(e) => this._valueChanged(e, 'pair_travel_animation')}>
+            </ha-switch>
+          </div>
+        </div>
+
         <!-- Travel time Casa → Lavoro (sensor 1) -->
         <div class="sensor-group">
           <div class="sensor-header">
@@ -1644,6 +1665,19 @@ class PersonTrackerCardEditor extends LitElement {
           <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
             ${this._t('editor.last_changed_color_description')}
           </p>
+        ` : ''}
+
+        ${['glass', 'bio'].includes(this._config.layout) ? html`
+          <div class="sensor-group" style="margin-bottom:8px;">
+            <div class="sensor-header">
+              <ha-icon icon="mdi:circle-opacity" class="sensor-icon"></ha-icon>
+              <span class="sensor-title">${this._t('editor.transparent_background')}</span>
+              <ha-switch
+                .checked=${this._config.transparent_background === true}
+                @change=${(e) => this._valueChanged(e, 'transparent_background')}>
+              </ha-switch>
+            </div>
+          </div>
         ` : ''}
 
         <ha-textfield

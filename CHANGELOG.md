@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-03-17
+
+### Added
+- ✨ **`pair_travel_animation`** — New toggle to disable the alternating distance/travel animation. When off, distance and travel time are shown as two separate chips simultaneously (all 7 layouts). Toggle available in the editor next to Smart Mode.
+- ✨ **`transparent_background`** — New toggle (Glass and Bio layouts only) to remove the dark card background and box-shadow, making the card blend into any HA dashboard background. Visible in the Style tab only when Glass or Bio is selected.
+
+### Fixed
+- 🐛 **HACS install button wrong type** — README links used `category=plugin`, corrected to `category=dashboard`.
+
+---
+
 ## [1.4.0] - 2026-03-15
 
 ### Added

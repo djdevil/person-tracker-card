@@ -1,7 +1,7 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **seven layout modes**.
 
@@ -527,6 +527,11 @@ show_connection: false
 
 ## 📝 Changelog
 
+### v1.4.1 (2026-03-17)
+- ✨ **`pair_travel_animation`** — Toggle to disable the alternating distance/travel animation; when off, both chips are shown separately
+- ✨ **`transparent_background`** — Glass and Bio layouts: remove the dark background to blend into any dashboard
+- 🐛 Fixed HACS install button type (`plugin` → `dashboard`)
+
 ### v1.4.0 (2026-03-15)
 - 🎨 **`weather_text_color`** — New option to override the color of weather text (temperature, icon, condition label) across all 7 layouts
 - 🎨 **`last_changed_color`** — New option to override the color of the last-updated timestamp (classic, neon, holo)
@@ -1031,6 +1036,11 @@ show_connection: false
 ---
 
 ## 📝 Changelog
+
+### v1.4.1 (2026-03-17)
+- ✨ **`pair_travel_animation`** — Toggle per disabilitare l'animazione alternata distanza/tempo; quando disattivato mostra entrambi i chip separati
+- ✨ **`transparent_background`** — Layout Glass e Bio: rimuove lo sfondo scuro per integrarsi con qualsiasi dashboard
+- 🐛 Fix pulsante HACS: tipo corretto da `plugin` a `dashboard`
 
 ### v1.4.0 (2026-03-15)
 - 🎨 **`weather_text_color`** — Nuova opzione per sovrascrivere il colore del testo meteo (temperatura, icona, condizione) su tutti e 7 i layout

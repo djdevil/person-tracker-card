@@ -1,6 +1,8 @@
-// Person Tracker Card v1.4.0 - Multilanguage Version
+// Person Tracker Card v1.4.1 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.1: pair_travel_animation option — disable alternating distance/travel animation to show both
+//         separately; transparent_background option for Glass and Bio layouts; README HACS link fix
 // v1.4.0: weather_text_color and last_changed_color options (card + editor) — custom text colors
 //         for weather label and last-updated timestamp across all 7 layouts
 // v1.3.9: Editor cache fix: import.meta.url extracts hacstag from HACS and passes it to editor;
@@ -23,7 +25,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.0 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.1 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -253,7 +255,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.0';
+const CARD_VERSION = '1.4.1';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -429,6 +431,10 @@ class PersonTrackerCard extends LitElement {
       tap_action: { action: 'more-info' },
       // Distance precision (Fix #16)
       distance_precision: 1,
+      // Pair animation: when true, distance+travel alternate; when false, show separately
+      pair_travel_animation: true,
+      // Transparent background (glass/bio only)
+      transparent_background: false,
       // Weather
       show_weather: false,
       weather_entity: null,
@@ -1516,8 +1522,8 @@ class PersonTrackerCard extends LitElement {
               const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
               const hasTravel2 = showDir2 && this.config.show_travel_time_2 && this._travelTime2 > 0;
               // Animate only when exactly one direction is active (avoids overlap at same position)
-              const pairDir1 = hasDist1 && hasTravel1;
-              const pairDir2 = hasDist2 && hasTravel2;
+              const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+              const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
               const distStyle1 = `font-size:${this.config.distance_font_size};${Object.entries(distancePos).map(([k,v])=>`${k}:${v}`).join(';')}`;
               const distStyle2 = distStyle1;
               const travStyle = `font-size:${this.config.travel_font_size};${Object.entries(travelPos).map(([k,v])=>`${k}:${v}`).join(';')}`;
@@ -1708,8 +1714,8 @@ class PersonTrackerCard extends LitElement {
               const hasTravel1 = showDir1 && this.config.show_travel_time && this._travelTime > 0;
               const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
               const hasTravel2 = showDir2 && this.config.show_travel_time_2 && this._travelTime2 > 0;
-              const pairDir1 = hasDist1 && hasTravel1;
-              const pairDir2 = hasDist2 && hasTravel2;
+              const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+              const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
               const badgeBaseStyle =`width:${badgeSize}px;height:${badgeSize}px;flex-direction:column;justify-content:center;align-items:center;gap:0;line-height:1`;
               return html`
                 ${pairDir1 ? html`
@@ -1829,8 +1835,8 @@ class PersonTrackerCard extends LitElement {
     const hasTravel1Modern = showDir1Modern && this.config.show_travel_time && travelTime > 0;
     const hasDist2Modern = showDir2Modern && this.config.show_distance_2 && this._distanceSensorFound2;
     const hasTravel2Modern = showDir2Modern && this.config.show_travel_time_2 && travelTime2 > 0;
-    const pairDir1Modern = hasDist1Modern && hasTravel1Modern;
-    const pairDir2Modern = hasDist2Modern && hasTravel2Modern;
+    const pairDir1Modern = hasDist1Modern && hasTravel1Modern && (this.config.pair_travel_animation !== false);
+    const pairDir2Modern = hasDist2Modern && hasTravel2Modern && (this.config.pair_travel_animation !== false);
 
     // Activity
     const activityIcon = this._activityIcon;
@@ -2096,8 +2102,8 @@ class PersonTrackerCard extends LitElement {
     const hasTravel1Neon = showDir1Neon && this.config.show_travel_time && travelTime > 0;
     const hasDist2Neon = showDir2Neon && this.config.show_distance_2 && this._distanceSensorFound2;
     const hasTravel2Neon = showDir2Neon && this.config.show_travel_time_2 && travelTime2 > 0;
-    const pairDir1Neon = hasDist1Neon && hasTravel1Neon;
-    const pairDir2Neon = hasDist2Neon && hasTravel2Neon;
+    const pairDir1Neon = hasDist1Neon && hasTravel1Neon && (this.config.pair_travel_animation !== false);
+    const pairDir2Neon = hasDist2Neon && hasTravel2Neon && (this.config.pair_travel_animation !== false);
 
     return html`
       <style>${this._getPairAnimationStyles('neon')}</style>
@@ -2294,16 +2300,16 @@ class PersonTrackerCard extends LitElement {
     const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
     const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
     const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
-    const pairDir1 = hasDist1 && hasTravel1;
-    const pairDir2 = hasDist2 && hasTravel2;
+    const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+    const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
 
     return html`
       <style>${this._getPairAnimationStyles('glass')}</style>
       <ha-card style="
-        background: linear-gradient(135deg, #0f0f1a 0%, #1a0f2e 60%, #0a0f1a 100%);
+        background: ${this.config.transparent_background ? 'transparent' : 'linear-gradient(135deg, #0f0f1a 0%, #1a0f2e 60%, #0a0f1a 100%)'};
         border: 1px solid rgba(255,255,255,0.10);
         border-radius: ${this.config.card_border_radius};
-        box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow: ${this.config.transparent_background ? 'none' : '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)'};
         position: relative;
         overflow: hidden;
       ">
@@ -2517,8 +2523,8 @@ class PersonTrackerCard extends LitElement {
     const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
     const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
     const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
-    const pairDir1 = hasDist1 && hasTravel1;
-    const pairDir2 = hasDist2 && hasTravel2;
+    const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+    const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
 
     return html`
       <style>${this._getPairAnimationStyles('bio')}</style>
@@ -2526,9 +2532,9 @@ class PersonTrackerCard extends LitElement {
         border-radius: ${this.config.card_border_radius};
         overflow: hidden;
         position: relative;
-        background: #000a0d;
+        background: ${this.config.transparent_background ? 'transparent' : '#000a0d'};
         border: 1px solid rgba(${sensorRgb},0.12);
-        box-shadow: 0 0 40px rgba(${sensorRgb},0.05), 0 30px 60px rgba(0,0,0,0.8);
+        box-shadow: ${this.config.transparent_background ? 'none' : `0 0 40px rgba(${sensorRgb},0.05), 0 30px 60px rgba(0,0,0,0.8)`};
       ">
         ${this._renderWeatherBg()}
 
@@ -2738,8 +2744,8 @@ class PersonTrackerCard extends LitElement {
     const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
     const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
     const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
-    const pairDir1 = hasDist1 && hasTravel1;
-    const pairDir2 = hasDist2 && hasTravel2;
+    const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+    const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
 
     const weatherLabel = this._weatherState ? this._t(`weather.${this._weatherState}`) : '';
     const weatherLine = (this.config.show_weather && this.config.show_weather_temperature !== false && (this._weatherTemp || weatherLabel))
