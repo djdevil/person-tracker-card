@@ -604,7 +604,7 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 ### v1.4.1 (2026-03-17)
 - ✨ **`pair_travel_animation`** — Toggle to disable the alternating distance/travel animation; when off, both chips are shown separately
 - ✨ **`transparent_background`** — Glass and Bio layouts: remove the dark background to blend into any dashboard
-- 🐛 Fixed HACS install button type (`plugin` → `dashboard`)
+- 🐛 Fixed HACS install button type (`dashboard` → `plugin`)
 
 ### v1.4.0 (2026-03-15)
 - 🎨 **`weather_text_color`** — New option to override the color of weather text (temperature, icon, condition label) across all 7 layouts
