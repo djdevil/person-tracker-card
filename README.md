@@ -59,6 +59,7 @@ Advanced card for Home Assistant that displays detailed information about people
 - [📱 Mobile App Integration](#-mobile-app-integration)
 - [🗺️ Smart Travel Mode](#️-smart-travel-mode)
 - [🎭 Examples](#-examples)
+- [🎬 Animated Emoji Avatar](#-animated-emoji-avatar-memoji--ar-emoji)
 - [🔍 Troubleshooting](#-troubleshooting)
 - [📝 Changelog](#-changelog)
 
@@ -489,6 +490,62 @@ show_travel_time: false
 show_distance: false
 show_activity: false
 show_connection: false
+```
+
+---
+
+## 🎬 Animated Emoji Avatar (Memoji / AR Emoji)
+
+You can use a **real animated GIF of your Memoji or AR Emoji** as the person's avatar — it will loop automatically inside the card, giving it a very personal and lively look.
+
+### How to create it (iPhone — Memoji)
+
+1. **Open iMessage** on your iPhone and start a new message
+2. Tap the **Memoji button** (the smiley face icon in the keyboard bar)
+3. Select your Memoji → tap **Record** (hold the big button to record a short animation — wave, nod, thumbs up, etc.)
+4. Send it to yourself or **AirDrop** the sticker pack to your Mac
+5. On your Mac, open the received file and **export the frame/clip** as a video or image sequence
+6. Go to **remove.bg** and upload the video/frame to remove the background → download as PNG
+7. Convert PNG sequence or clip to **GIF** using any free tool (e.g. ezgif.com — upload frames → make GIF)
+8. Copy the GIF to your Home Assistant `/config/www/` folder (e.g. `/config/www/marco-home.gif`)
+
+> **Tip:** Create one GIF per state — wave for `home`, thumbs up for arriving, neutral/idle for `away`.
+
+### How to create it (Android — AR Emoji / Bitmoji)
+
+The process is identical:
+1. **Samsung AR Emoji** or **Snapchat Bitmoji** → record a short animation
+2. Export the video clip to PC
+3. Remove background on **remove.bg**
+4. Convert to GIF on **ezgif.com**
+5. Upload to `/config/www/`
+
+### How to use it in the card
+
+```yaml
+entity_picture: /local/marco-home.gif
+```
+
+Or set it dynamically using a template sensor that swaps GIF based on state:
+
+```yaml
+# configuration.yaml
+template:
+  - sensor:
+      - name: marco_avatar
+        state: >
+          {% if is_state('person.marco', 'home') %}
+            /local/marco-home.gif
+          {% elif states('sensor.marco_distance') | float(0) < 2 %}
+            /local/marco-arriving.gif
+          {% else %}
+            /local/marco-away.gif
+          {% endif %}
+```
+
+Then in the card config:
+```yaml
+entity_picture: "{{ states('sensor.marco_avatar') }}"
 ```
 
 ---
@@ -999,6 +1056,62 @@ show_travel_time: false
 show_distance: false
 show_activity: false
 show_connection: false
+```
+
+---
+
+## 🎬 Avatar Emoji Animato (Memoji / AR Emoji)
+
+Puoi usare una **GIF animata del tuo Memoji o AR Emoji** come avatar della persona — si ripeterà automaticamente nella card, rendendola viva e personalissima.
+
+### Come crearla (iPhone — Memoji)
+
+1. **Apri iMessage** sul tuo iPhone e inizia un nuovo messaggio
+2. Tocca il **pulsante Memoji** (faccina nella barra della tastiera)
+3. Seleziona il tuo Memoji → tocca **Registra** (tieni premuto il tasto grande per registrare una breve animazione — saluto, annuire, pollice su, ecc.)
+4. Invialo a te stesso oppure usa **AirDrop** per mandarlo al Mac
+5. Sul Mac, apri il file ricevuto ed **esporta il frame/clip** come video o sequenza di immagini
+6. Vai su **remove.bg**, carica il video/frame per rimuovere lo sfondo → scarica come PNG
+7. Converti la sequenza PNG o il clip in **GIF** con un tool gratuito (es. ezgif.com — carica i frame → crea GIF)
+8. Copia la GIF nella cartella `/config/www/` di Home Assistant (es. `/config/www/marco-casa.gif`)
+
+> **Consiglio:** Crea una GIF per ogni stato — saluto per `home`, pollice su per l'arrivo, neutro/idle per `away`.
+
+### Come crearla (Android — AR Emoji / Bitmoji)
+
+Il procedimento è identico:
+1. **Samsung AR Emoji** o **Snapchat Bitmoji** → registra una breve animazione
+2. Esporta il clip video sul PC
+3. Rimuovi lo sfondo su **remove.bg**
+4. Converti in GIF su **ezgif.com**
+5. Carica in `/config/www/`
+
+### Come usarla nella card
+
+```yaml
+entity_picture: /local/marco-casa.gif
+```
+
+Oppure in modo dinamico con un template sensor che cambia GIF in base allo stato:
+
+```yaml
+# configuration.yaml
+template:
+  - sensor:
+      - name: marco_avatar
+        state: >
+          {% if is_state('person.marco', 'home') %}
+            /local/marco-casa.gif
+          {% elif states('sensor.marco_distanza') | float(0) < 2 %}
+            /local/marco-arrivo.gif
+          {% else %}
+            /local/marco-fuori.gif
+          {% endif %}
+```
+
+Poi nella config della card:
+```yaml
+entity_picture: "{{ states('sensor.marco_avatar') }}"
 ```
 
 ---
