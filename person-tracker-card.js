@@ -1,8 +1,12 @@
-// Person Tracker Card v1.4.1 - Multilanguage Version
+// Person Tracker Card v1.4.2 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.2: Weather Station layout (wxstation); show_device_2_battery — second device (tablet/laptop)
+//         battery display with auto-detection across all 8 layouts; fix weather_text_color now
+//         also applies to °C/°F temperature unit
 // v1.4.1: pair_travel_animation option — disable alternating distance/travel animation to show both
-//         separately; transparent_background option for Glass and Bio layouts; README HACS link fix
+//         separately; transparent_background option for Glass and Bio layouts; show_particles toggle
+//         to disable rising particles/orbs (Glass/Bio); README HACS link fix
 // v1.4.0: weather_text_color and last_changed_color options (card + editor) — custom text colors
 //         for weather label and last-updated timestamp across all 7 layouts
 // v1.3.9: Editor cache fix: import.meta.url extracts hacstag from HACS and passes it to editor;
@@ -25,7 +29,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.1 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.2 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -105,6 +109,9 @@ class LocalizationHelper {
         'weather.windy': 'Ventoso',
         'weather.windy-variant': 'Molto Ventoso',
         'weather.exceptional': 'Eccezionale',
+        'wx.battery': 'Batteria', 'wx.watch': 'Orologio', 'wx.wind': 'Vento',
+        'wx.humidity': 'Umidità', 'wx.network': 'Rete', 'wx.activity': 'Attività',
+        'wx.pressure': 'Press.', 'wx.feels': 'Percepita', 'wx.device2': 'Disp.2',
       },
       'en': {
         'common.person_tracker': 'Person Tracker',
@@ -148,6 +155,9 @@ class LocalizationHelper {
         'weather.windy': 'Windy',
         'weather.windy-variant': 'Very Windy',
         'weather.exceptional': 'Exceptional',
+        'wx.battery': 'Battery', 'wx.watch': 'Watch', 'wx.wind': 'Wind',
+        'wx.humidity': 'Humidity', 'wx.network': 'Network', 'wx.activity': 'Activity',
+        'wx.pressure': 'Press.', 'wx.feels': 'Feels like', 'wx.device2': 'Device 2',
       },
       'fr': {
         'common.person_tracker': 'Suivi de Personne',
@@ -191,6 +201,9 @@ class LocalizationHelper {
         'weather.windy': 'Venteux',
         'weather.windy-variant': 'Très venteux',
         'weather.exceptional': 'Exceptionnel',
+        'wx.battery': 'Batterie', 'wx.watch': 'Montre', 'wx.wind': 'Vent',
+        'wx.humidity': 'Humidité', 'wx.network': 'Réseau', 'wx.activity': 'Activité',
+        'wx.pressure': 'Press.', 'wx.feels': 'Ressenti', 'wx.device2': 'Appar.2',
       },
       'de': {
         'common.person_tracker': 'Personen-Tracker',
@@ -234,6 +247,9 @@ class LocalizationHelper {
         'weather.windy': 'Windig',
         'weather.windy-variant': 'Sehr windig',
         'weather.exceptional': 'Außergewöhnlich',
+        'wx.battery': 'Batterie', 'wx.watch': 'Uhr', 'wx.wind': 'Wind',
+        'wx.humidity': 'Luftfeuchte', 'wx.network': 'Netzwerk', 'wx.activity': 'Aktivität',
+        'wx.pressure': 'Druck', 'wx.feels': 'Gefühlt', 'wx.device2': 'Gerät 2',
       }
     };
   }
@@ -255,7 +271,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.1';
+const CARD_VERSION = '1.4.2';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -281,6 +297,9 @@ class PersonTrackerCard extends LitElement {
       _travelTime2: { state: true },
       _weatherState: { state: true },
       _weatherTemp: { state: true },
+      _battery2Level: { state: true },
+      _battery2Icon: { state: true },
+      _battery2Charging: { state: true },
     };
   }
 
@@ -307,6 +326,10 @@ class PersonTrackerCard extends LitElement {
     this._travelIcon2 = 'mdi:car-clock';
     this._weatherState = null;
     this._weatherTemp = null;
+    this._battery2Level = 0;
+    this._battery2Icon = 'mdi:battery';
+    this._battery2Charging = false;
+    this._resolvedPrefix2 = null;
     this._localize = null;
   }
 
@@ -435,6 +458,13 @@ class PersonTrackerCard extends LitElement {
       pair_travel_animation: true,
       // Transparent background (glass/bio only)
       transparent_background: false,
+      // Particles/orbs animation (glass/bio only)
+      show_particles: true,
+      // Second device (tablet/laptop) battery
+      show_device_2_battery: true,
+      device_2_battery_sensor: null,
+      device_2_battery_state_sensor: null,
+      device_2_battery_position: 'top-right-3',
       // Weather
       show_weather: false,
       weather_entity: null,
@@ -499,6 +529,7 @@ class PersonTrackerCard extends LitElement {
     if (this.hass && this.config) {
       if (!this._resolvedPrefix || changedProps.has('config') || changedProps.has('hass')) {
         this._resolvedPrefix = this._resolveDevicePrefix();
+        this._resolvedPrefix2 = this._resolveDevicePrefix2();
       }
       this._updateSensorData();
     }
@@ -540,6 +571,12 @@ class PersonTrackerCard extends LitElement {
     if (this.config.show_weather && this.config.weather_entity) {
       entities.push(this.config.weather_entity);
     }
+    if (this.config.show_device_2_battery !== false) {
+      const d2Id = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+      if (d2Id) entities.push(d2Id);
+      const d2StateId = this.config.device_2_battery_state_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_state` : null);
+      if (d2StateId) entities.push(d2StateId);
+    }
 
     return entities;
   }
@@ -577,6 +614,28 @@ class PersonTrackerCard extends LitElement {
           if (this._batteryCharging !== newChargingState) {
             this._batteryCharging = newChargingState;
           }
+        }
+      }
+    }
+
+    // Device 2 Battery (tablet/laptop)
+    if (this.config.show_device_2_battery !== false) {
+      const d2Id = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+      if (d2Id) {
+        const d2Entity = this.hass.states[d2Id];
+        if (d2Entity) {
+          const newLevel = parseFloat(d2Entity.state) || 0;
+          const newIcon = d2Entity.attributes?.icon || 'mdi:battery';
+          if (this._battery2Level !== newLevel) this._battery2Level = newLevel;
+          if (this._battery2Icon !== newIcon) this._battery2Icon = newIcon;
+        }
+      }
+      const d2StateId = this.config.device_2_battery_state_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_state` : null);
+      if (d2StateId) {
+        const d2StateEntity = this.hass.states[d2StateId];
+        if (d2StateEntity) {
+          const newCharging = this._isChargingState(d2StateEntity.state, this.config.battery_charging_value);
+          if (this._battery2Charging !== newCharging) this._battery2Charging = newCharging;
         }
       }
     }
@@ -804,6 +863,31 @@ class PersonTrackerCard extends LitElement {
     return null;
   }
 
+  // Resolve the second device (tablet/laptop) prefix — skips the first resolved prefix.
+  _resolveDevicePrefix2() {
+    if (!this.hass || !this.config.entity) return null;
+    const personEntity = this.hass.states[this.config.entity];
+    if (!personEntity) return null;
+    const skip = this._resolvedPrefix;
+
+    const deviceTrackers = personEntity.attributes?.device_trackers || [];
+    for (const dt of deviceTrackers) {
+      const prefix = dt.replace('device_tracker.', '');
+      if (prefix === skip) continue;
+      if (this.hass.states[`sensor.${prefix}_battery_level`]) return prefix;
+    }
+    return null;
+  }
+
+  // Return mdi icon based on device sensor entity ID or prefix name
+  _getDeviceIcon(entityIdOrPrefix) {
+    if (!entityIdOrPrefix) return 'mdi:cellphone';
+    const p = entityIdOrPrefix.replace('sensor.', '').replace('_battery_level', '').toLowerCase();
+    if (/ipad|tablet|galaxy.?tab|lenovo.?tab/.test(p)) return 'mdi:tablet';
+    if (/mac|laptop|macbook|surface|notebook|book|pc|computer/.test(p)) return 'mdi:laptop';
+    return 'mdi:cellphone';
+  }
+
   // Open more-info dialog for an entity
   _showMoreInfo(entityId) {
     if (!entityId) return;
@@ -903,7 +987,9 @@ class PersonTrackerCard extends LitElement {
       'bottom-left': { bottom: '8px', left: '8px' },
       'bottom-left-2': { bottom: '28px', left: '8px' },
       'bottom-right': { bottom: '8px', right: '8px' },
-      'bottom-right-2': { bottom: '28px', right: '8px' }
+      'bottom-right-2': { bottom: '28px', right: '8px' },
+      'top-right-3': { top: '72px', right: '8px' },
+      'top-left-3': { top: '72px', left: '8px' }
     };
 
     if (!position || !(position in positions)) {
@@ -1067,6 +1153,12 @@ class PersonTrackerCard extends LitElement {
         .pair-b-holo{animation:pair-b-holo 8s linear infinite}
         .sensor-pair-holo{position:relative;flex-shrink:0;min-width:44px;height:42px}
         .sensor-pair-holo>*{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}`,
+      wxstation: `
+        @keyframes pair-a-wx{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+        @keyframes pair-b-wx{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
+        .pair-a-wx{animation:pair-a-wx 8s ease-in-out infinite;display:flex;align-items:center;gap:4px;white-space:nowrap}
+        .pair-b-wx{animation:pair-b-wx 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+        .sensor-pair-wx{position:relative;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0;}`,
     };
     return styles[theme] || '';
   }
@@ -1120,7 +1212,8 @@ class PersonTrackerCard extends LitElement {
       && this.config.layout !== 'classic' && this.config.layout !== 'neon'
       && this.config.layout !== 'glass' && this.config.layout !== 'bio'
       && this.config.layout !== 'modern' && this.config.layout !== 'compact'
-      && this.config.layout !== 'holo';
+      && this.config.layout !== 'holo'
+      && this.config.layout !== 'wxstation';
     return html`
       ${showBg ? html`<div class="${bgClass}" @click=${clickHandler}>${particles}</div>` : ''}
       ${floatingTemp ? html`<span class="weather-bg-temp">${this._weatherTemp}</span>` : ''}
@@ -1383,6 +1476,8 @@ class PersonTrackerCard extends LitElement {
       return this._renderBioLayout();
     } else if (this.config.layout === 'holo') {
       return this._renderHoloLayout();
+    } else if (this.config.layout === 'wxstation') {
+      return this._renderWxStationLayout();
     } else {
       return this._renderClassicLayout();
     }
@@ -1410,6 +1505,9 @@ class PersonTrackerCard extends LitElement {
     // Posizioni elementi con fallback sicuro
     const batteryPos = this._getPositionStyles(this.config.battery_position) || {};
     const watchBatteryPos = this._getPositionStyles(this.config.watch_battery_position) || {};
+    const device2BatteryPos = this._getPositionStyles(this.config.device_2_battery_position || 'top-right-3') || {};
+    const device2Id = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+    const showDevice2Battery = this.config.show_device_2_battery !== false && device2Id && this._battery2Level > 0;
     const activityPos = this._getPositionStyles(this.config.activity_position) || {};
     const distancePos = this._getPositionStyles(this.config.distance_position) || {};
     const travelPos = this._getPositionStyles(this.config.travel_position) || {};
@@ -1495,6 +1593,18 @@ class PersonTrackerCard extends LitElement {
                 <span>⌚</span>
                 <ha-icon icon="${this._watchBatteryCharging ? 'mdi:battery-charging' : this._watchBatteryIcon}" .style=${iconStyle}></ha-icon>
                 <span>${this._watchBatteryLevel}%</span>
+              </div>
+            ` : ''}
+
+            ${showDevice2Battery ? html`
+              <div class="custom-field battery clickable ${this._battery2Charging ? 'charging' : ''}"
+                   @click=${() => this._showMoreInfo(device2Id)}
+                   style="color: ${this._getBatteryColor(this._battery2Level)};
+                          font-size: ${this.config.battery_font_size};
+                          ${Object.entries(device2BatteryPos).map(([k, v]) => `${k}: ${v}`).join('; ')}">
+                <ha-icon icon="${this._getDeviceIcon(device2Id)}" .style=${iconStyle}></ha-icon>
+                <ha-icon icon="${this._battery2Charging ? 'mdi:battery-charging' : this._battery2Icon}" .style=${iconStyle}></ha-icon>
+                <span>${this._battery2Level}%</span>
               </div>
             ` : ''}
 
@@ -1700,6 +1810,19 @@ class PersonTrackerCard extends LitElement {
                 </span>
               </div>
             ` : ''}
+
+            ${(() => {
+              const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+              return (this.config.show_device_2_battery !== false && d2p && this._battery2Level > 0) ? html`
+                <div class="compact-icon-badge clickable ${this._battery2Charging ? 'charging' : ''}"
+                     @click=${() => this._showMoreInfo(d2p)}
+                     style="width: ${badgeSize}px; height: ${badgeSize}px; flex-direction: column; justify-content: center; align-items: center; gap: 0; line-height: 1; position: relative;">
+                  ${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size: ${Math.round(iconSize * 0.5)}px; color: #4CAF50; position: absolute; top: -2px; right: -2px;"></ha-icon>` : ''}
+                  <ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size: ${smallIconSize}px; color: ${this._getBatteryColor(this._battery2Level)}; line-height: 1;"></ha-icon>
+                  <span style="font-size: ${smallFontSize}px; font-weight: bold; color: ${this._getBatteryColor(this._battery2Level)}; line-height: 1;">${this._battery2Level}%</span>
+                </div>
+              ` : '';
+            })()}
 
             ${(() => {
               const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
@@ -1942,6 +2065,27 @@ class PersonTrackerCard extends LitElement {
                 </div>
               </div>
             ` : ''}
+
+            <!-- Device 2 Battery -->
+            ${(() => {
+              const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+              if (this.config.show_device_2_battery === false || !d2p || this._battery2Level <= 0) return '';
+              const bat2Color = this._getBatteryColor(this._battery2Level);
+              const bat2Level = Math.round(this._battery2Level);
+              return html`
+                <div class="ring-container clickable ${this._battery2Charging ? 'charging' : ''}" @click=${() => this._showMoreInfo(d2p)} style="width: ${ringSize}px; height: ${ringSize}px; position: relative;">
+                  ${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size: ${Math.round(ringSize * 0.35)}px; color: #4CAF50; position: absolute; top: -4px; right: -4px; z-index: 1;"></ha-icon>` : ''}
+                  <svg viewBox="0 0 36 36" class="ring-svg ${this._battery2Charging ? 'charging-ring' : ''}">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${ringBgColor}" stroke-width="3"/>
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${this._battery2Charging ? '#4CAF50' : bat2Color}" stroke-width="3" stroke-dasharray="${bat2Level}, 100" stroke-linecap="round"/>
+                  </svg>
+                  <div class="ring-text">
+                    <span class="ring-value" style="font-size: ${ringValueFontSize}px;">${bat2Level}</span>
+                    <span class="ring-unit" style="font-size: ${ringUnitFontSize}px;"><ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:${ringUnitFontSize + 2}px;"></ha-icon></span>
+                  </div>
+                </div>
+              `;
+            })()}
 
             <!-- Activity -->
             ${this.config.show_activity && this._activity !== 'unknown' ? html`
@@ -2190,6 +2334,22 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
+            ${(() => {
+              const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+              if (this.config.show_device_2_battery === false || !d2p || this._battery2Level <= 0) return '';
+              const bat2Color = this._getBatteryColor(this._battery2Level);
+              return html`
+                <div class="neon-badge clickable ${this._battery2Charging ? 'charging' : ''}"
+                     @click=${() => this._showMoreInfo(d2p)}
+                     style="border-color: ${bat2Color}; box-shadow: 0 0 6px ${bat2Color}44;">
+                  ${this._battery2Charging
+                    ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:12px; color:#4CAF50;"></ha-icon>`
+                    : html`<ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:13px; color:${bat2Color};"></ha-icon>`}
+                  <span style="color:${bat2Color};">${this._battery2Level}%</span>
+                </div>
+              `;
+            })()}
+
             ${pairDir1Neon ? html`
               <div class="sensor-pair-neon" style="min-width:80px;height:28px;">
                 <div class="neon-badge pair-a-neon clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="border-color:#00d4ff;box-shadow:0 0 6px #00d4ff44;">
@@ -2314,8 +2474,9 @@ class PersonTrackerCard extends LitElement {
         overflow: hidden;
       ">
         <!-- Background orbs -->
+        ${this.config.show_particles !== false ? html`
         <div style="position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,${accentColor}28 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
-        <div style="position:absolute;bottom:-50px;left:-50px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(0,180,255,0.16) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+        <div style="position:absolute;bottom:-50px;left:-50px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(0,180,255,0.16) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>` : ''}
 
         ${this._renderWeatherBg()}
 
@@ -2347,7 +2508,7 @@ class PersonTrackerCard extends LitElement {
               ${this.config.show_last_changed ? html`<div class="glass-time" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
 
-            ${this.config.show_battery || this.config.show_connection ? html`
+            ${(this.config.show_battery || this.config.show_connection || (this.config.show_device_2_battery !== false && (this.config.device_2_battery_sensor || this._resolvedPrefix2) && this._battery2Level > 0)) ? html`
               <div class="glass-battery-pill">
                 ${this.config.show_battery ? html`
                   <div class="${this._batteryCharging ? 'glass-bat-svg-wrap glass-bat-charging clickable' : 'glass-bat-svg-wrap clickable'}" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}>
@@ -2360,6 +2521,18 @@ class PersonTrackerCard extends LitElement {
                     <span style="font-size:11px;font-weight:700;color:${batteryColor};margin-left:5px;">${this._batteryLevel}%</span>
                   </div>
                 ` : ''}
+                ${(() => {
+                  const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+                  if (this.config.show_device_2_battery === false || !d2p || this._battery2Level <= 0) return '';
+                  const bat2Color = this._getBatteryColor(this._battery2Level);
+                  return html`
+                    <div class="glass-bat-svg-wrap clickable ${this._battery2Charging ? 'glass-bat-charging' : ''}" @click=${() => this._showMoreInfo(d2p)}>
+                      <ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:14px;color:${bat2Color};"></ha-icon>
+                      <span style="font-size:11px;font-weight:700;color:${bat2Color};margin-left:3px;">${this._battery2Level}%</span>
+                      ${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;margin-left:2px;"></ha-icon>` : ''}
+                    </div>
+                  `;
+                })()}
                 ${this.config.show_connection ? html`
                   <div class="glass-conn-pill clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}>
                     <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:16px;color:${connectionColor};"></ha-icon>
@@ -2539,6 +2712,7 @@ class PersonTrackerCard extends LitElement {
         ${this._renderWeatherBg()}
 
         <!-- Orbs -->
+        ${this.config.show_particles !== false ? html`
         <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;">
           <div class="bio-orb" style="width:140px;height:90px;background:rgba(${sensorRgb},0.18);top:-10%;left:-20%;animation-delay:0s;"></div>
           <div class="bio-orb" style="width:100px;height:120px;background:rgba(0,200,255,0.12);bottom:0%;right:-10%;animation-delay:2s;animation-duration:10s;"></div>
@@ -2551,7 +2725,7 @@ class PersonTrackerCard extends LitElement {
           <div class="bio-particle" style="left:60%;bottom:4%;background:${sensorColor};width:3px;height:3px;box-shadow:0 0 5px ${sensorColor};animation-delay:3s;animation-duration:6s;"></div>
           <div class="bio-particle" style="left:78%;bottom:10%;background:rgba(${sensorRgb},0.9);box-shadow:0 0 4px ${sensorColor};animation-delay:0.8s;animation-duration:8s;"></div>
           <div class="bio-particle" style="left:22%;bottom:7%;background:rgba(0,212,255,0.9);box-shadow:0 0 4px #00d4ff;animation-delay:2.2s;animation-duration:5.5s;"></div>
-        </div>
+        </div>` : ''}
 
         <div style="position:relative;z-index:2;padding:18px 16px 14px;">
           <!-- Header -->
@@ -2578,7 +2752,7 @@ class PersonTrackerCard extends LitElement {
               ${this.config.show_last_changed ? html`<div style="font-size:10px;color:${this.config.last_changed_color || `rgba(${sensorRgb},0.35)`};margin-top:2px;letter-spacing:0.5px;">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
 
-            ${this.config.show_battery || this.config.show_connection ? html`
+            ${(this.config.show_battery || this.config.show_connection || (this.config.show_device_2_battery !== false && (this.config.device_2_battery_sensor || this._resolvedPrefix2) && this._battery2Level > 0)) ? html`
               <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
                 ${this.config.show_battery ? html`
                   <div class="${this._batteryCharging ? 'bio-bat-charging' : ''} clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))} style="display:flex;align-items:center;gap:5px;cursor:pointer;">
@@ -2591,6 +2765,18 @@ class PersonTrackerCard extends LitElement {
                     <span style="font-size:11px;font-weight:700;color:${batteryColor};">${this._batteryLevel}%</span>
                   </div>
                 ` : ''}
+                ${(() => {
+                  const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+                  if (this.config.show_device_2_battery === false || !d2p || this._battery2Level <= 0) return '';
+                  const bat2Color = this._getBatteryColor(this._battery2Level);
+                  return html`
+                    <div class="clickable ${this._battery2Charging ? 'bio-bat-charging' : ''}" @click=${() => this._showMoreInfo(d2p)} style="display:flex;align-items:center;gap:5px;cursor:pointer;">
+                      <ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:15px;color:${bat2Color};"></ha-icon>
+                      <span style="font-size:11px;font-weight:700;color:${bat2Color};">${this._battery2Level}%</span>
+                      ${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;"></ha-icon>` : ''}
+                    </div>
+                  `;
+                })()}
                 ${this.config.show_connection ? html`
                   <div class="clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="display:flex;align-items:center;gap:4px;cursor:pointer;">
                     <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:14px;color:${connectionColor};"></ha-icon>
@@ -2836,6 +3022,18 @@ class PersonTrackerCard extends LitElement {
                       <div class="holo-mu">⌚</div>
                     </div>
                   ` : ''}
+                  ${(() => {
+                    const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+                    if (this.config.show_device_2_battery === false || !d2p || this._battery2Level <= 0) return '';
+                    const bat2Color = this._getBatteryColor(this._battery2Level);
+                    return html`
+                      <div class="holo-metric clickable" @click=${() => this._showMoreInfo(d2p)} style="cursor:pointer;">
+                        <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
+                        <div class="holo-mv" style="color:${bat2Color};">${Math.round(this._battery2Level)}%</div>
+                        <div class="holo-mu"><ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:13px;color:${bat2Color};"></ha-icon></div>
+                      </div>
+                    `;
+                  })()}
                   ${this.config.show_connection && this._connectionType ? html`
                     <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
@@ -2903,6 +3101,228 @@ class PersonTrackerCard extends LitElement {
               </div>
             </div>
           </div>
+        </div>
+      </ha-card>
+    `;
+  }
+
+  _renderWxStationLayout() {
+    const entity = this.hass.states[this.config.entity];
+    const stateConfig = this._getCurrentStateConfig();
+    const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
+    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
+
+    const stateAccent = entity.state === 'home' ? '#22c55e' : entity.state === 'not_home' ? '#6b7280' : '#3b82f6';
+    const accentColor = stateConfig?.styles?.name?.color || stateAccent;
+    const _wxHex = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); return m ? `${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)}` : null; };
+    const accentRgb = _wxHex(accentColor) || '34,197,94';
+
+    const batteryLevel = Math.round(this._batteryLevel);
+    const batteryColor = this._getBatteryColor(this._batteryLevel);
+    const watchBatteryLevel = Math.round(this._watchBatteryLevel);
+    const watchBatteryColor = this._getBatteryColor(this._watchBatteryLevel);
+    const travelTime = Math.round(this._travelTime);
+    const travelColor = this._getTravelTimeColor(travelTime);
+    const travelTime2 = Math.round(this._travelTime2);
+    const travelColor2 = this._getTravelTimeColor(travelTime2);
+    const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const connectionColor = this._isWifiConnection(this._connectionType) ? '#38bdf8' : '#f97316';
+    const distPrecision = this.config.distance_precision ?? 1;
+    const activityIcon = this._getActivityIcon();
+    const last_changed_color = this.config.last_changed_color || null;
+
+    const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
+    const hasDir2 = !!(this.config.travel_sensor_2 || this.config.distance_sensor_2);
+    const isHome = entity.state === 'home';
+    const smartMode = this.config.smart_travel_mode !== false;
+    const zone2Name = this.config.zone_2
+      ? (this.hass.states[this.config.zone_2]?.attributes?.friendly_name || this.config.zone_2.replace('zone.', '').replace(/_/g, ' '))
+      : null;
+    const isZone2 = zone2Name && entity.state.toLowerCase() === zone2Name.toLowerCase();
+    const showDir1 = !smartMode || !hasDir2 || !isZone2;
+    const showDir2 = hasDir2 && (!smartMode || !isHome || !hasDir1);
+    const hasDist1 = showDir1 && this.config.show_distance && this._distanceSensorFound;
+    const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
+    const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
+    const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
+    const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+    const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
+    const hasChips = hasDist1 || hasTravel1 || hasDist2 || hasTravel2;
+
+    // Weather
+    const weatherEntity = this.config.show_weather && this.config.weather_entity ? this.hass.states[this.config.weather_entity] : null;
+    const weatherAttr = weatherEntity?.attributes || {};
+    const weatherHumidity = weatherAttr.humidity != null ? Math.round(weatherAttr.humidity) : null;
+    const weatherWindSpeed = weatherAttr.wind_speed != null ? Math.round(weatherAttr.wind_speed) : null;
+    const weatherWindUnit = weatherAttr.wind_speed_unit || 'km/h';
+    const weatherFeels = weatherAttr.apparent_temperature != null ? `${Math.round(weatherAttr.apparent_temperature)}${weatherAttr.temperature_unit || '°'}` : null;
+    const weatherTempRaw = weatherAttr.temperature != null ? Math.round(weatherAttr.temperature) : null;
+    const weatherTempUnit = weatherAttr.temperature_unit || '°';
+    const weatherState = this._weatherState;
+    const weatherIconMap = {'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','partlycloudy':'mdi:weather-partly-cloudy','pouring':'mdi:weather-pouring','rainy':'mdi:weather-rainy','snowy':'mdi:weather-snowy','snowy-rainy':'mdi:weather-snowy-rainy','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','exceptional':'mdi:alert-circle'};
+    const weatherLabel = weatherState ? this._t(`weather.${weatherState}`) : '';
+    const weatherIcon = weatherState ? (weatherIconMap[weatherState] || 'mdi:weather-partly-cloudy') : null;
+    const weatherTextColor = this.config.weather_text_color || 'rgba(150,200,255,0.85)';
+    const showWeatherTemp = this.config.show_weather && this.config.show_weather_temperature !== false && weatherTempRaw != null;
+
+    const lastChanged = this._getRelativeTime(entity.last_changed);
+
+    // Build gauge list — up to 4 shown
+    const gauges = [];
+    if (this.config.show_battery && batteryLevel > 0)
+      gauges.push({ icon: 'mdi:battery', val: `${batteryLevel}%`, label: this._t('wx.battery'), color: batteryColor, entityType: 'battery' });
+    if (this.config.show_watch_battery && watchBatteryLevel > 0)
+      gauges.push({ icon: 'mdi:watch-vibrate', val: `${watchBatteryLevel}%`, label: this._t('wx.watch'), color: watchBatteryColor, entityType: 'watch_battery' });
+    const wxD2Id = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+    if (this.config.show_device_2_battery !== false && wxD2Id && this._battery2Level > 0) {
+      const bat2Color = this._getBatteryColor(this._battery2Level);
+      gauges.push({ icon: this._getDeviceIcon(wxD2Id), val: `${Math.round(this._battery2Level)}%`, label: this._t('wx.device2'), color: bat2Color, entityId: wxD2Id });
+    }
+    const wxGaugeColor = 'rgba(150,200,255,0.85)';
+    if (this.config.show_weather && weatherWindSpeed != null)
+      gauges.push({ icon: 'mdi:weather-windy', val: `${weatherWindSpeed} ${weatherWindUnit}`, label: this._t('wx.wind'), color: wxGaugeColor, weatherClick: true });
+    if (this.config.show_weather && weatherHumidity != null)
+      gauges.push({ icon: 'mdi:water-percent', val: `${weatherHumidity}%`, label: this._t('wx.humidity'), color: wxGaugeColor, weatherClick: true });
+    if (this.config.show_connection && this._connectionType)
+      gauges.push({ icon: connectionIcon, val: this._isWifiConnection(this._connectionType) ? 'WiFi' : this._connectionType, label: this._t('wx.network'), color: connectionColor, entityType: 'connection' });
+    if (this.config.show_activity && this._activity)
+      gauges.push({ icon: activityIcon, val: this._activity, label: this._t('wx.activity'), color: wxGaugeColor, entityType: 'activity' });
+    if (this.config.show_weather && weatherAttr.pressure != null)
+      gauges.push({ icon: 'mdi:gauge', val: `${Math.round(weatherAttr.pressure)}`, label: this._t('wx.pressure'), color: wxGaugeColor, weatherClick: true });
+    if (this.config.show_weather && weatherFeels)
+      gauges.push({ icon: 'mdi:thermometer-water', val: weatherFeels, label: this._t('wx.feels'), color: wxGaugeColor, weatherClick: true });
+
+    const visibleGauges = gauges.slice(0, 4);
+    const overflowGauges = gauges.slice(4);
+    const gridCols = visibleGauges.length < 3 ? visibleGauges.length || 1 : visibleGauges.length === 3 ? 3 : 4;
+
+    return html`
+      <style>${this._getPairAnimationStyles('wxstation')}</style>
+      <ha-card style="
+        border-radius: ${this.config.card_border_radius};
+        overflow: hidden;
+        background: ${this.config.transparent_background ? 'transparent' : 'linear-gradient(160deg, #0a1628 0%, #0d2040 50%, #1a0d30 100%)'};
+        border: 1px solid rgba(100,150,255,0.12);
+        box-shadow: ${this.config.transparent_background ? 'none' : '0 8px 32px rgba(0,0,0,0.5)'};
+      ">
+        <!-- Top: weather bg + person row -->
+        <div class="wx-top">
+          ${this._renderWeatherBg()}
+          <div class="wx-person-row">
+            <!-- Avatar -->
+            <div class="wx-avatar" style="border-color:rgba(${accentRgb},0.45);box-shadow:0 0 12px rgba(${accentRgb},0.2);">
+              ${this.config.show_entity_picture && entityPicture
+                ? html`<img src="${entityPicture}" @click=${() => this._handleTapAction()} style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;cursor:pointer;">`
+                : html`<span style="font-size:28px;cursor:pointer;" @click=${() => this._handleTapAction()}>👤</span>`}
+            </div>
+            <!-- Info block -->
+            <div style="flex:1;min-width:0;z-index:2;">
+              ${this.config.show_person_name ? html`
+                <div class="wx-name" @click=${() => this._handleTapAction()} style="cursor:pointer;">${personName}</div>
+              ` : ''}
+              ${this.config.show_name ? html`
+                <div class="wx-location">📍 ${displayLocation}</div>
+              ` : ''}
+              ${this.config.show_last_changed && lastChanged ? html`
+                <div style="font-size:10px;color:${last_changed_color || 'rgba(255,255,255,0.28)'};margin-top:3px;">${lastChanged}</div>
+              ` : ''}
+            </div>
+            <!-- Big temperature + condition below -->
+            ${showWeatherTemp ? html`
+              <div class="wx-temp-display" @click=${() => this._showMoreInfo(this.config.weather_entity)} style="cursor:pointer;">
+                <div class="wx-temp-big" style="color:${weatherTextColor};">${weatherTempRaw}<span class="wx-temp-unit">${weatherTempUnit}</span></div>
+                ${weatherState ? html`
+                  <div class="wx-condition" style="color:${weatherTextColor};text-align:right;margin-top:2px;">
+                    ${weatherIcon ? html`<ha-icon icon="${weatherIcon}" style="--mdc-icon-size:12px;vertical-align:middle;"></ha-icon>` : ''}
+                    ${weatherLabel}
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Gauges grid -->
+        ${visibleGauges.length > 0 ? html`
+          <div class="wx-gauges" style="grid-template-columns:repeat(${gridCols},1fr);">
+            ${visibleGauges.map(g => html`
+              <div class="wx-gauge" @click=${() => g.entityId ? this._showMoreInfo(g.entityId) : g.entityType ? this._showMoreInfo(this._getSensorEntityId(g.entityType)) : g.weatherClick ? this._showMoreInfo(this.config.weather_entity) : null} style="cursor:${g.entityId || g.entityType || g.weatherClick ? 'pointer' : 'default'};">
+                <div class="wx-gauge-icon"><ha-icon icon="${g.icon}" style="--mdc-icon-size:20px;color:${g.color};"></ha-icon></div>
+                <div class="wx-gauge-val" style="color:${g.color};">${g.val}</div>
+                <div class="wx-gauge-label">${g.label}</div>
+              </div>
+            `)}
+          </div>
+        ` : ''}
+
+        <!-- Travel / distance chips + overflow sensors -->
+        ${(hasChips || overflowGauges.length > 0) ? html`
+          <div class="wx-chips">
+            ${overflowGauges.map(g => html`
+              <div class="wx-chip" @click=${() => g.entityId ? this._showMoreInfo(g.entityId) : g.entityType ? this._showMoreInfo(this._getSensorEntityId(g.entityType)) : g.weatherClick ? this._showMoreInfo(this.config.weather_entity) : null} style="cursor:${g.entityId || g.entityType || g.weatherClick ? 'pointer' : 'default'};color:${g.color};">
+                <ha-icon icon="${g.icon}" style="--mdc-icon-size:13px;color:${g.color};"></ha-icon>
+                <span>${g.val}</span>
+              </div>
+            `)}
+            ${pairDir1 ? html`
+              <div class="wx-chip sensor-pair-wx" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
+                <div class="pair-a-wx">
+                  <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
+                  <span style="color:${travelColor};">${travelTime}m</span>
+                </div>
+                <div class="pair-b-wx">
+                  <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:13px;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome?.toFixed(distPrecision))} ${this._distanceUnit}</span>
+                </div>
+              </div>
+            ` : html`
+              ${hasTravel1 ? html`
+                <div class="wx-chip" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
+                  <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
+                  <span style="color:${travelColor};">${travelTime}m</span>
+                </div>
+              ` : ''}
+              ${hasDist1 ? html`
+                <div class="wx-chip" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="cursor:pointer;">
+                  <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:13px;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome?.toFixed(distPrecision))} ${this._distanceUnit}</span>
+                </div>
+              ` : ''}
+            `}
+            ${pairDir2 ? html`
+              <div class="wx-chip sensor-pair-wx" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;animation-delay:-4s;">
+                <div class="pair-a-wx" style="animation-delay:-4s;">
+                  <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
+                  <span style="color:${travelColor2};">${travelTime2}m</span>
+                </div>
+                <div class="pair-b-wx" style="animation-delay:-4s;">
+                  <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:13px;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))} ${this._distanceUnit2}</span>
+                </div>
+              </div>
+            ` : html`
+              ${hasTravel2 ? html`
+                <div class="wx-chip" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;">
+                  <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
+                  <span style="color:${travelColor2};">${travelTime2}m</span>
+                </div>
+              ` : ''}
+              ${hasDist2 ? html`
+                <div class="wx-chip" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))} style="cursor:pointer;">
+                  <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:13px;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))} ${this._distanceUnit2}</span>
+                </div>
+              ` : ''}
+            `}
+          </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div class="wx-footer">
+          <div class="wx-status-dot" style="background:${accentColor};box-shadow:0 0 8px rgba(${accentRgb},0.7);"></div>
+          <div class="wx-footer-text">${displayLocation}</div>
+          <div class="wx-updated">${lastChanged}</div>
         </div>
       </ha-card>
     `;
@@ -4184,6 +4604,95 @@ class PersonTrackerCard extends LitElement {
       }
       .holo-mv { font-size: 12px; font-weight: 700; color: #fff; line-height: 1; }
       .holo-mu { font-size: 8px; color: rgba(255,255,255,0.32); line-height: 1; }
+
+      /* ── Weather Station Theme ───────────────────────────── */
+      @keyframes wx-dot-pulse {
+        0%,100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(1.4); opacity: 0.7; }
+      }
+      .wx-top {
+        position: relative;
+        padding: 14px 16px 10px;
+        overflow: hidden;
+      }
+      .wx-top::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 44px;
+        background: linear-gradient(to bottom, transparent, #0d2040);
+        pointer-events: none;
+        z-index: 1;
+      }
+      .wx-person-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+        z-index: 2;
+      }
+      .wx-avatar {
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 2px solid rgba(100,150,255,0.3);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 28px;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+      .wx-name { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.2; }
+      .wx-location { font-size: 12px; color: rgba(150,200,255,0.7); margin-top: 3px; }
+      .wx-condition { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; cursor: pointer; }
+      .wx-temp-display { margin-left: auto; text-align: right; flex-shrink: 0; z-index: 2; }
+      .wx-temp-big { font-size: 42px; font-weight: 200; color: #fff; line-height: 1; }
+      .wx-temp-unit { font-size: 18px; vertical-align: super; color: inherit; opacity: 0.55; }
+      .wx-feels { font-size: 10px; color: rgba(255,255,255,0.28); margin-top: 2px; }
+      .wx-gauges {
+        padding: 8px 16px 10px;
+        display: grid;
+        gap: 4px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+      }
+      .wx-gauge {
+        text-align: center;
+        padding: 6px 4px;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+      .wx-gauge:hover { background: rgba(255,255,255,0.04); }
+      .wx-gauge-icon { font-size: 18px; margin-bottom: 3px; display: flex; align-items: center; justify-content: center; }
+      .wx-gauge-val { font-size: 12px; font-weight: 700; }
+      .wx-gauge-label { font-size: 8px; color: rgba(255,255,255,0.25); margin-top: 1px; letter-spacing: 1px; text-transform: uppercase; }
+      .wx-chips {
+        padding: 6px 12px 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .wx-chip {
+        display: flex; align-items: center; gap: 5px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 11px; font-weight: 600;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.7);
+        position: relative;
+        overflow: hidden;
+      }
+      .wx-footer {
+        padding: 9px 16px;
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(0,0,0,0.15);
+      }
+      .wx-status-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        flex-shrink: 0;
+        animation: wx-dot-pulse 2.5s ease-in-out infinite;
+      }
+      .wx-footer-text { font-size: 11px; color: rgba(255,255,255,0.4); flex: 1; }
+      .wx-updated { font-size: 10px; color: rgba(255,255,255,0.2); }
     `;
   }
 }
@@ -4192,7 +4701,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.3.9 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.2 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

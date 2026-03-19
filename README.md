@@ -1,9 +1,9 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **seven layout modes**.
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eight layout modes**.
 
 ---
 
@@ -42,6 +42,11 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ---
 
+### 🌦️ Weather Station
+![Weather Station Layout](images/wxstation.png)
+
+---
+
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
 ---
@@ -67,7 +72,7 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ## ✨ Key Features
 
-- 🎨 **Seven Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D
+- 🎨 **Eight Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station
 - 🌦️ **Rich Weather Animations** — 15 fully animated weather states as card background
 - 📱 **Auto Sensor Detection** — Automatically finds battery, activity, connection sensors from the HA Companion App
 - 🔋 **Battery Monitoring** — Phone battery with dynamic icon and color
@@ -156,6 +161,17 @@ entity: person.davide
 layout: holo
 ```
 
+### Weather Station 🌦️
+A dedicated dashboard for personal weather data. Weather animation fills the top section, with a dynamic 4-column gauge grid (battery, watch, wind, humidity, pressure, feels like — priority order). Overflow sensors appear as chips below the grid. Travel and distance chips animate at the bottom.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: wxstation
+weather_entity: weather.home
+show_weather: true
+```
+
 ---
 
 ## 🌦️ Weather Animations
@@ -165,7 +181,7 @@ Enable animated weather backgrounds by providing a `weather` entity:
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-layout: modern          # works on all 7 layouts
+layout: modern          # works on all 8 layouts
 weather_entity: weather.home
 show_weather: true
 show_weather_background: true   # animated scene
@@ -251,7 +267,7 @@ show_weather_temperature: true  # temperature label
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `entity` | string | required | `person.xxx` entity |
-| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` |
+| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` |
 | `show_entity_picture` | bool | `true` | Show avatar |
 | `show_name` | bool | `true` | Show person name |
 | `show_last_changed` | bool | `true` | Show last state change time |
@@ -265,6 +281,10 @@ show_weather_temperature: true  # temperature label
 | `show_weather_background` | bool | `true` | Animated weather background |
 | `show_weather_temperature` | bool | `true` | Temperature label |
 | `weather_entity` | string | — | `weather.xxx` entity |
+| `show_device_2_battery` | bool | `true` | Show second device (tablet/laptop) battery. Auto-detected; manual override via `device_2_battery_sensor` |
+| `show_particles` | bool | `true` | Show animated particles/orbs (Glass and Bio only) |
+| `transparent_background` | bool | `false` | Transparent card background (Glass and Bio only) |
+| `pair_travel_animation` | bool | `true` | Alternate distance/travel chips. When `false`, both show simultaneously |
 | `card_background` | string | — | CSS background value |
 | `card_border_radius` | string | — | CSS border-radius value |
 | `distance_unit` | string | auto | Override distance unit (`km`, `mi`) |
@@ -275,6 +295,8 @@ show_weather_temperature: true  # temperature label
 |--------|-------------|
 | `battery_sensor` | Phone battery sensor (auto-detected) |
 | `watch_battery_sensor` | Watch battery sensor (auto-detected) |
+| `device_2_battery_sensor` | Second device battery sensor (auto-detected from 2nd device tracker) |
+| `device_2_battery_state_sensor` | Second device charging state sensor |
 | `activity_sensor` | Activity sensor (auto-detected) |
 | `connection_sensor` | Connection type sensor (auto-detected) |
 | `distance_sensor` | Distance/travel time sensor (Waze/Google Routes) |
@@ -411,7 +433,7 @@ zone_2: work
 - Person **at `zone_2`** (work) → show direction 1 (work→home), hide direction 2
 - Person **elsewhere** → both directions visible (with alternating animation)
 
-Supported in all 7 layouts.
+Supported in all 8 layouts.
 
 ---
 

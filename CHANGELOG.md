@@ -3,14 +3,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-03-19
+
+### Added
+- ✨ **`show_particles`** — New toggle (Glass and Bio layouts only) to disable the animated particles and orbs. When off, the rising bioluminescent particles (Bio) and background orbs (Glass) are hidden. Default: `true`.
+- 🌦️ **Weather Station layout (`wxstation`)** — New layout with a dynamic weather background, 4-column gauge grid (battery, watch, wind, humidity, pressure, feels like — priority order), overflow sensors as chips, animated travel/distance chips, and a status footer with last-updated time. Fully integrated with all existing config options.
+- 📱 **Second device battery (`show_device_2_battery`)** — Display battery for a second device (tablet, laptop, phone) alongside the primary device. Auto-detected from `device_trackers` (second entry); manual override via `device_2_battery_sensor` and `device_2_battery_state_sensor` entity pickers in the Sensors tab. Device icon auto-detected from entity name (tablet/laptop/phone). Supported across all 8 layouts.
+
+### Fixed
+- 🐛 **`weather_text_color` not applying to °C/°F unit** — Temperature unit (`.wx-temp-unit`) had a hardcoded `color: rgba(255,255,255,0.5)` that overrode the inherited color. Now uses `color: inherit; opacity: 0.55`.
+
+---
+
 ## [1.4.1] - 2026-03-17
 
 ### Added
 - ✨ **`pair_travel_animation`** — New toggle to disable the alternating distance/travel animation. When off, distance and travel time are shown as two separate chips simultaneously (all 7 layouts). Toggle available in the editor next to Smart Mode.
 - ✨ **`transparent_background`** — New toggle (Glass and Bio layouts only) to remove the dark card background and box-shadow, making the card blend into any HA dashboard background. Visible in the Style tab only when Glass or Bio is selected.
 
+
 ### Fixed
-- 🐛 **HACS install button wrong type** — README links used `category=plugin`, corrected to `category=dashboard`.
+- 🐛 **HACS install button wrong type** — README links used `category=dashboard`, corrected to `category=plugin`.
 
 ---
 

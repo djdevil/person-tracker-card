@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.2: wxstation layout added to picker; device_2_battery_sensor entity pickers (auto-detect)
 // v1.4.1: pair_travel_animation toggle (near smart mode); transparent_background toggle for Glass/Bio
 // v1.4.0: weather_text_color picker in weather section; last_changed_color picker in style section
 // v1.3.7: Version badge added to editor UI top-right
@@ -85,6 +86,13 @@ class EditorLocalizationHelper {
         'editor.last_changed_font_size': 'Dimensione font ultimo aggiornamento',
         'editor.card_background': 'Sfondo card',
         'editor.transparent_background': 'Sfondo trasparente (solo Glass/Bio)',
+        'editor.show_particles': 'Mostra particelle animate (solo Glass/Bio)',
+        'editor.show_device_2_battery': 'Batteria secondo dispositivo (tablet/laptop)',
+        'editor.device_2_battery_sensor': 'Sensore batteria secondo dispositivo',
+        'editor.device_2_battery_state_sensor': 'Stato carica secondo dispositivo',
+        'wx.battery': 'Batteria', 'wx.watch': 'Orologio', 'wx.wind': 'Vento',
+        'wx.humidity': 'Umidità', 'wx.network': 'Rete', 'wx.activity': 'Attività',
+        'wx.pressure': 'Press.', 'wx.feels': 'Percepita', 'wx.device2': 'Disp.2',
         'editor.border_radius': 'Raggio bordo',
         'editor.image_size': 'Dimensione immagine (%)',
         'editor.modern_picture_size': 'Dimensione immagine (px)',
@@ -218,6 +226,13 @@ class EditorLocalizationHelper {
         'editor.last_changed_font_size': 'Last changed font size',
         'editor.card_background': 'Card background',
         'editor.transparent_background': 'Transparent background (Glass/Bio only)',
+        'editor.show_particles': 'Show animated particles (Glass/Bio only)',
+        'editor.show_device_2_battery': 'Second device battery (tablet/laptop)',
+        'editor.device_2_battery_sensor': 'Second device battery sensor',
+        'editor.device_2_battery_state_sensor': 'Second device charging state sensor',
+        'wx.battery': 'Battery', 'wx.watch': 'Watch', 'wx.wind': 'Wind',
+        'wx.humidity': 'Humidity', 'wx.network': 'Network', 'wx.activity': 'Activity',
+        'wx.pressure': 'Press.', 'wx.feels': 'Feels like', 'wx.device2': 'Device 2',
         'editor.border_radius': 'Border radius',
         'editor.image_size': 'Image size (%)',
         'editor.modern_picture_size': 'Picture size (px)',
@@ -351,6 +366,13 @@ class EditorLocalizationHelper {
         'editor.last_changed_font_size': 'Taille police dernière mise à jour',
         'editor.card_background': 'Fond carte',
         'editor.transparent_background': 'Fond transparent (Glass/Bio uniquement)',
+        'editor.show_particles': 'Afficher particules animées (Glass/Bio uniquement)',
+        'editor.show_device_2_battery': 'Batterie 2e appareil (tablette/laptop)',
+        'editor.device_2_battery_sensor': 'Capteur batterie 2e appareil',
+        'editor.device_2_battery_state_sensor': 'Capteur état charge 2e appareil',
+        'wx.battery': 'Batterie', 'wx.watch': 'Montre', 'wx.wind': 'Vent',
+        'wx.humidity': 'Humidité', 'wx.network': 'Réseau', 'wx.activity': 'Activité',
+        'wx.pressure': 'Press.', 'wx.feels': 'Ressenti',
         'editor.border_radius': 'Rayon bordure',
         'editor.image_size': 'Taille image (%)',
         'editor.modern_picture_size': 'Taille image (px)',
@@ -484,6 +506,13 @@ class EditorLocalizationHelper {
         'editor.last_changed_font_size': 'Schriftgröße Letzte Änderung',
         'editor.card_background': 'Kartenhintergrund',
         'editor.transparent_background': 'Transparenter Hintergrund (nur Glass/Bio)',
+        'editor.show_particles': 'Animierte Partikel anzeigen (nur Glass/Bio)',
+        'editor.show_device_2_battery': 'Zweitgerät-Akku (Tablet/Laptop)',
+        'editor.device_2_battery_sensor': 'Akku-Sensor Zweitgerät',
+        'editor.device_2_battery_state_sensor': 'Ladestatus-Sensor Zweitgerät',
+        'wx.battery': 'Batterie', 'wx.watch': 'Uhr', 'wx.wind': 'Wind',
+        'wx.humidity': 'Luftfeuchte', 'wx.network': 'Netzwerk', 'wx.activity': 'Aktivität',
+        'wx.pressure': 'Druck', 'wx.feels': 'Gefühlt', 'wx.device2': 'Gerät 2',
         'editor.border_radius': 'Randradius',
         'editor.image_size': 'Bildgröße (%)',
         'editor.modern_picture_size': 'Bildgröße (px)',
@@ -979,7 +1008,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.1</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.2</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1055,6 +1084,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="glass">Glass ◈</mwc-list-item>
           <mwc-list-item value="bio">Bioluminescence ◉</mwc-list-item>
           <mwc-list-item value="holo">Holographic 3D ◈</mwc-list-item>
+          <mwc-list-item value="wxstation">Weather Station ⛅</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -1307,6 +1337,37 @@ class PersonTrackerCardEditor extends LitElement {
             .helper=${this._t('editor.charging_helper')}
             @input=${(e) => this._valueChanged(e, 'watch_battery_charging_value')}>
           </ha-textfield>
+        </div>
+
+        <!-- Device 2 Battery (tablet/laptop) -->
+        <div class="sensor-group">
+          <div class="sensor-header">
+            <ha-icon icon="mdi:devices" class="sensor-icon"></ha-icon>
+            <span class="sensor-title">${this._t('editor.show_device_2_battery')}</span>
+            <ha-switch
+              .checked=${this._config.show_device_2_battery !== false}
+              @change=${(e) => this._valueChanged(e, 'show_device_2_battery')}>
+            </ha-switch>
+          </div>
+
+          ${this._config.show_device_2_battery !== false ? html`
+            <ha-entity-picker
+              .hass=${this.hass}
+              .value=${this._config.device_2_battery_sensor || auto.device_2_battery_sensor || ''}
+              .label=${auto.device_2_battery_sensor || this._t('editor.device_2_battery_sensor')}
+              .includeDomains=${['sensor', 'input_number']}
+              allow-custom-entity
+              @value-changed=${(e) => this._valueChanged(e, 'device_2_battery_sensor')}>
+            </ha-entity-picker>
+            <ha-entity-picker
+              .hass=${this.hass}
+              .value=${this._config.device_2_battery_state_sensor || auto.device_2_battery_state_sensor || ''}
+              .label=${auto.device_2_battery_state_sensor || this._t('editor.device_2_battery_state_sensor')}
+              .includeDomains=${['sensor', 'binary_sensor']}
+              allow-custom-entity
+              @value-changed=${(e) => this._entityPickerChanged(e, 'device_2_battery_state_sensor')}>
+            </ha-entity-picker>
+          ` : ''}
         </div>
 
         <!-- Activity -->
@@ -1678,6 +1739,16 @@ class PersonTrackerCardEditor extends LitElement {
               </ha-switch>
             </div>
           </div>
+          <div class="sensor-group" style="margin-bottom:8px;">
+            <div class="sensor-header">
+              <ha-icon icon="mdi:blur" class="sensor-icon"></ha-icon>
+              <span class="sensor-title">${this._t('editor.show_particles')}</span>
+              <ha-switch
+                .checked=${this._config.show_particles !== false}
+                @change=${(e) => this._valueChanged(e, 'show_particles')}>
+              </ha-switch>
+            </div>
+          </div>
         ` : ''}
 
         <ha-textfield
@@ -2043,7 +2114,7 @@ class PersonTrackerCardEditor extends LitElement {
       || item?.value
       || (item && item.getAttribute ? item.getAttribute('value') : null);
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo')) {
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo' && value !== 'wxstation')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -2252,14 +2323,31 @@ class PersonTrackerCardEditor extends LitElement {
     const connection = p
       ? (s[`sensor.${p}_connection_type`] ? `sensor.${p}_connection_type` : `sensor.${p}_network_type`)
       : (s[`sensor.phone_${entityBase}_connection_type`] ? `sensor.phone_${entityBase}_connection_type` : `sensor.phone_${entityBase}_network_type`);
+    const p2 = this._resolveDevicePrefix2Editor();
     return {
-      battery_sensor:             p ? `sensor.${p}_battery_level`        : `sensor.phone_${entityBase}_battery_level`,
-      battery_state_sensor:       p ? `sensor.${p}_battery_state`        : `sensor.phone_${entityBase}_battery_state`,
-      watch_battery_sensor:       p ? `sensor.${p}_watch_battery_level`  : `sensor.watch_${entityBase}_battery_level`,
-      watch_battery_state_sensor: p ? `sensor.${p}_watch_battery_state`  : `sensor.watch_${entityBase}_battery_state`,
-      activity_sensor:            p ? `sensor.${p}_activity`             : `sensor.phone_${entityBase}_activity`,
-      connection_sensor:          connection,
+      battery_sensor:              p ? `sensor.${p}_battery_level`        : `sensor.phone_${entityBase}_battery_level`,
+      battery_state_sensor:        p ? `sensor.${p}_battery_state`        : `sensor.phone_${entityBase}_battery_state`,
+      watch_battery_sensor:        p ? `sensor.${p}_watch_battery_level`  : `sensor.watch_${entityBase}_battery_level`,
+      watch_battery_state_sensor:  p ? `sensor.${p}_watch_battery_state`  : `sensor.watch_${entityBase}_battery_state`,
+      activity_sensor:             p ? `sensor.${p}_activity`             : `sensor.phone_${entityBase}_activity`,
+      connection_sensor:           connection,
+      device_2_battery_sensor:     p2 ? `sensor.${p2}_battery_level` : null,
+      device_2_battery_state_sensor: p2 ? `sensor.${p2}_battery_state` : null,
     };
+  }
+
+  _resolveDevicePrefix2Editor() {
+    if (!this.hass || !this._config?.entity) return null;
+    const personEntity = this.hass.states[this._config.entity];
+    if (!personEntity) return null;
+    const skip = this._resolveDevicePrefixEditor();
+    const deviceTrackers = personEntity.attributes?.device_trackers || [];
+    for (const dt of deviceTrackers) {
+      const prefix = dt.replace('device_tracker.', '');
+      if (prefix === skip) continue;
+      if (this.hass.states[`sensor.${prefix}_battery_level`]) return prefix;
+    }
+    return null;
   }
 
   _autoDetectSensors() {
@@ -2268,12 +2356,14 @@ class PersonTrackerCardEditor extends LitElement {
     const auto = this._getAutoSensorIds();
 
     const candidates = {
-      battery_sensor:             [auto.battery_sensor],
-      battery_state_sensor:       [auto.battery_state_sensor],
-      watch_battery_sensor:       [auto.watch_battery_sensor],
-      watch_battery_state_sensor: [auto.watch_battery_state_sensor],
-      activity_sensor:            [auto.activity_sensor],
-      connection_sensor:          [auto.connection_sensor],
+      battery_sensor:               [auto.battery_sensor],
+      battery_state_sensor:         [auto.battery_state_sensor],
+      watch_battery_sensor:         [auto.watch_battery_sensor],
+      watch_battery_state_sensor:   [auto.watch_battery_state_sensor],
+      activity_sensor:              [auto.activity_sensor],
+      connection_sensor:            [auto.connection_sensor],
+      device_2_battery_sensor:      [auto.device_2_battery_sensor],
+      device_2_battery_state_sensor:[auto.device_2_battery_state_sensor],
     };
 
     let updated = { ...this._config };
