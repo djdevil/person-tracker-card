@@ -2,6 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![Version](https://img.shields.io/badge/version-1.4.3-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **nine layout modes**.
 
@@ -48,7 +49,7 @@ Advanced card for Home Assistant that displays detailed information about people
 ---
 
 ### 🖥️ Matrix Rain
-![Matrix Rain Layout](images/matrix.png)
+<img src="images/matrix.png" alt="Matrix Rain Layout" width="340">
 
 ---
 
