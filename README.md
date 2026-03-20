@@ -1,9 +1,9 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.3-blue.svg)](https://github.com/djdevil/person-tracker-card)
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eight layout modes**.
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **nine layout modes**.
 
 ---
 
@@ -47,6 +47,11 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ---
 
+### 🖥️ Matrix Rain
+![Matrix Rain Layout](images/matrix.png)
+
+---
+
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
 ---
@@ -72,7 +77,7 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ## ✨ Key Features
 
-- 🎨 **Eight Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station
+- 🎨 **Nine Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain
 - 🌦️ **Rich Weather Animations** — 15 fully animated weather states as card background
 - 📱 **Auto Sensor Detection** — Automatically finds battery, activity, connection sensors from the HA Companion App
 - 🔋 **Battery Monitoring** — Phone battery with dynamic icon and color
@@ -172,6 +177,15 @@ weather_entity: weather.home
 show_weather: true
 ```
 
+### Matrix Rain 🖥️
+Terminal/hacker theme with animated falling katakana and hexadecimal characters as background. Square avatar with CRT scanlines and animated scan bar. Monospace stats blocks with phosphor green progress bars. Avatar border and scan bar color follow the state color picker.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: matrix
+```
+
 ---
 
 ## 🌦️ Weather Animations
@@ -181,7 +195,7 @@ Enable animated weather backgrounds by providing a `weather` entity:
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-layout: modern          # works on all 8 layouts
+layout: modern          # works on all 9 layouts
 weather_entity: weather.home
 show_weather: true
 show_weather_background: true   # animated scene
@@ -267,7 +281,7 @@ show_weather_temperature: true  # temperature label
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `entity` | string | required | `person.xxx` entity |
-| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` |
+| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` / `matrix` |
 | `show_entity_picture` | bool | `true` | Show avatar |
 | `show_name` | bool | `true` | Show person name |
 | `show_last_changed` | bool | `true` | Show last state change time |
@@ -433,7 +447,7 @@ zone_2: work
 - Person **at `zone_2`** (work) → show direction 1 (work→home), hide direction 2
 - Person **elsewhere** → both directions visible (with alternating animation)
 
-Supported in all 8 layouts.
+Supported in all 9 layouts.
 
 ---
 

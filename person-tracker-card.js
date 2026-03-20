@@ -1,6 +1,8 @@
-// Person Tracker Card v1.4.2 - Multilanguage Version
+// Person Tracker Card v1.4.3 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.3: Matrix Rain layout (matrix) — terminal/hacker theme with falling katakana/hex columns,
+//         monospace stats with progress bars, state color on avatar border/scan bar
 // v1.4.2: Weather Station layout (wxstation); show_device_2_battery — second device (tablet/laptop)
 //         battery display with auto-detection across all 8 layouts; fix weather_text_color now
 //         also applies to °C/°F temperature unit
@@ -29,7 +31,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.2 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.3 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -271,7 +273,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.2';
+const CARD_VERSION = '1.4.3';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -1159,6 +1161,12 @@ class PersonTrackerCard extends LitElement {
         .pair-a-wx{animation:pair-a-wx 8s ease-in-out infinite;display:flex;align-items:center;gap:4px;white-space:nowrap}
         .pair-b-wx{animation:pair-b-wx 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
         .sensor-pair-wx{position:relative;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0;}`,
+      matrix: `
+        @keyframes pair-a-matrix{0%,43%{opacity:1}50%,93%{opacity:0}100%{opacity:1}}
+        @keyframes pair-b-matrix{0%,43%{opacity:0}50%,93%{opacity:1}100%{opacity:0}}
+        .pair-a-matrix{animation:pair-a-matrix 8s ease-in-out infinite;display:flex;align-items:center;gap:5px;white-space:nowrap}
+        .pair-b-matrix{animation:pair-b-matrix 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;gap:5px;white-space:nowrap}
+        .sensor-pair-matrix{position:relative;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0;}`,
     };
     return styles[theme] || '';
   }
@@ -1478,6 +1486,8 @@ class PersonTrackerCard extends LitElement {
       return this._renderHoloLayout();
     } else if (this.config.layout === 'wxstation') {
       return this._renderWxStationLayout();
+    } else if (this.config.layout === 'matrix') {
+      return this._renderMatrixLayout();
     } else {
       return this._renderClassicLayout();
     }
@@ -3328,6 +3338,228 @@ class PersonTrackerCard extends LitElement {
     `;
   }
 
+  _renderMatrixLayout() {
+    const entity = this.hass.states[this.config.entity];
+    const stateConfig = this._getCurrentStateConfig();
+    const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
+    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
+
+    const stateAccent = entity.state === 'home' ? '#00ff41' : entity.state === 'not_home' ? '#ff4141' : '#00d4ff';
+    const accentColor = stateConfig?.styles?.name?.color || stateAccent;
+    const _hexRgb = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); return m ? `${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)}` : null; };
+    const accentRgb = _hexRgb(accentColor) || '0,255,65';
+
+    const batteryLevel = Math.round(this._batteryLevel);
+    const batteryColor = this._getBatteryColor(this._batteryLevel);
+    const watchBatteryLevel = Math.round(this._watchBatteryLevel);
+    const watchBatteryColor = this._getBatteryColor(this._watchBatteryLevel);
+    const travelTime = Math.round(this._travelTime);
+    const travelTime2 = Math.round(this._travelTime2);
+    const travelColor = this._getTravelTimeColor(travelTime);
+    const travelColor2 = this._getTravelTimeColor(travelTime2);
+    const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const distPrecision = this.config.distance_precision ?? 1;
+
+    const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
+    const hasDir2 = !!(this.config.travel_sensor_2 || this.config.distance_sensor_2);
+    const isHome = entity.state === 'home';
+    const smartMode = this.config.smart_travel_mode !== false;
+    const zone2Name = this.config.zone_2
+      ? (this.hass.states[this.config.zone_2]?.attributes?.friendly_name || this.config.zone_2.replace('zone.', '').replace(/_/g, ' '))
+      : null;
+    const isZone2 = zone2Name && entity.state.toLowerCase() === zone2Name.toLowerCase();
+    const showDir1 = !smartMode || !hasDir2 || !isZone2;
+    const showDir2 = hasDir2 && (!smartMode || !isHome || !hasDir1);
+    const hasDist1 = showDir1 && this.config.show_distance && this._distanceSensorFound;
+    const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
+    const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
+    const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
+    const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+    const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
+
+    const lastChanged = this.config.show_last_changed ? this._getRelativeTime(entity.last_changed) : '';
+
+    const d2p = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
+    const showDevice2 = this.config.show_device_2_battery !== false && d2p && this._battery2Level > 0;
+    const battery2Level = Math.round(this._battery2Level);
+    const battery2Color = this._getBatteryColor(this._battery2Level);
+
+    // Deterministic matrix rain columns via seeded PRNG
+    const r = this._rng(987654);
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノラリルレロ0123456789ABCDEF@#$%';
+    const matrixCols = Array.from({ length: 24 }, () => {
+      const x = r() * 97;
+      const duration = 2.5 + r() * 5;
+      const delay = -(r() * 8);
+      const opacity = 0.2 + r() * 0.5;
+      const fontSize = 9 + Math.floor(r() * 5);
+      let txt = '';
+      const len = 14 + Math.floor(r() * 14);
+      for (let j = 0; j < len; j++) txt += chars[Math.floor(r() * chars.length)] + '\n';
+      return { x, duration, delay, opacity, fontSize, txt };
+    });
+
+    const hasChips = (this.config.show_activity && this._activity !== 'unknown' && this._activity) ||
+                     (this.config.show_connection && this._connectionType) ||
+                     hasDist1 || hasTravel1 || hasDist2 || hasTravel2;
+
+    return html`
+      <style>${this._getPairAnimationStyles('matrix')}</style>
+      <ha-card style="
+        background:#000;
+        font-family:'Courier New',monospace;
+        border-radius:${this.config.card_border_radius};
+        ${this.config.card_background ? `background:${this.config.card_background};` : ''}
+      ">
+        <!-- Rain columns -->
+        <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;">
+          ${matrixCols.map(col => html`
+            <div style="
+              position:absolute;left:${col.x}%;top:0;
+              color:#00ff41;font-size:${col.fontSize}px;opacity:${col.opacity};
+              writing-mode:vertical-lr;white-space:pre;line-height:1.2;
+              animation:matrix-fall ${col.duration}s linear ${col.delay}s infinite;
+              user-select:none;
+            ">${col.txt}</div>
+          `)}
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.5) 45%,rgba(0,0,0,0.88) 70%,#000 90%);"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="matrix-content">
+          <!-- Person row -->
+          <div class="matrix-person-row">
+            <div class="matrix-avatar-box clickable" @click=${() => this._handleTapAction()}
+                 style="border-color:${accentColor};box-shadow:0 0 14px rgba(${accentRgb},.45),inset 0 0 10px rgba(${accentRgb},.08);">
+              ${this.config.show_entity_picture && entityPicture
+                ? html`<img src="${entityPicture}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;">`
+                : html`<span style="font-size:26px;">👤</span>`}
+              <div class="matrix-avatar-scanlines" style="background:repeating-linear-gradient(transparent 0px,transparent 2px,rgba(${accentRgb},.04) 2px,rgba(${accentRgb},.04) 4px);"></div>
+              <div class="matrix-avatar-scan" style="background:rgba(${accentRgb},.18);"></div>
+            </div>
+            <div style="flex:1;min-width:0;">
+              ${this.config.show_person_name !== false ? html`<div class="matrix-name">${personName.toUpperCase()}</div>` : ''}
+              ${this.config.show_name !== false ? html`<div class="matrix-state">STATUS:: ${displayLocation.toUpperCase()}</div>` : ''}
+              ${lastChanged ? html`<div class="matrix-last-changed" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${lastChanged}</div>` : ''}
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="color:#00ff41;font-size:9px;letter-spacing:2px;opacity:.6;animation:matrix-blink 2s step-end infinite;">◼ LIVE</div>
+            </div>
+          </div>
+
+          <hr class="matrix-divider">
+
+          <!-- Stats blocks -->
+          <div class="matrix-stats">
+            ${this.config.show_battery && batteryLevel > 0 ? html`
+              <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))} style="cursor:pointer;">
+                <div class="matrix-stat-label">BATTERY</div>
+                <div class="matrix-stat-val" style="color:${batteryColor};">${batteryLevel}%</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${batteryLevel}%;background:${batteryColor};box-shadow:0 0 5px ${batteryColor};"></div></div>
+              </div>
+            ` : ''}
+            ${this.config.show_watch_battery && watchBatteryLevel > 0 ? html`
+              <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))} style="cursor:pointer;">
+                <div class="matrix-stat-label">WATCH</div>
+                <div class="matrix-stat-val" style="color:${watchBatteryColor};">${watchBatteryLevel}%</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${watchBatteryLevel}%;background:${watchBatteryColor};box-shadow:0 0 5px ${watchBatteryColor};"></div></div>
+              </div>
+            ` : ''}
+            ${showDevice2 ? html`
+              <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(d2p)} style="cursor:pointer;">
+                <div class="matrix-stat-label">DEV.2</div>
+                <div class="matrix-stat-val" style="color:${battery2Color};">${battery2Level}%</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${battery2Level}%;background:${battery2Color};box-shadow:0 0 5px ${battery2Color};"></div></div>
+              </div>
+            ` : ''}
+            ${this.config.show_weather && this._weatherTemp ? html`
+              <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)} style="cursor:pointer;">
+                <div class="matrix-stat-label">TEMP</div>
+                <div class="matrix-stat-val" style="color:${this.config.weather_text_color || '#00ff41'};">${this._weatherTemp}</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:65%;"></div></div>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Chips: activity, connection, travel/distance -->
+          ${hasChips ? html`
+            <div class="matrix-chips-row">
+              ${this.config.show_activity && this._activity && this._activity !== 'unknown' ? html`
+                <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))} style="cursor:pointer;">
+                  <ha-icon icon="${this._activityIcon || 'mdi:run'}" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
+                  <span>${this._activity.toUpperCase()}</span>
+                </div>
+              ` : ''}
+              ${this.config.show_connection && this._connectionType ? html`
+                <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="cursor:pointer;">
+                  <ha-icon icon="${connectionIcon}" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
+                  <span>${this._isWifiConnection(this._connectionType) ? 'WIFI' : 'LTE'}</span>
+                </div>
+              ` : ''}
+              ${pairDir1 ? html`
+                <div class="matrix-chip sensor-pair-matrix clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
+                  <div class="pair-a-matrix">
+                    <ha-icon icon="mdi:car" style="--mdc-icon-size:12px;color:${travelColor};"></ha-icon>
+                    <span style="color:${travelColor};">${travelTime}M</span>
+                  </div>
+                  <div class="pair-b-matrix">
+                    <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
+                    <span>${parseFloat(this._distanceFromHome?.toFixed(distPrecision))}${this._distanceUnit}</span>
+                  </div>
+                </div>
+              ` : html`
+                ${hasTravel1 ? html`
+                  <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
+                    <ha-icon icon="mdi:car" style="--mdc-icon-size:12px;color:${travelColor};"></ha-icon>
+                    <span style="color:${travelColor};">${travelTime}M</span>
+                  </div>
+                ` : ''}
+                ${hasDist1 ? html`
+                  <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="cursor:pointer;">
+                    <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
+                    <span>${parseFloat(this._distanceFromHome?.toFixed(distPrecision))}${this._distanceUnit}</span>
+                  </div>
+                ` : ''}
+              `}
+              ${pairDir2 ? html`
+                <div class="matrix-chip sensor-pair-matrix clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;">
+                  <div class="pair-a-matrix" style="animation-delay:-4s;">
+                    <ha-icon icon="mdi:car" style="--mdc-icon-size:12px;color:${travelColor2};"></ha-icon>
+                    <span style="color:${travelColor2};">${travelTime2}M</span>
+                  </div>
+                  <div class="pair-b-matrix" style="animation-delay:-4s;">
+                    <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
+                    <span>${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))}${this._distanceUnit2}</span>
+                  </div>
+                </div>
+              ` : html`
+                ${hasTravel2 ? html`
+                  <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;">
+                    <ha-icon icon="mdi:car" style="--mdc-icon-size:12px;color:${travelColor2};"></ha-icon>
+                    <span style="color:${travelColor2};">${travelTime2}M</span>
+                  </div>
+                ` : ''}
+                ${hasDist2 ? html`
+                  <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))} style="cursor:pointer;">
+                    <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
+                    <span>${parseFloat(this._distanceFromHome2?.toFixed(distPrecision))}${this._distanceUnit2}</span>
+                  </div>
+                ` : ''}
+              `}
+            </div>
+          ` : ''}
+
+          <!-- Footer -->
+          <div class="matrix-footer-row">
+            <div class="matrix-status-line">SYS::TRACKER v${CARD_VERSION}</div>
+            ${lastChanged ? html`<div class="matrix-status-line" style="color:rgba(0,255,65,.45);">UPD ${lastChanged.toUpperCase()}</div>` : ''}
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
+
   static get styles() {
     return css`
       :host {
@@ -4693,6 +4925,60 @@ class PersonTrackerCard extends LitElement {
       }
       .wx-footer-text { font-size: 11px; color: rgba(255,255,255,0.4); flex: 1; }
       .wx-updated { font-size: 10px; color: rgba(255,255,255,0.2); }
+
+      /* ── Matrix Rain layout ── */
+      @keyframes matrix-fall { 0%{transform:translateY(-150%)} 100%{transform:translateY(220%)} }
+      @keyframes matrix-scan { 0%{top:-35%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:120%;opacity:0} }
+      @keyframes matrix-blink { 50%{opacity:0} }
+      .matrix-content {
+        position: relative; z-index: 2;
+        padding: 16px 16px 12px;
+        display: flex; flex-direction: column; gap: 10px;
+      }
+      .matrix-person-row { display: flex; align-items: center; gap: 13px; }
+      .matrix-avatar-box {
+        width: 52px; height: 52px; border-radius: 4px;
+        background: #000; border: 1px solid #00ff41;
+        display: flex; align-items: center; justify-content: center; font-size: 26px;
+        box-shadow: 0 0 14px rgba(0,255,65,.45), inset 0 0 10px rgba(0,255,65,.08);
+        position: relative; overflow: hidden; flex-shrink: 0;
+      }
+      .matrix-avatar-scanlines {
+        position: absolute; inset: 0; pointer-events: none;
+        background: repeating-linear-gradient(transparent 0px,transparent 2px,rgba(0,255,65,.04) 2px,rgba(0,255,65,.04) 4px);
+      }
+      .matrix-avatar-scan {
+        position: absolute; top: -35%; left: 0; right: 0; height: 35%;
+        background: rgba(0,255,65,.18);
+        animation: matrix-scan 3s linear infinite;
+      }
+      .matrix-name {
+        color: #00ff41; font-size: 15px; font-weight: 700;
+        text-shadow: 0 0 10px #00ff41; letter-spacing: 2px;
+      }
+      .matrix-state { color: rgba(0,255,65,.5); font-size: 10px; margin-top: 2px; letter-spacing: 1px; }
+      .matrix-last-changed { color: rgba(0,255,65,.3); font-size: 9px; margin-top: 1px; letter-spacing: 1px; }
+      .matrix-divider { border: none; border-top: 1px solid rgba(0,255,65,.18); margin: 2px 0; }
+      .matrix-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+      .matrix-stat-block { display: flex; flex-direction: column; gap: 3px; min-width: 52px; }
+      .matrix-stat-label { color: rgba(0,255,65,.38); font-size: 8px; letter-spacing: 2px; }
+      .matrix-stat-val { color: #00ff41; font-size: 13px; font-weight: 700; text-shadow: 0 0 8px #00ff41; letter-spacing: 1px; }
+      .matrix-stat-bar { height: 2px; background: rgba(0,255,65,.1); border-radius: 1px; width: 100%; margin-top: 2px; }
+      .matrix-stat-bar-fill { height: 100%; background: #00ff41; border-radius: 1px; box-shadow: 0 0 6px #00ff41; }
+      .matrix-chips-row { display: flex; gap: 7px; flex-wrap: wrap; }
+      .matrix-chip {
+        display: flex; align-items: center; gap: 5px;
+        padding: 4px 9px; border-radius: 3px;
+        background: rgba(0,255,65,.07); border: 1px solid rgba(0,255,65,.22);
+        font-size: 10px; color: #00ff41; letter-spacing: 1px;
+        text-shadow: 0 0 6px #00ff41; font-family: inherit;
+        position: relative; overflow: hidden;
+      }
+      .matrix-footer-row {
+        display: flex; justify-content: space-between; align-items: center;
+        border-top: 1px solid rgba(0,255,65,.1); padding-top: 8px; margin-top: 2px;
+      }
+      .matrix-status-line { color: rgba(0,255,65,.28); font-size: 9px; letter-spacing: 1.5px; }
     `;
   }
 }
@@ -4701,7 +4987,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.2 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.3 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

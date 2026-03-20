@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-03-20
+
+### Added
+- 🖥️ **Matrix Rain layout (`matrix`)** — Terminal/hacker-style theme with animated falling katakana and hex characters as background. Features a square avatar with CRT scanlines and an animated scan bar (color driven by state picker), monospace stats blocks with green phosphor progress bars (battery, watch, device 2, weather temp), activity and connection chips, animated travel/distance pair chips, and a `SYS::TRACKER` footer. The avatar border and scan bar color follow the configured state color.
+
+### Fixed
+- 🐛 **Matrix activity sensor not showing** — Was reading `this._activityType` (non-existent). Corrected to `this._activity` and `this._activityIcon`, matching all other layouts.
+- 🐛 **Matrix state color picker had no effect** — `accentColor` was not read from `stateConfig`. Now applied exclusively to the avatar box border, glow and scan bar — the matrix green theme is otherwise unchanged.
+
+---
+
 ## [1.4.2] - 2026-03-19
 
 ### Added

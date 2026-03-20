@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.3: matrix layout added to picker and validation whitelist
 // v1.4.2: wxstation layout added to picker; device_2_battery_sensor entity pickers (auto-detect)
 // v1.4.1: pair_travel_animation toggle (near smart mode); transparent_background toggle for Glass/Bio
 // v1.4.0: weather_text_color picker in weather section; last_changed_color picker in style section
@@ -1008,7 +1009,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.2</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.3</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1085,6 +1086,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="bio">Bioluminescence ◉</mwc-list-item>
           <mwc-list-item value="holo">Holographic 3D ◈</mwc-list-item>
           <mwc-list-item value="wxstation">Weather Station ⛅</mwc-list-item>
+          <mwc-list-item value="matrix">Matrix Rain 🖥️</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -1939,6 +1941,7 @@ class PersonTrackerCardEditor extends LitElement {
           <p style="font-size:11px; color: var(--secondary-text-color); margin: 4px 0 0 0;">
             ${this._t('section.weather_description')}
           </p>
+          ${this._config.layout !== 'matrix' ? html`
           <div class="sensor-group" style="margin-top:8px;">
             <div class="sensor-header">
               <span class="sensor-title">${this._t('editor.show_weather_background')}</span>
@@ -1948,6 +1951,7 @@ class PersonTrackerCardEditor extends LitElement {
               </ha-switch>
             </div>
           </div>
+          ` : ''}
           <div class="sensor-group">
             <div class="sensor-header">
               <span class="sensor-title">${this._t('editor.show_weather_temperature')}</span>
@@ -2114,7 +2118,7 @@ class PersonTrackerCardEditor extends LitElement {
       || item?.value
       || (item && item.getAttribute ? item.getAttribute('value') : null);
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo' && value !== 'wxstation')) {
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo' && value !== 'wxstation' && value !== 'matrix')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -2152,7 +2156,7 @@ class PersonTrackerCardEditor extends LitElement {
     const validTriggerValues = ['all', 'entity', 'custom'];
 
     // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio', 'holo'];
+    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio', 'holo', 'wxstation', 'matrix'];
 
     // Allowed values for positions
     const validPositions = [
