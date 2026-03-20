@@ -49,7 +49,7 @@ Advanced card for Home Assistant that displays detailed information about people
 ---
 
 ### 🖥️ Matrix Rain
-![Matrix Rai Layout](images/matrix.png.png)
+![Matrix Rai Layout](images/matrix.png)
 
 
 ---
