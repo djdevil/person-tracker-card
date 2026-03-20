@@ -49,7 +49,8 @@ Advanced card for Home Assistant that displays detailed information about people
 ---
 
 ### 🖥️ Matrix Rain
-<img src="images/matrix.png" alt="Matrix Rain Layout" width="340">
+![Matrix Rai Layout](images/matrix.png.png)
+
 
 ---
 
@@ -57,7 +58,7 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ---
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)  [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/divil17f)
 
 <a name="english-version"></a>
 ## 📑 Table of Contents
