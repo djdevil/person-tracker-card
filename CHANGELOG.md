@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-03-21
+
+### Added
+- 📍 **Geocoded location** (issue #29) — Shows the human-readable GPS address from `sensor.xxx_geocoded_location` (Home Assistant Mobile App) in all 9 layouts when the person is not at home. Auto-detected from the mobile app device prefix; manual override via `geocoded_location_entity`. Clickable to open the sensor's more-info dialog. If the text overflows its container it scrolls with a smooth bounce marquee; otherwise it is static.
+- 📍 **Compact layout**: address alternates with the zone state using a vertical slide animation (no extra space used).
+- 📍 **Editor**: new toggle `show_geocoded_location` and entity picker in the Sensors tab, with description and auto-population from the detected device prefix.
+
+### Fixed
+- 🐛 **Neon / Glass / Bio pair chip misalignment** — Animated distance↔travel chips now follow the same stacking pattern as the Weather Station layout: `pair-a` stays in flow to define the container size; `pair-b` overlays with `position:absolute;inset:0` + `justify-content:center`. For Bio, position is applied inline to override the `position:relative` on `.bio-chip`.
+- 🐛 **Weather-active text shadow missing on Glass, Bio, Holo** — Added `weather-active` class to the `ha-card` of these three layouts and added contrast CSS rules (text-shadow + frosted chip background) matching the Classic layout behaviour.
+- 🐛 **Classic geocoded text missing shadow when weather background is active** — Added `.weather-active .geo-marquee-outer/inner` rule to match the shadow on name and last-changed.
+- 🐛 **Wxstation double 📍 icon** — The static `📍` in `wx-location` is now hidden when geocoded location is active and the person is not home.
+- 🐛 **Classic/Neon geocoded text not centred** — Applied `text-align:center` via style parameter; `geo-scrolling` class overrides to `left` only during animation.
+- 🐛 **Glass geocoded text had leading space** — Removed spurious `padding-left:10px`.
+- 🐛 **Classic layout default `picture_size`** — Changed from 45 → 40.
+
+---
+
 ## [1.4.3] - 2026-03-20
 
 ### Added

@@ -1,6 +1,12 @@
-// Person Tracker Card v1.4.3 - Multilanguage Version
+// Person Tracker Card v1.4.4 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.4: Geocoded location (sensor.xxx_geocoded_location) — human-readable GPS address in all 9
+//         layouts when not home; auto-detected from mobile app prefix; clickable (more-info);
+//         scrolling marquee when text overflows; compact layout alternates state/address with animation;
+//         editor: Sensors tab toggle + auto-populated picker + description.
+//         Fix: neon/glass/bio pair chip alignment follows wxstation pattern (pair-b uses inset:0).
+//         Fix: weather-active text shadow/contrast now applied to glass, bio and holo layouts.
 // v1.4.3: Matrix Rain layout (matrix) — terminal/hacker theme with falling katakana/hex columns,
 //         monospace stats with progress bars, state color on avatar border/scan bar
 // v1.4.2: Weather Station layout (wxstation); show_device_2_battery — second device (tablet/laptop)
@@ -31,7 +37,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.3 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.4 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -273,7 +279,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.3';
+const CARD_VERSION = '1.4.4';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -433,7 +439,7 @@ class PersonTrackerCard extends LitElement {
       last_changed_font_size: '12px',
       card_background: 'rgba(255,255,255,0.05)',
       card_border_radius: '15px',
-      picture_size: 45,
+      picture_size: 40,
       // Element positions
       battery_position: 'top-right',
       watch_battery_position: 'top-right-2',
@@ -534,6 +540,10 @@ class PersonTrackerCard extends LitElement {
         this._resolvedPrefix2 = this._resolveDevicePrefix2();
       }
       this._updateSensorData();
+    }
+
+    if (this.config?.show_geocoded_location) {
+      requestAnimationFrame(() => this._checkGeoOverflow());
     }
   }
 
@@ -782,6 +792,20 @@ class PersonTrackerCard extends LitElement {
         const unit = weatherEntity.attributes?.temperature_unit || '°';
         this._weatherTemp = temp != null ? `${Math.round(temp)}${unit}` : null;
       }
+    }
+
+    // Geocoded location (device 1 only)
+    if (this.config.show_geocoded_location) {
+      const geoId = this.config.geocoded_location_entity || (p ? `sensor.${p}_geocoded_location` : null);
+      if (geoId) {
+        const geoEntity = this.hass.states[geoId];
+        const newGeo = (geoEntity && geoEntity.state !== 'unavailable' && geoEntity.state !== 'unknown') ? geoEntity.state : null;
+        if (this._geocodedLocation !== newGeo) this._geocodedLocation = newGeo;
+      } else {
+        this._geocodedLocation = null;
+      }
+    } else {
+      this._geocodedLocation = null;
     }
   }
 
@@ -1120,7 +1144,12 @@ class PersonTrackerCard extends LitElement {
         .pair-a-compact{animation:pair-a-compact 8s ease-in-out infinite;transform-origin:center}
         .pair-b-compact{animation:pair-b-compact 8s ease-in-out infinite;transform-origin:center}
         .sensor-pair-compact{position:relative;flex-shrink:0}
-        .sensor-pair-compact>*{position:absolute;top:0;left:0;right:0;bottom:0}`,
+        .sensor-pair-compact>*{position:absolute;top:0;left:0;right:0;bottom:0}
+        @keyframes geo-state-slide{0%,42%{opacity:1;transform:translateY(0)}48%,92%{opacity:0;transform:translateY(-6px)}100%{opacity:1;transform:translateY(0)}}
+        @keyframes geo-addr-slide{0%,42%{opacity:0;transform:translateY(6px)}48%,92%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(6px)}}
+        .geo-wrap{position:relative;overflow:hidden;display:flex;align-items:center;min-height:1.2em}
+        .geo-state{animation:geo-state-slide 7s ease-in-out infinite}
+        .geo-addr{animation:geo-addr-slide 7s ease-in-out infinite;position:absolute;left:0;right:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`,
       modern: `
         @keyframes pair-a-modern{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
         @keyframes pair-b-modern{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
@@ -1130,24 +1159,21 @@ class PersonTrackerCard extends LitElement {
       neon: `
         @keyframes pair-a-neon{0%,40%{opacity:1;transform:translateX(0);filter:none}44%{opacity:.4;transform:translateX(-2px);filter:hue-rotate(60deg) brightness(2)}50%,93%{opacity:0;transform:translateX(0);filter:none}97%{opacity:.3;filter:brightness(1.5)}100%{opacity:1}}
         @keyframes pair-b-neon{0%,43%{opacity:0;filter:none}47%{opacity:.4;transform:translateX(2px);filter:hue-rotate(120deg) brightness(2)}50%,90%{opacity:1;transform:translateX(0);filter:none}94%{opacity:.4;transform:translateX(-1px);filter:hue-rotate(60deg)}100%{opacity:0}}
-        .pair-a-neon{animation:pair-a-neon 8s ease-in-out infinite}
-        .pair-b-neon{animation:pair-b-neon 8s ease-in-out infinite}
-        .sensor-pair-neon{position:relative;flex-shrink:0;display:inline-flex}
-        .sensor-pair-neon>*{position:absolute;top:0;left:0}`,
+        .pair-a-neon{animation:pair-a-neon 8s ease-in-out infinite;display:flex;align-items:center;gap:4px;white-space:nowrap}
+        .pair-b-neon{animation:pair-b-neon 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+        .sensor-pair-neon{position:relative;flex-shrink:0;display:inline-flex;align-items:center;overflow:hidden}`,
       glass: `
         @keyframes pair-a-glass{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
         @keyframes pair-b-glass{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
-        .pair-a-glass{animation:pair-a-glass 8s ease-in-out infinite}
-        .pair-b-glass{animation:pair-b-glass 8s ease-in-out infinite}
-        .sensor-pair-glass{position:relative;flex-shrink:0;display:inline-flex}
-        .sensor-pair-glass>*{position:absolute;top:0;left:0}`,
+        .pair-a-glass{animation:pair-a-glass 8s ease-in-out infinite;display:flex;align-items:center;gap:5px;white-space:nowrap}
+        .pair-b-glass{animation:pair-b-glass 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+        .sensor-pair-glass{position:relative;flex-shrink:0;display:inline-flex;align-items:center;overflow:hidden}`,
       bio: `
         @keyframes pair-a-bio{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
         @keyframes pair-b-bio{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
         .pair-a-bio{animation:pair-a-bio 8s ease-in-out infinite}
         .pair-b-bio{animation:pair-b-bio 8s ease-in-out infinite}
-        .sensor-pair-bio{position:relative;flex-shrink:0;display:inline-flex}
-        .sensor-pair-bio>*{position:absolute;top:0;left:0}`,
+        .sensor-pair-bio{position:relative;flex-shrink:0;display:inline-flex;align-items:center;overflow:hidden}`,
       holo: `
         @keyframes pair-a-holo{0%,48%{opacity:1}50%,98%{opacity:0}100%{opacity:1}}
         @keyframes pair-b-holo{0%,48%{opacity:0}50%,98%{opacity:1}100%{opacity:0}}
@@ -1168,7 +1194,42 @@ class PersonTrackerCard extends LitElement {
         .pair-b-matrix{animation:pair-b-matrix 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;gap:5px;white-space:nowrap}
         .sensor-pair-matrix{position:relative;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0;}`,
     };
-    return styles[theme] || '';
+    const geoStyle = `
+      @keyframes geo-ticker{0%,15%{transform:translateX(0)}85%,100%{transform:translateX(var(--geo-overflow,0px))}}
+      .geo-marquee-outer{overflow:hidden;width:100%;cursor:pointer}
+      .geo-marquee-inner{display:inline-block;white-space:nowrap;will-change:transform}
+      .geo-marquee-outer.geo-scrolling{text-align:left!important}`;
+    return (styles[theme] || '') + geoStyle;
+  }
+
+  _renderGeocoded(entityId, style = '') {
+    if (!this._geocodedLocation || !entityId) return html``;
+    const text = this._geocodedLocation;
+    // Structural styles always applied; animation applied after render by _checkGeoOverflow()
+    return html`
+      <div class="geo-marquee-outer clickable"
+           @click=${(e) => { e.stopPropagation(); this._showMoreInfo(entityId); }}
+           style="display:block;width:100%;min-width:0;max-width:100%;overflow:hidden;align-self:stretch;box-sizing:border-box;${style}">
+        <span class="geo-marquee-inner">📍 ${text}</span>
+      </div>`;
+  }
+
+  _checkGeoOverflow() {
+    this.shadowRoot?.querySelectorAll('.geo-marquee-outer').forEach(outer => {
+      const inner = outer.querySelector('.geo-marquee-inner');
+      if (!inner) return;
+      const overflow = inner.scrollWidth - outer.clientWidth;
+      if (overflow > 1) {
+        const dur = Math.max(4, overflow * 0.06);
+        outer.style.setProperty('--geo-overflow', `-${overflow}px`);
+        outer.classList.add('geo-scrolling');
+        inner.style.animation = `geo-ticker ${dur}s ease-in-out infinite alternate`;
+      } else {
+        outer.style.removeProperty('--geo-overflow');
+        outer.classList.remove('geo-scrolling');
+        inner.style.animation = '';
+      }
+    });
   }
 
   _renderWeatherBg() {
@@ -1523,6 +1584,8 @@ class PersonTrackerCard extends LitElement {
     const travelPos = this._getPositionStyles(this.config.travel_position) || {};
     const connectionPos = this._getPositionStyles(this.config.connection_position) || {};
 
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
+
     // Icon size configurabile
     const iconSize = this.config.classic_icon_size || 16;
     const iconStyle = `width: ${iconSize}px; height: ${iconSize}px;`;
@@ -1562,6 +1625,7 @@ class PersonTrackerCard extends LitElement {
                   ${stateName}
                 </div>
               ` : ''}
+              ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;text-align:center;') : ''}
             </div>
 
             <!-- Sezione inferiore sempre in basso -->
@@ -1728,6 +1792,7 @@ class PersonTrackerCard extends LitElement {
 
     // Nome dello stato personalizzato (location)
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
 
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
     const stateStyles = stateConfig?.styles?.name || {};
@@ -1779,7 +1844,12 @@ class PersonTrackerCard extends LitElement {
           ` : ''}
 
           <div class="compact-location clickable" @click=${() => this._handleTapAction()} style="color: ${stateStyles.color || 'var(--secondary-text-color)'}; cursor: pointer; font-size: ${locationFontSize}px;">
-            ${displayLocation}
+            ${this.config.show_geocoded_location && this._geocodedLocation && entity.state !== 'home' ? html`
+              <div class="geo-wrap" style="width:100%;">
+                <span class="geo-state">${displayLocation}</span>
+                <span class="geo-addr clickable" style="font-size:${Math.max(8, locationFontSize - 1)}px;opacity:0.85;cursor:pointer;" @click=${(e) => { e.stopPropagation(); this._showMoreInfo(geoEntityId); }}>${this._geocodedLocation}</span>
+              </div>
+            ` : displayLocation}
             ${this.config.show_last_changed ? html`
               <div style="font-size:9px;color:${this.config.last_changed_color || 'rgba(255,255,255,0.45)'};margin-top:1px;letter-spacing:0.3px;line-height:1.2;">${this._getRelativeTime(entity.last_changed)}</div>
             ` : ''}
@@ -1921,6 +1991,7 @@ class PersonTrackerCard extends LitElement {
 
     // State name (location)
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
 
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
     const stateStyles = stateConfig?.styles?.name || {};
@@ -2036,6 +2107,7 @@ class PersonTrackerCard extends LitElement {
                 ${displayLocation}
               </div>
             ` : ''}
+            ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;') : ''}
             ${this.config.show_weather && this._weatherState && this.config.show_weather_temperature !== false ? html`
               <div style="display:flex;align-items:center;gap:3px;margin-top:3px;opacity:0.75;">
                 <ha-icon icon="${weatherIconMap[this._weatherState] || 'mdi:weather-cloudy'}" style="--mdc-icon-size:12px;color:${this.config.weather_text_color || 'rgba(255,255,255,0.7)'};"></ha-icon>
@@ -2229,6 +2301,7 @@ class PersonTrackerCard extends LitElement {
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     // Usa il colore configurato nell'editor per lo stato corrente, con fallback neon
     const stateColor = stateConfig?.styles?.name?.color || this._getNeonStateColor(entity.state);
     const glowColor = stateColor + '66';
@@ -2308,6 +2381,7 @@ class PersonTrackerCard extends LitElement {
                 ${displayLocation}
               </div>
             ` : ''}
+            ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;text-align:center;') : ''}
             ${this.config.show_last_changed ? html`
               <div class="neon-time" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${this._getRelativeTime(entity.last_changed)}</div>
             ` : ''}
@@ -2361,7 +2435,7 @@ class PersonTrackerCard extends LitElement {
             })()}
 
             ${pairDir1Neon ? html`
-              <div class="sensor-pair-neon" style="min-width:80px;height:28px;">
+              <div class="sensor-pair-neon">
                 <div class="neon-badge pair-a-neon clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="border-color:#00d4ff;box-shadow:0 0 6px #00d4ff44;">
                   <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
                   <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome.toFixed(this.config.distance_precision ?? 1))} ${this._distanceUnit}</span>
@@ -2387,7 +2461,7 @@ class PersonTrackerCard extends LitElement {
             `}
 
             ${pairDir2Neon ? html`
-              <div class="sensor-pair-neon" style="min-width:80px;height:28px;">
+              <div class="sensor-pair-neon">
                 <div class="neon-badge pair-a-neon clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))} style="border-color:#00d4ff;box-shadow:0 0 6px #00d4ff44;">
                   <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
                   <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome2.toFixed(this.config.distance_precision ?? 1))} ${this._distanceUnit2}</span>
@@ -2441,6 +2515,7 @@ class PersonTrackerCard extends LitElement {
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
     const accentColor = stateConfig?.styles?.name?.color || this._getNeonStateColor(entity.state);
@@ -2475,7 +2550,7 @@ class PersonTrackerCard extends LitElement {
 
     return html`
       <style>${this._getPairAnimationStyles('glass')}</style>
-      <ha-card style="
+      <ha-card class="${this.config.show_weather && this._weatherState ? 'weather-active' : ''}" style="
         background: ${this.config.transparent_background ? 'transparent' : 'linear-gradient(135deg, #0f0f1a 0%, #1a0f2e 60%, #0a0f1a 100%)'};
         border: 1px solid rgba(255,255,255,0.10);
         border-radius: ${this.config.card_border_radius};
@@ -2515,6 +2590,7 @@ class PersonTrackerCard extends LitElement {
                   <span class="glass-zone-text">${displayLocation}</span>
                 </div>
               ` : ''}
+              ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.38);margin-top:2px;') : ''}
               ${this.config.show_last_changed ? html`<div class="glass-time" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
 
@@ -2575,7 +2651,7 @@ class PersonTrackerCard extends LitElement {
             ` : ''}
 
             ${pairDir1 ? html`
-              <div class="sensor-pair-glass" style="min-width:90px;height:28px;">
+              <div class="sensor-pair-glass">
                 <div class="glass-chip pair-a-glass clickable"
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))}
                      style="border-color:rgba(0,212,255,0.3);color:#00d4ff;">
@@ -2584,7 +2660,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
                 <div class="glass-chip pair-b-glass clickable"
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}
-                     style="border-color:${travelColor}50;color:${travelColor};position:absolute;top:0;left:0;">
+                     style="border-color:${travelColor}50;color:${travelColor};">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
                   <span>${travelTime} min</span>
                 </div>
@@ -2605,7 +2681,7 @@ class PersonTrackerCard extends LitElement {
             `}
 
             ${pairDir2 ? html`
-              <div class="sensor-pair-glass" style="min-width:90px;height:28px;">
+              <div class="sensor-pair-glass">
                 <div class="glass-chip pair-a-glass clickable"
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))}
                      style="border-color:rgba(0,212,255,0.3);color:#00d4ff;">
@@ -2614,7 +2690,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
                 <div class="glass-chip pair-b-glass clickable"
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}
-                     style="border-color:${travelColor2}50;color:${travelColor2};position:absolute;top:0;left:0;">
+                     style="border-color:${travelColor2}50;color:${travelColor2};">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
                   <span>${travelTime2} min</span>
                 </div>
@@ -2670,6 +2746,7 @@ class PersonTrackerCard extends LitElement {
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
     const stateAccent = entity.state === 'home' ? '#00ffb4' : entity.state === 'not_home' ? '#b400ff' : '#00d4ff';
@@ -2711,7 +2788,7 @@ class PersonTrackerCard extends LitElement {
 
     return html`
       <style>${this._getPairAnimationStyles('bio')}</style>
-      <ha-card style="
+      <ha-card class="${this.config.show_weather && this._weatherState ? 'weather-active' : ''}" style="
         border-radius: ${this.config.card_border_radius};
         overflow: hidden;
         position: relative;
@@ -2759,6 +2836,7 @@ class PersonTrackerCard extends LitElement {
             <div class="clickable" @click=${() => this._handleTapAction()} style="flex:1;min-width:0;">
               ${this.config.show_person_name ? html`<div class="bio-name">${personName}</div>` : ''}
               ${this.config.show_name ? html`<div class="bio-zone" style="color:rgba(${sensorRgb},0.65);">◉ ${displayLocation}</div>` : ''}
+              ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, `font-size:9px;color:rgba(${sensorRgb},0.38);margin-top:1px;`) : ''}
               ${this.config.show_last_changed ? html`<div style="font-size:10px;color:${this.config.last_changed_color || `rgba(${sensorRgb},0.35)`};margin-top:2px;letter-spacing:0.5px;">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
 
@@ -2819,12 +2897,12 @@ class PersonTrackerCard extends LitElement {
             ` : ''}
 
             ${pairDir1 ? html`
-              <div class="sensor-pair-bio" style="min-width:90px;height:28px;">
+              <div class="sensor-pair-bio">
                 <div class="bio-chip pair-a-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))} style="border-color:rgba(0,212,255,0.25);color:#00d4ff;">
                   <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
                   <span>${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
                 </div>
-                <div class="bio-chip pair-b-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="border-color:${travelColor}44;color:${travelColor};position:absolute;top:0;left:0;">
+                <div class="bio-chip pair-b-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-color:${travelColor}44;color:${travelColor};">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
                   <span>${travelTime} min</span>
                 </div>
@@ -2845,12 +2923,12 @@ class PersonTrackerCard extends LitElement {
             `}
 
             ${pairDir2 ? html`
-              <div class="sensor-pair-bio" style="min-width:90px;height:28px;">
+              <div class="sensor-pair-bio">
                 <div class="bio-chip pair-a-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))} style="border-color:rgba(0,212,255,0.25);color:#00d4ff;">
                   <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#00d4ff;"></ha-icon>
                   <span>${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
                 </div>
-                <div class="bio-chip pair-b-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="border-color:${travelColor2}44;color:${travelColor2};position:absolute;top:0;left:0;">
+                <div class="bio-chip pair-b-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-color:${travelColor2}44;color:${travelColor2};">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
                   <span>${travelTime2} min</span>
                 </div>
@@ -2908,6 +2986,7 @@ class PersonTrackerCard extends LitElement {
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
     const stateAccent = entity.state === 'home' ? '#00d4ff' : entity.state === 'not_home' ? '#7f50ff' : '#00d4ff';
@@ -2951,7 +3030,7 @@ class PersonTrackerCard extends LitElement {
 
     return html`
       <style>${this._getPairAnimationStyles('holo')}</style>
-      <ha-card style="
+      <ha-card class="${this.config.show_weather && this._weatherState ? 'weather-active' : ''}" style="
         background: transparent;
         border: none;
         box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 40px rgba(${accentRgb},0.07);
@@ -3011,6 +3090,7 @@ class PersonTrackerCard extends LitElement {
                   ${this.config.show_name ? html`
                     <div class="holo-loc" style="background:linear-gradient(90deg,${accentColor},#7f50ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${displayLocation}</div>
                   ` : ''}
+                  ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.35);margin-top:1px;') : ''}
                   <div class="holo-sub">
                     ${lastChanged ? html`<span style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${lastChanged}</span>` : ''}
                     ${weatherLine ? html`${lastChanged ? html`<span style="opacity:0.3">·</span>` : ''}<span class="clickable" style="cursor:pointer;${this.config.weather_text_color ? `color:${this.config.weather_text_color};` : ''}" @click=${() => this._showMoreInfo(this.config.weather_entity)}>🌤 ${weatherLine}</span>` : ''}
@@ -3121,6 +3201,7 @@ class PersonTrackerCard extends LitElement {
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
     const stateAccent = entity.state === 'home' ? '#22c55e' : entity.state === 'not_home' ? '#6b7280' : '#3b82f6';
@@ -3232,8 +3313,9 @@ class PersonTrackerCard extends LitElement {
                 <div class="wx-name" @click=${() => this._handleTapAction()} style="cursor:pointer;">${personName}</div>
               ` : ''}
               ${this.config.show_name ? html`
-                <div class="wx-location">📍 ${displayLocation}</div>
+                <div class="wx-location">${this.config.show_geocoded_location && this._geocodedLocation && entity.state !== 'home' ? '' : '📍 '}${displayLocation}</div>
               ` : ''}
+              ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.38);margin-top:1px;') : ''}
               ${this.config.show_last_changed && lastChanged ? html`
                 <div style="font-size:10px;color:${last_changed_color || 'rgba(255,255,255,0.28)'};margin-top:3px;">${lastChanged}</div>
               ` : ''}
@@ -3343,6 +3425,7 @@ class PersonTrackerCard extends LitElement {
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
     const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
     const stateAccent = entity.state === 'home' ? '#00ff41' : entity.state === 'not_home' ? '#ff4141' : '#00d4ff';
@@ -3441,6 +3524,7 @@ class PersonTrackerCard extends LitElement {
             <div style="flex:1;min-width:0;">
               ${this.config.show_person_name !== false ? html`<div class="matrix-name">${personName.toUpperCase()}</div>` : ''}
               ${this.config.show_name !== false ? html`<div class="matrix-state">STATUS:: ${displayLocation.toUpperCase()}</div>` : ''}
+              ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, "font-size:8px;color:#00ff4160;margin-top:1px;font-family:'Courier New',monospace;letter-spacing:0.5px;") : ''}
               ${lastChanged ? html`<div class="matrix-last-changed" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${lastChanged}</div>` : ''}
             </div>
             <div style="text-align:right;flex-shrink:0;">
@@ -3817,12 +3901,14 @@ class PersonTrackerCard extends LitElement {
 
       .compact-location {
         grid-area: location;
-        justify-self: start;
+        justify-self: stretch;
         align-self: start;
         font-size: 10px;
         margin: 0;
         padding: 0;
         margin-bottom: 3px;
+        min-width: 0;
+        overflow: hidden;
       }
 
       .compact-icons {
@@ -3873,6 +3959,11 @@ class PersonTrackerCard extends LitElement {
         color: #fff !important;
         text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
       }
+      .weather-active .geo-marquee-outer,
+      .weather-active .geo-marquee-inner {
+        text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
+        color: rgba(255,255,255,0.75) !important;
+      }
       .weather-active .entity-last-changed {
         color: #fff;
         text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
@@ -3905,6 +3996,44 @@ class PersonTrackerCard extends LitElement {
         -webkit-backdrop-filter: blur(4px);
         color: #fff !important;
         border-color: rgba(255,255,255,0.15) !important;
+      }
+
+      /* ── Glass weather contrast ── */
+      .weather-active .glass-name,
+      .weather-active .glass-zone-text,
+      .weather-active .glass-time {
+        text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
+        color: #fff !important;
+      }
+      .weather-active .glass-chip {
+        background: rgba(0,0,0,0.5) !important;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+
+      /* ── Bio weather contrast ── */
+      .weather-active .bio-name,
+      .weather-active .bio-zone {
+        text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
+        color: #fff !important;
+      }
+      .weather-active .bio-chip {
+        background: rgba(0,0,0,0.5) !important;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+
+      /* ── Holo weather contrast ── */
+      .weather-active .holo-name {
+        text-shadow: 0 1px 8px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8) !important;
+        color: #fff !important;
+      }
+      .weather-active .holo-loc,
+      .weather-active .holo-sub {
+        text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.8);
+      }
+      .weather-active .holo-metric {
+        text-shadow: 0 1px 6px rgba(0,0,0,0.9);
       }
 
       /* Modern Layout Styles */
@@ -4388,6 +4517,7 @@ class PersonTrackerCard extends LitElement {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        align-items: center;
         gap: 6px;
         width: 100%;
         padding-top: 10px;
@@ -4987,7 +5117,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.3 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.4 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

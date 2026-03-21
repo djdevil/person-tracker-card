@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.4: show_geocoded_location toggle + geocoded_location_entity picker in Sensors tab (auto-detected)
 // v1.4.3: matrix layout added to picker and validation whitelist
 // v1.4.2: wxstation layout added to picker; device_2_battery_sensor entity pickers (auto-detect)
 // v1.4.1: pair_travel_animation toggle (near smart mode); transparent_background toggle for Glass/Bio
@@ -88,6 +89,9 @@ class EditorLocalizationHelper {
         'editor.card_background': 'Sfondo card',
         'editor.transparent_background': 'Sfondo trasparente (solo Glass/Bio)',
         'editor.show_particles': 'Mostra particelle animate (solo Glass/Bio)',
+        'editor.show_geocoded_location': 'Mostra indirizzo GPS (geocoded location)',
+        'editor.geocoded_location_description': 'Mostra l\'indirizzo leggibile ottenuto dal GPS tramite sensor.xxx_geocoded_location. Visibile solo quando la persona non è a casa.',
+        'editor.geocoded_location_entity': 'Entità geocoded location (auto-rilevata se vuota)',
         'editor.show_device_2_battery': 'Batteria secondo dispositivo (tablet/laptop)',
         'editor.device_2_battery_sensor': 'Sensore batteria secondo dispositivo',
         'editor.device_2_battery_state_sensor': 'Stato carica secondo dispositivo',
@@ -228,6 +232,9 @@ class EditorLocalizationHelper {
         'editor.card_background': 'Card background',
         'editor.transparent_background': 'Transparent background (Glass/Bio only)',
         'editor.show_particles': 'Show animated particles (Glass/Bio only)',
+        'editor.show_geocoded_location': 'Show GPS address (geocoded location)',
+        'editor.geocoded_location_description': 'Shows the human-readable address from GPS via sensor.xxx_geocoded_location. Only visible when the person is not home.',
+        'editor.geocoded_location_entity': 'Geocoded location entity (auto-detected if empty)',
         'editor.show_device_2_battery': 'Second device battery (tablet/laptop)',
         'editor.device_2_battery_sensor': 'Second device battery sensor',
         'editor.device_2_battery_state_sensor': 'Second device charging state sensor',
@@ -368,6 +375,9 @@ class EditorLocalizationHelper {
         'editor.card_background': 'Fond carte',
         'editor.transparent_background': 'Fond transparent (Glass/Bio uniquement)',
         'editor.show_particles': 'Afficher particules animées (Glass/Bio uniquement)',
+        'editor.show_geocoded_location': 'Afficher adresse GPS (geocoded location)',
+        'editor.geocoded_location_description': 'Affiche l\'adresse lisible obtenue via GPS grâce à sensor.xxx_geocoded_location. Visible uniquement quand la personne n\'est pas à la maison.',
+        'editor.geocoded_location_entity': 'Entité geocoded location (auto-détectée si vide)',
         'editor.show_device_2_battery': 'Batterie 2e appareil (tablette/laptop)',
         'editor.device_2_battery_sensor': 'Capteur batterie 2e appareil',
         'editor.device_2_battery_state_sensor': 'Capteur état charge 2e appareil',
@@ -508,6 +518,9 @@ class EditorLocalizationHelper {
         'editor.card_background': 'Kartenhintergrund',
         'editor.transparent_background': 'Transparenter Hintergrund (nur Glass/Bio)',
         'editor.show_particles': 'Animierte Partikel anzeigen (nur Glass/Bio)',
+        'editor.show_geocoded_location': 'GPS-Adresse anzeigen (Geocoded Location)',
+        'editor.geocoded_location_description': 'Zeigt die lesbare GPS-Adresse via sensor.xxx_geocoded_location an. Nur sichtbar wenn die Person nicht zu Hause ist.',
+        'editor.geocoded_location_entity': 'Geocoded-Location-Entität (auto-erkannt wenn leer)',
         'editor.show_device_2_battery': 'Zweitgerät-Akku (Tablet/Laptop)',
         'editor.device_2_battery_sensor': 'Akku-Sensor Zweitgerät',
         'editor.device_2_battery_state_sensor': 'Ladestatus-Sensor Zweitgerät',
@@ -1009,7 +1022,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.3</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.4</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1412,6 +1425,29 @@ class PersonTrackerCardEditor extends LitElement {
             allow-custom-entity
             @value-changed=${(e) => this._valueChanged(e, 'connection_sensor')}>
           </ha-entity-picker>
+        </div>
+
+        <!-- Geocoded Location -->
+        <div class="sensor-group">
+          <p class="info-text" style="margin:0 0 6px;">${this._t('editor.geocoded_location_description')}</p>
+          <div class="sensor-header">
+            <ha-icon icon="mdi:map-marker-account" class="sensor-icon"></ha-icon>
+            <span class="sensor-title">${this._t('editor.show_geocoded_location')}</span>
+            <ha-switch
+              .checked=${this._config.show_geocoded_location === true}
+              @change=${(e) => this._valueChanged(e, 'show_geocoded_location')}>
+            </ha-switch>
+          </div>
+          ${this._config.show_geocoded_location ? html`
+            <ha-entity-picker
+              .hass=${this.hass}
+              .value=${this._config.geocoded_location_entity || auto.geocoded_location_entity || ''}
+              .label=${auto.geocoded_location_entity || this._t('editor.geocoded_location_entity')}
+              .includeDomains=${['sensor']}
+              allow-custom-entity
+              @value-changed=${(e) => this._entityPickerChanged(e, 'geocoded_location_entity')}>
+            </ha-entity-picker>
+          ` : ''}
         </div>
 
       </div>
@@ -2337,6 +2373,7 @@ class PersonTrackerCardEditor extends LitElement {
       connection_sensor:           connection,
       device_2_battery_sensor:     p2 ? `sensor.${p2}_battery_level` : null,
       device_2_battery_state_sensor: p2 ? `sensor.${p2}_battery_state` : null,
+      geocoded_location_entity:    p ? `sensor.${p}_geocoded_location` : null,
     };
   }
 
@@ -2368,6 +2405,7 @@ class PersonTrackerCardEditor extends LitElement {
       connection_sensor:            [auto.connection_sensor],
       device_2_battery_sensor:      [auto.device_2_battery_sensor],
       device_2_battery_state_sensor:[auto.device_2_battery_state_sensor],
+      geocoded_location_entity:     [auto.geocoded_location_entity],
     };
 
     let updated = { ...this._config };
