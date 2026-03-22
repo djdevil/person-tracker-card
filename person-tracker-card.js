@@ -1,6 +1,9 @@
-// Person Tracker Card v1.4.4 - Multilanguage Version
+// Person Tracker Card v1.4.5 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.5: Orbital layout (orbital) — 3D spinning photo coin, three tilted orbital rings, orbiting
+//         satellite badges (battery/connection/activity), pulsing energy rings, animated star field,
+//         chip row centered below, state-based accent color (home=teal, away=violet, zone=blue).
 // v1.4.4: Geocoded location (sensor.xxx_geocoded_location) — human-readable GPS address in all 9
 //         layouts when not home; auto-detected from mobile app prefix; clickable (more-info);
 //         scrolling marquee when text overflows; compact layout alternates state/address with animation;
@@ -37,7 +40,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.4 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.5 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -279,7 +282,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.4';
+const CARD_VERSION = '1.4.5';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -1193,6 +1196,12 @@ class PersonTrackerCard extends LitElement {
         .pair-a-matrix{animation:pair-a-matrix 8s ease-in-out infinite;display:flex;align-items:center;gap:5px;white-space:nowrap}
         .pair-b-matrix{animation:pair-b-matrix 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;gap:5px;white-space:nowrap}
         .sensor-pair-matrix{position:relative;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0;}`,
+      orbital: `
+        @keyframes pair-a-orbital{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+        @keyframes pair-b-orbital{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
+        .pair-a-orbital{animation:pair-a-orbital 8s ease-in-out infinite;display:flex;align-items:center;gap:5px;white-space:nowrap}
+        .pair-b-orbital{animation:pair-b-orbital 8s ease-in-out infinite;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+        .sensor-pair-orbital{position:relative;overflow:hidden;display:inline-flex;align-items:center;flex-shrink:0;}`,
     };
     const geoStyle = `
       @keyframes geo-ticker{0%,15%{transform:translateX(0)}85%,100%{transform:translateX(var(--geo-overflow,0px))}}
@@ -1282,7 +1291,8 @@ class PersonTrackerCard extends LitElement {
       && this.config.layout !== 'glass' && this.config.layout !== 'bio'
       && this.config.layout !== 'modern' && this.config.layout !== 'compact'
       && this.config.layout !== 'holo'
-      && this.config.layout !== 'wxstation';
+      && this.config.layout !== 'wxstation'
+      && this.config.layout !== 'orbital';
     return html`
       ${showBg ? html`<div class="${bgClass}" @click=${clickHandler}>${particles}</div>` : ''}
       ${floatingTemp ? html`<span class="weather-bg-temp">${this._weatherTemp}</span>` : ''}
@@ -1549,6 +1559,8 @@ class PersonTrackerCard extends LitElement {
       return this._renderWxStationLayout();
     } else if (this.config.layout === 'matrix') {
       return this._renderMatrixLayout();
+    } else if (this.config.layout === 'orbital') {
+      return this._renderOrbitalLayout();
     } else {
       return this._renderClassicLayout();
     }
@@ -3644,6 +3656,261 @@ class PersonTrackerCard extends LitElement {
     `;
   }
 
+  _renderOrbitalLayout() {
+    const entity = this.hass.states[this.config.entity];
+    const stateConfig = this._getCurrentStateConfig();
+    const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
+    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
+    const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
+
+    const stateAccent = entity.state === 'home' ? '#00d4aa' : entity.state === 'not_home' ? '#b44fff' : '#4a9eff';
+    const accentColor = stateConfig?.styles?.name?.color || stateAccent;
+    const _hexRgb = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); return m ? `${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)}` : null; };
+    const accentRgb = _hexRgb(accentColor) || '0,212,170';
+
+    const batteryLevel = Math.round(this._batteryLevel);
+    const batteryColor = this._getBatteryColor(this._batteryLevel);
+    const travelTime = Math.round(this._travelTime);
+    const travelTime2 = Math.round(this._travelTime2);
+    const travelColor = this._getTravelTimeColor(travelTime);
+    const travelColor2 = this._getTravelTimeColor(travelTime2);
+    const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const connectionLabel = this._isWifiConnection(this._connectionType) ? 'WiFi' : '4G';
+    const distPrecision = this.config.distance_precision ?? 1;
+
+    const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
+    const hasDir2 = !!(this.config.travel_sensor_2 || this.config.distance_sensor_2);
+    const isHome = entity.state === 'home';
+    const smartMode = this.config.smart_travel_mode !== false;
+    const zone2Name = this.config.zone_2
+      ? (this.hass.states[this.config.zone_2]?.attributes?.friendly_name || this.config.zone_2.replace('zone.', '').replace(/_/g, ' '))
+      : null;
+    const isZone2 = zone2Name && entity.state.toLowerCase() === zone2Name.toLowerCase();
+    const showDir1 = !smartMode || !hasDir2 || !isZone2;
+    const showDir2 = hasDir2 && (!smartMode || !isHome || !hasDir1);
+    const hasDist1 = showDir1 && this.config.show_distance && this._distanceSensorFound;
+    const hasTravel1 = showDir1 && this.config.show_travel_time && travelTime > 0;
+    const hasDist2 = showDir2 && this.config.show_distance_2 && this._distanceSensorFound2;
+    const hasTravel2 = showDir2 && this.config.show_travel_time_2 && travelTime2 > 0;
+    const pairDir1 = hasDist1 && hasTravel1 && (this.config.pair_travel_animation !== false);
+    const pairDir2 = hasDist2 && hasTravel2 && (this.config.pair_travel_animation !== false);
+
+    const weatherLabel = this._weatherState ? this._t(`weather.${this._weatherState}`) : '';
+    const weatherLine = (this.config.show_weather && this.config.show_weather_temperature !== false && (this._weatherTemp || weatherLabel))
+      ? [this._weatherTemp, weatherLabel].filter(Boolean).join(' · ')
+      : '';
+
+    // Deterministic star positions via seeded PRNG
+    const r = this._rng('orbital_stars');
+    const stars = Array.from({ length: 45 }, () => ({
+      x: r() * 100, y: r() * 100,
+      s: r() * 1.8 + 0.4,
+      d: 2 + r() * 5,
+      dl: r() * 5,
+      a: 0.05 + r() * 0.12,
+      b: 0.25 + r() * 0.5,
+    }));
+
+    // All sensors orbit as satellites
+    const showSat1 = this.config.show_battery && batteryLevel > 0;
+    const showSat2 = this.config.show_connection && !!this._connectionType;
+    const showSat3 = this.config.show_activity && this._activity && this._activity !== 'unknown';
+    const showSat4 = hasDist1 || hasTravel1;
+    const showSat5 = hasDist2 || hasTravel2;
+    const battery2Level = Math.round(this._battery2Level);
+    const batteryColor2 = this._getBatteryColor(this._battery2Level);
+    const showSat6 = this.config.show_device_2_battery !== false && battery2Level > 0;
+
+    const cardBg = this.config.transparent_background
+      ? 'transparent'
+      : `linear-gradient(160deg,rgba(${accentRgb},0.03) 0%,#05050f 40%,#05050f 100%)`;
+    const cardBorder = this.config.transparent_background ? 'transparent' : `rgba(${accentRgb},0.22)`;
+    const cardShadow = this.config.transparent_background
+      ? 'none'
+      : `0 24px 64px rgba(0,0,0,0.85),0 0 80px rgba(${accentRgb},0.05),inset 0 1px 0 rgba(255,255,255,0.05)`;
+
+    return html`
+      <style>${this._getPairAnimationStyles('orbital')}</style>
+      <ha-card class="${this.config.show_weather && this._weatherState ? 'weather-active' : ''}" style="
+        background:${cardBg};
+        border:1px solid ${cardBorder};
+        border-radius:${this.config.card_border_radius};
+        box-shadow:${cardShadow};
+        overflow:hidden;
+        position:relative;
+      ">
+        ${this._renderWeatherBg()}
+
+        <!-- Stars -->
+        ${this.config.show_particles !== false ? html`
+        <div class="orb-stars" aria-hidden="true">
+          ${stars.map(s => html`<div class="orb-star" style="
+            left:${s.x}%;top:${s.y}%;
+            width:${s.s}px;height:${s.s}px;
+            --orb-d:${s.d}s;--orb-dl:-${s.dl}s;
+            --orb-a:${s.a};--orb-b:${s.b};
+          "></div>`)}
+        </div>` : ''}
+
+        <!-- Grid overlay -->
+        <div class="orb-grid" style="background-image:linear-gradient(rgba(${accentRgb},0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(${accentRgb},0.03) 1px,transparent 1px);" aria-hidden="true"></div>
+
+        <!-- Scan sweep -->
+        <div class="orb-scan" style="background:linear-gradient(transparent,rgba(${accentRgb},0.04),transparent);" aria-hidden="true"></div>
+
+        <!-- Content -->
+        <div class="orb-content">
+
+          <!-- Header: name + LIVE -->
+          <div class="orb-header">
+            <div class="orb-name clickable" @click=${() => this._handleTapAction()}
+                 style="text-shadow:0 0 24px rgba(${accentRgb},0.5);">
+              ${this.config.show_person_name ? personName : ''}
+            </div>
+            <div class="orb-live" style="color:rgba(${accentRgb},0.85);border-color:rgba(${accentRgb},0.3);">● LIVE</div>
+          </div>
+
+          <!-- Zone row -->
+          ${this.config.show_name ? html`
+          <div class="orb-zone clickable" @click=${() => this._handleTapAction()}>
+            <div class="orb-zone-dot" style="background:${accentColor};box-shadow:0 0 8px ${accentColor};"></div>
+            <span class="orb-zone-name">${displayLocation}</span>
+          </div>` : ''}
+
+          <!-- ── SPHERE SECTION ── -->
+          <div class="orb-sphere">
+
+            <!-- Pulse rings (expand outward, 3 staggered) -->
+            ${this.config.show_particles !== false ? html`
+            <div class="orb-pulse" style="border-color:rgba(${accentRgb},0.5);"></div>
+            <div class="orb-pulse" style="border-color:rgba(${accentRgb},0.4);animation-delay:1s;"></div>
+            <div class="orb-pulse" style="border-color:rgba(${accentRgb},0.3);animation-delay:2s;"></div>` : ''}
+
+            <!-- Glow halo -->
+            <div class="orb-halo" style="background:radial-gradient(circle,rgba(${accentRgb},0.14) 0%,transparent 70%);"></div>
+
+            <!-- Orbital rings -->
+            <div class="orb-ring orb-ring-1" style="border-color:rgba(${accentRgb},0.32);box-shadow:0 0 10px rgba(${accentRgb},0.08);"></div>
+            <div class="orb-ring orb-ring-2" style="border-color:rgba(${accentRgb},0.18);"></div>
+            <div class="orb-ring orb-ring-3" style="border-color:rgba(${accentRgb},0.1);"></div>
+
+            <!-- Orbiting satellites – connection / activity / travel -->
+            ${showSat2 ? html`
+            <div class="orb-sat orb-sat-2 clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}
+                 style="border-color:rgba(0,212,255,0.5);color:#00d4ff;box-shadow:0 0 10px rgba(0,212,255,0.12);">
+              <ha-icon icon="${connectionIcon}" style="--mdc-icon-size:11px;color:#00d4ff;"></ha-icon>
+              <span>${connectionLabel}</span>
+            </div>` : ''}
+            ${showSat3 ? html`
+            <div class="orb-sat orb-sat-3 clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))}
+                 style="border-color:rgba(180,80,255,0.5);color:#b44fff;box-shadow:0 0 10px rgba(180,80,255,0.12);">
+              <ha-icon icon="${this._activityIcon || 'mdi:run'}" style="--mdc-icon-size:11px;color:#b44fff;"></ha-icon>
+              <span>${this._activity}</span>
+            </div>` : ''}
+            ${showSat4 ? html`
+            <div class="orb-sat orb-sat-4" style="overflow:hidden;border-color:rgba(0,212,255,0.5);">
+              ${pairDir1 ? html`
+                <div class="pair-a-orbital" style="display:flex;align-items:center;gap:4px;color:#00d4ff;"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))}>
+                  <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:11px;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
+                </div>
+                <div class="pair-b-orbital" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;color:${travelColor};"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}>
+                  <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:11px;"></ha-icon>
+                  <span>${travelTime} min</span>
+                </div>
+              ` : hasDist1 ? html`
+                <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:11px;color:#00d4ff;"></ha-icon>
+                <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
+              ` : html`
+                <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:11px;color:${travelColor};"></ha-icon>
+                <span style="color:${travelColor};">${travelTime} min</span>
+              `}
+            </div>` : ''}
+            ${showSat5 ? html`
+            <div class="orb-sat orb-sat-5" style="overflow:hidden;border-color:rgba(0,212,255,0.45);">
+              ${pairDir2 ? html`
+                <div class="pair-a-orbital" style="display:flex;align-items:center;gap:4px;color:#00d4ff;"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))}>
+                  <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:11px;"></ha-icon>
+                  <span>${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
+                </div>
+                <div class="pair-b-orbital" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;color:${travelColor2};"
+                     @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}>
+                  <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:11px;"></ha-icon>
+                  <span>${travelTime2} min</span>
+                </div>
+              ` : hasDist2 ? html`
+                <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:11px;color:#00d4ff;"></ha-icon>
+                <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
+              ` : html`
+                <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:11px;color:${travelColor2};"></ha-icon>
+                <span style="color:${travelColor2};">${travelTime2} min</span>
+              `}
+            </div>` : ''}
+            <!-- 3D Coin (front=photo, back=batteries) -->
+            <div class="orb-coin">
+              <!-- Front face: entity picture -->
+              <div class="orb-face orb-front clickable" @click=${() => this._handleTapAction()}
+                   style="border-color:${accentColor};box-shadow:0 0 0 4px rgba(${accentRgb},0.12),0 0 32px rgba(${accentRgb},0.3);">
+                ${this.config.show_entity_picture && entityPicture
+                  ? html`<img src="${entityPicture}" alt="${personName}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">`
+                  : html`<span style="font-size:46px;line-height:1;">👤</span>`}
+              </div>
+              <!-- Back face: battery levels -->
+              <div class="orb-face orb-back" style="border-color:rgba(${accentRgb},0.45);box-shadow:0 0 20px rgba(${accentRgb},0.15);">
+                ${batteryLevel > 0 ? html`
+                <div class="orb-back-bat clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}>
+                  <ha-icon icon="mdi:cellphone" style="--mdc-icon-size:11px;color:${batteryColor};"></ha-icon>
+                  <span style="color:${batteryColor};">${batteryLevel}%</span>
+                </div>` : ''}
+                ${this._watchBatteryLevel > 0 ? html`
+                <div class="orb-back-bat clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))}>
+                  <ha-icon icon="mdi:watch" style="--mdc-icon-size:11px;color:${this._getBatteryColor(this._watchBatteryLevel)};"></ha-icon>
+                  <span style="color:${this._getBatteryColor(this._watchBatteryLevel)};">${Math.round(this._watchBatteryLevel)}%</span>
+                </div>` : ''}
+                ${battery2Level > 0 ? html`
+                <div class="orb-back-bat clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('device_2_battery'))}>
+                  <ha-icon icon="${this._getDeviceIcon(this._resolvedPrefix2 || this.config.device_2_prefix)}" style="--mdc-icon-size:11px;color:${batteryColor2};"></ha-icon>
+                  <span style="color:${batteryColor2};">${battery2Level}%</span>
+                </div>` : ''}
+                <span class="orb-back-lbl" style="margin-top:3px;">batteries</span>
+              </div>
+            </div>
+
+          </div>
+          <!-- ── END SPHERE ── -->
+
+          <!-- Last changed -->
+          ${this.config.show_last_changed ? html`
+          <div class="orb-last-changed" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : `color:rgba(${accentRgb},0.4);`}">
+            ${this._getRelativeTime(entity.last_changed)}
+          </div>` : ''}
+
+          <!-- Geocoded address -->
+          ${this.config.show_geocoded_location && entity.state !== 'home' && this._geocodedLocation ? html`
+          <div class="orb-geo clickable" @click=${() => this._showMoreInfo(geoEntityId)}
+               style="border-color:rgba(${accentRgb},0.12);background:rgba(${accentRgb},0.04);">
+            ${this._renderGeocoded(geoEntityId, `font-size:10px;color:rgba(${accentRgb},0.55);text-align:center;`)}
+          </div>` : ''}
+
+          <!-- ── WEATHER FOOTER ── -->
+          ${weatherLine ? html`
+          <div class="orb-weather">
+            <span class="clickable" @click=${() => this._showMoreInfo(this.config.weather_entity)}
+                  style="${this.config.weather_text_color ? `color:${this.config.weather_text_color};` : ''}">
+              ${this._weatherIcon ? html`<ha-icon icon="${this._weatherIcon}" style="--mdc-icon-size:14px;vertical-align:middle;margin-right:3px;"></ha-icon>` : ''}
+              ${weatherLine}
+            </span>
+          </div>` : ''}
+
+        </div><!-- /orb-content -->
+      </ha-card>
+    `;
+  }
+
   static get styles() {
     return css`
       :host {
@@ -5109,6 +5376,218 @@ class PersonTrackerCard extends LitElement {
         border-top: 1px solid rgba(0,255,65,.1); padding-top: 8px; margin-top: 2px;
       }
       .matrix-status-line { color: rgba(0,255,65,.28); font-size: 9px; letter-spacing: 1.5px; }
+
+      /* ══════════════════════════════
+         Orbital Layout
+      ══════════════════════════════ */
+      .orb-stars { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden; }
+      .orb-star {
+        position:absolute;border-radius:50%;background:#fff;
+        animation:orb-twinkle var(--orb-d,3s) ease-in-out infinite var(--orb-dl,0s);
+      }
+      @keyframes orb-twinkle {
+        0%,100%{opacity:var(--orb-a,.08);transform:scale(1)}
+        50%{opacity:var(--orb-b,.45);transform:scale(1.3)}
+      }
+      .orb-grid {
+        position:absolute;inset:0;background-size:28px 28px;
+        pointer-events:none;z-index:0;opacity:0.7;
+      }
+      .orb-scan {
+        position:absolute;left:0;right:0;height:35%;
+        animation:orb-sweep 9s ease-in-out infinite;
+        pointer-events:none;z-index:1;
+      }
+      @keyframes orb-sweep { 0%{top:-35%} 100%{top:120%} }
+
+      .orb-content { position:relative;z-index:10;padding:12px 14px 10px; }
+
+      /* Header */
+      .orb-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:3px; }
+      .orb-name {
+        font-size:20px;font-weight:800;letter-spacing:2px;
+        color:#fff;text-transform:uppercase;cursor:pointer;
+      }
+      .orb-live {
+        font-size:7px;font-weight:800;letter-spacing:2px;
+        border:1px solid;border-radius:6px;padding:2px 6px;
+        animation:orb-live-blink 2s ease-in-out infinite;
+      }
+      @keyframes orb-live-blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+      .orb-zone { display:flex;align-items:center;gap:6px;margin-bottom:2px;cursor:pointer; }
+      .orb-zone-dot {
+        width:7px;height:7px;border-radius:50%;flex-shrink:0;
+        animation:orb-dot-pulse 2.2s ease-in-out infinite;
+      }
+      @keyframes orb-dot-pulse {
+        0%,100%{transform:scale(1)} 50%{transform:scale(1.5)}
+      }
+      .orb-zone-name { font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.38);text-transform:uppercase; }
+
+      /* Sphere */
+      .orb-sphere {
+        position:relative;height:192px;
+        display:flex;align-items:center;justify-content:center;
+        perspective:600px;
+        margin:4px 0 2px;
+      }
+
+      /* Orbital rings */
+      .orb-ring {
+        position:absolute;border-radius:50%;border:1px solid;pointer-events:none;
+      }
+      .orb-ring-1 {
+        width:182px;height:182px;
+        animation:orb-ring1 14s linear infinite;
+      }
+      .orb-ring-2 {
+        width:155px;height:155px;
+        animation:orb-ring2 10s linear infinite reverse;
+      }
+      .orb-ring-3 {
+        width:213px;height:213px;
+        animation:orb-ring3 19s linear infinite;
+      }
+      @keyframes orb-ring1 {
+        from{transform:rotateX(72deg) rotateZ(0deg)} to{transform:rotateX(72deg) rotateZ(360deg)}
+      }
+      @keyframes orb-ring2 {
+        from{transform:rotateX(68deg) rotateZ(60deg)} to{transform:rotateX(68deg) rotateZ(-300deg)}
+      }
+      @keyframes orb-ring3 {
+        from{transform:rotateX(64deg) rotateZ(120deg)} to{transform:rotateX(64deg) rotateZ(480deg)}
+      }
+
+      /* Halo glow */
+      .orb-halo {
+        position:absolute;width:152px;height:152px;border-radius:50%;
+        animation:orb-halo-pulse 3s ease-in-out infinite;pointer-events:none;
+      }
+      @keyframes orb-halo-pulse {
+        0%,100%{transform:scale(1);opacity:0.7} 50%{transform:scale(1.12);opacity:1}
+      }
+
+      /* Pulse rings */
+      .orb-pulse {
+        position:absolute;width:128px;height:128px;border-radius:50%;
+        border:1.5px solid;pointer-events:none;
+        animation:orb-pulse-expand 3s ease-out infinite;
+      }
+      @keyframes orb-pulse-expand {
+        0%{transform:scale(1);opacity:0.55} 100%{transform:scale(2.3);opacity:0}
+      }
+
+      /* 3D Coin */
+      .orb-coin {
+        position:relative;z-index:10;width:128px;height:128px;
+        transform-style:preserve-3d;
+        animation:orb-coin-spin 10s linear infinite;
+      }
+      @keyframes orb-coin-spin {
+        from{transform:perspective(600px) rotateY(0deg)}
+        to{transform:perspective(600px) rotateY(360deg)}
+      }
+      .orb-face {
+        position:absolute;inset:0;border-radius:50%;
+        backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;
+      }
+      .orb-front {
+        border:2px solid;
+        display:flex;align-items:center;justify-content:center;
+        background:linear-gradient(135deg,rgba(10,10,30,1),rgba(20,20,50,1));
+      }
+      .orb-back {
+        transform:rotateY(180deg);
+        background:rgba(4,4,18,0.97);
+        border:2px solid rgba(0,212,255,0.45);
+        box-shadow:0 0 20px rgba(0,212,255,0.15);
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+      }
+      .orb-back-bat {
+        display:flex;align-items:center;gap:5px;
+        font-size:11px;font-weight:700;font-family:'Courier New',monospace;
+        cursor:pointer;
+      }
+      .orb-back-lbl { font-size:7px;letter-spacing:2px;text-transform:uppercase;opacity:0.35;color:#fff; }
+
+      /* Satellites */
+      .orb-sat {
+        position:absolute;top:50%;left:50%;
+        display:flex;align-items:center;gap:4px;
+        background:rgba(0,0,0,0.82);border:1px solid;border-radius:20px;
+        padding:4px 8px;font-size:10px;font-weight:700;
+        white-space:nowrap;backdrop-filter:blur(4px);cursor:pointer;
+        overflow:hidden;
+      }
+      .orb-sat-1 { animation:orb-sat-a 14s linear infinite; }
+      .orb-sat-2 { animation:orb-sat-b 10s linear infinite reverse; }
+      .orb-sat-3 { animation:orb-sat-c 19s linear infinite; }
+      .orb-sat-4 { animation:orb-sat-d 16s linear infinite; }
+      .orb-sat-5 { animation:orb-sat-e 13s linear infinite reverse; }
+      .orb-sat-6 { animation:orb-sat-f 17s linear infinite; }
+      @keyframes orb-sat-a {
+        0%{transform:translate(-50%,-50%) rotate(0deg) translateX(90px) rotate(0deg);opacity:1}
+        42%{opacity:1} 50%{opacity:0} 58%{opacity:0}
+        100%{transform:translate(-50%,-50%) rotate(360deg) translateX(90px) rotate(-360deg);opacity:1}
+      }
+      @keyframes orb-sat-b {
+        0%{transform:translate(-50%,-50%) rotate(120deg) translateX(78px) rotate(-120deg);opacity:1}
+        42%{opacity:1} 50%{opacity:0} 58%{opacity:0}
+        100%{transform:translate(-50%,-50%) rotate(-240deg) translateX(78px) rotate(240deg);opacity:1}
+      }
+      @keyframes orb-sat-c {
+        0%{transform:translate(-50%,-50%) rotate(240deg) translateX(100px) rotate(-240deg);opacity:1}
+        42%{opacity:1} 50%{opacity:0} 58%{opacity:0}
+        100%{transform:translate(-50%,-50%) rotate(600deg) translateX(100px) rotate(-600deg);opacity:1}
+      }
+      @keyframes orb-sat-d {
+        0%{transform:translate(-50%,-50%) rotate(60deg) translateX(84px) rotate(-60deg);opacity:1}
+        42%{opacity:1} 50%{opacity:0} 58%{opacity:0}
+        100%{transform:translate(-50%,-50%) rotate(420deg) translateX(84px) rotate(-420deg);opacity:1}
+      }
+      @keyframes orb-sat-e {
+        0%{transform:translate(-50%,-50%) rotate(180deg) translateX(96px) rotate(-180deg);opacity:1}
+        42%{opacity:1} 50%{opacity:0} 58%{opacity:0}
+        100%{transform:translate(-50%,-50%) rotate(-180deg) translateX(96px) rotate(180deg);opacity:1}
+      }
+      @keyframes orb-sat-f {
+        0%{transform:translate(-50%,-50%) rotate(300deg) translateX(76px) rotate(-300deg);opacity:1}
+        42%{opacity:1} 50%{opacity:0} 58%{opacity:0}
+        100%{transform:translate(-50%,-50%) rotate(660deg) translateX(76px) rotate(-660deg);opacity:1}
+      }
+
+      /* Last changed */
+      .orb-last-changed {
+        font-size:9px;text-align:center;letter-spacing:0.5px;
+        margin-bottom:4px;
+      }
+
+      /* Geocoded strip */
+      .orb-geo {
+        border:1px solid;border-radius:10px;
+        padding:5px 10px;margin-bottom:6px;
+        overflow:hidden;text-align:center;cursor:pointer;
+      }
+
+      /* Weather footer */
+      .orb-weather {
+        text-align:center;font-size:11px;
+        color:rgba(255,255,255,0.38);
+        padding-top:8px;
+        border-top:1px solid rgba(255,255,255,0.04);
+        cursor:pointer;
+      }
+
+      /* Weather contrast when bg active */
+      .weather-active .orb-name,
+      .weather-active .orb-zone-name {
+        text-shadow:0 1px 6px rgba(0,0,0,0.9),0 0 14px rgba(0,0,0,0.8);
+        color:#fff !important;
+      }
+      .weather-active .orb-sat {
+        background:rgba(0,0,0,0.85) !important;
+      }
     `;
   }
 }
@@ -5117,7 +5596,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.4 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.5 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

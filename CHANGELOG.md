@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-03-22
+
+### Added
+- 🪐 **Orbital layout** — A spectacular new layout centered around a 3D spinning photo coin (continuous Y-axis rotation revealing key stats on the back face). Three concentric orbital rings tilt in 3D at different angles and spin at different speeds. Three satellite badges orbit the photo (battery, connection, activity) and fade when passing "behind". Expanding pulse rings emanate from the photo center. A seeded star field fills the background with deterministic twinkling. Chips row centered below the sphere. State-based accent colour: teal (home), violet (away), blue (other zones). Full support for geocoded address, weather, pair animation, and `show_particles` toggle.
+
+---
+
 ## [1.4.4] - 2026-03-21
 
 ### Added

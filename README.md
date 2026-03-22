@@ -1,10 +1,10 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.4-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.5-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **nine layout modes**.
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **ten layout modes**.
 
 ---
 
@@ -49,8 +49,12 @@ Advanced card for Home Assistant that displays detailed information about people
 ---
 
 ### 🖥️ Matrix Rain
-![Matrix Rai Layout](images/matrix.png)
+![Matrix Rain Layout](images/matrix.png)
 
+---
+
+### 🪐 Orbital
+![Orbital Layout](images/orbital.png)
 
 ---
 
@@ -79,7 +83,8 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ## ✨ Key Features
 
-- 🎨 **Nine Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain
+- 🎨 **Ten Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital
+- 🪐 **Geocoded Location** — Shows reverse-geocoded street address when away from home
 - 🌦️ **Rich Weather Animations** — 15 fully animated weather states as card background
 - 📱 **Auto Sensor Detection** — Automatically finds battery, activity, connection sensors from the HA Companion App
 - 🔋 **Battery Monitoring** — Phone battery with dynamic icon and color
@@ -188,6 +193,18 @@ entity: person.davide
 layout: matrix
 ```
 
+### Orbital 🪐
+Sci-fi space theme with a spinning 3D coin (front = photo, back = battery levels of all devices), three tilted orbital rings, up to four orbiting satellite badges (connection, activity, distance/travel time), animated pulse rings, twinkling stars, and a perspective grid overlay. Accent color adapts to state: teal when home, violet when not home, blue for custom zones.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: orbital
+show_weather: true
+weather_entity: weather.home
+show_geocoded_location: true
+```
+
 ---
 
 ## 🌦️ Weather Animations
@@ -197,7 +214,7 @@ Enable animated weather backgrounds by providing a `weather` entity:
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-layout: modern          # works on all 9 layouts
+layout: modern          # works on all 10 layouts
 weather_entity: weather.home
 show_weather: true
 show_weather_background: true   # animated scene
@@ -283,7 +300,7 @@ show_weather_temperature: true  # temperature label
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `entity` | string | required | `person.xxx` entity |
-| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` / `matrix` |
+| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` / `matrix` / `orbital` |
 | `show_entity_picture` | bool | `true` | Show avatar |
 | `show_name` | bool | `true` | Show person name |
 | `show_last_changed` | bool | `true` | Show last state change time |
@@ -298,6 +315,8 @@ show_weather_temperature: true  # temperature label
 | `show_weather_temperature` | bool | `true` | Temperature label |
 | `weather_entity` | string | — | `weather.xxx` entity |
 | `show_device_2_battery` | bool | `true` | Show second device (tablet/laptop) battery. Auto-detected; manual override via `device_2_battery_sensor` |
+| `show_geocoded_location` | bool | `false` | Show reverse-geocoded street address when away from home |
+| `geocoded_location_entity` | string | auto | Manual override for geocoded location sensor |
 | `show_particles` | bool | `true` | Show animated particles/orbs (Glass and Bio only) |
 | `transparent_background` | bool | `false` | Transparent card background (Glass and Bio only) |
 | `pair_travel_animation` | bool | `true` | Alternate distance/travel chips. When `false`, both show simultaneously |
@@ -768,7 +787,8 @@ If you find this card useful:
 
 ## ✨ Caratteristiche Principali
 
-- 🎨 **Sette Modalità di Layout** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D
+- 🎨 **Dieci Modalità di Layout** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital
+- 🪐 **Posizione Geocodificata** — Mostra l'indirizzo stradale quando la persona non è a casa
 - 🌦️ **Animazioni Meteo Ricche** — 15 stati meteo completamente animati come sfondo della card
 - 📱 **Rilevamento Automatico Sensori** — Trova automaticamente batteria, attività, connessione dall'app Companion
 - 🔋 **Monitoraggio Batteria** — Batteria telefono con icona e colore dinamici
@@ -857,6 +877,38 @@ entity: person.davide
 layout: holo
 ```
 
+### Weather Station 🌦️
+Dashboard meteo personale con animazione meteo nella sezione superiore e griglia di gauge (batteria, orologio, vento, umidità, pressione, temperatura percepita). I sensori in overflow appaiono come chip sotto la griglia.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: wxstation
+weather_entity: weather.home
+show_weather: true
+```
+
+### Matrix Rain 🖥️
+Tema terminale/hacker con caratteri katakana ed esadecimali animati in caduta libera. Avatar quadrato con scanline CRT e barra di scansione animata. Blocchi statistici monospace con barre di progresso verde fosforo.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: matrix
+```
+
+### Orbital 🪐
+Tema spaziale sci-fi con una moneta 3D rotante (fronte = foto, retro = livelli batteria di tutti i dispositivi), tre anelli orbitali inclinati, fino a quattro satellite badge in orbita (connessione, attività, distanza/tempo di viaggio), anelli di impulso animati, stelle scintillanti e griglia in prospettiva. Il colore accentato si adatta allo stato: verde acqua quando a casa, viola quando lontano, blu per zone personalizzate.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: orbital
+show_weather: true
+weather_entity: weather.home
+show_geocoded_location: true
+```
+
 ---
 
 ## 🌦️ Animazioni Meteo
@@ -873,7 +925,7 @@ show_weather_background: true
 show_weather_temperature: true
 ```
 
-Funziona su tutti e 7 i layout. Le opzioni `show_weather_background` e `show_weather_temperature` sono indipendenti — puoi mostrare solo la scena animata, solo la temperatura, o entrambe.
+Funziona su tutti e 10 i layout. Le opzioni `show_weather_background` e `show_weather_temperature` sono indipendenti — puoi mostrare solo la scena animata, solo la temperatura, o entrambe.
 
 ---
 
@@ -933,7 +985,7 @@ Funziona su tutti e 7 i layout. Le opzioni `show_weather_background` e `show_wea
 ```yaml
 type: custom:person-tracker-card
 entity: person.davide
-layout: holo   # classic / compact / modern / neon / glass / bio / holo
+layout: orbital   # classic / compact / modern / neon / glass / bio / holo / wxstation / matrix / orbital
 ```
 
 ### Configurazione Completa con Meteo

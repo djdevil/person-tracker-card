@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.5: orbital layout added to picker and validation whitelist
 // v1.4.4: show_geocoded_location toggle + geocoded_location_entity picker in Sensors tab (auto-detected)
 // v1.4.3: matrix layout added to picker and validation whitelist
 // v1.4.2: wxstation layout added to picker; device_2_battery_sensor entity pickers (auto-detect)
@@ -1022,7 +1023,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.4</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.5</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1100,6 +1101,7 @@ class PersonTrackerCardEditor extends LitElement {
           <mwc-list-item value="holo">Holographic 3D ◈</mwc-list-item>
           <mwc-list-item value="wxstation">Weather Station ⛅</mwc-list-item>
           <mwc-list-item value="matrix">Matrix Rain 🖥️</mwc-list-item>
+          <mwc-list-item value="orbital">Orbital 🪐</mwc-list-item>
         </ha-select>
 
         ${this._config.layout === 'compact' ? html`
@@ -2154,7 +2156,7 @@ class PersonTrackerCardEditor extends LitElement {
       || item?.value
       || (item && item.getAttribute ? item.getAttribute('value') : null);
 
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo' && value !== 'wxstation' && value !== 'matrix')) {
+    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo' && value !== 'wxstation' && value !== 'matrix' && value !== 'orbital')) {
       console.warn('Invalid layout value:', value);
       return;
     }
@@ -2192,7 +2194,7 @@ class PersonTrackerCardEditor extends LitElement {
     const validTriggerValues = ['all', 'entity', 'custom'];
 
     // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio', 'holo', 'wxstation', 'matrix'];
+    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio', 'holo', 'wxstation', 'matrix', 'orbital'];
 
     // Allowed values for positions
     const validPositions = [
