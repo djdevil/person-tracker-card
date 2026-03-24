@@ -1,6 +1,7 @@
-// Person Tracker Card v1.4.5 - Multilanguage Version
+// Person Tracker Card v1.4.6 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.6: Maps integration — maps_provider config (google/apple/osm) opens GPS location on zone/address click; show_geocoded_location enabled by default; editor dropdown fix (value="none" sentinel, label+fixedMenuPosition); geocoded switch check !== false; GPS coords from person.attributes
 // v1.4.5: Orbital layout (orbital) — 3D spinning photo coin, three tilted orbital rings, orbiting
 //         satellite badges (battery/connection/activity), pulsing energy rings, animated star field,
 //         chip row centered below, state-based accent color (home=teal, away=violet, zone=blue).
@@ -40,7 +41,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.5 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.6 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -282,7 +283,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.5';
+const CARD_VERSION = '1.4.6';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -483,6 +484,10 @@ class PersonTrackerCard extends LitElement {
       show_weather_temperature: true,
       weather_text_color: null,
       last_changed_color: null,
+      // Geocoded location (on by default)
+      show_geocoded_location: true,
+      // Maps integration (opt-in: 'google' | 'apple' | 'osm', null = disabled)
+      maps_provider: null,
       // Modern layout options
       modern_picture_size: 40,
       modern_ring_size: 38,
@@ -810,6 +815,11 @@ class PersonTrackerCard extends LitElement {
     } else {
       this._geocodedLocation = null;
     }
+
+    // GPS coordinates for maps integration
+    const personEntityForGps = this.hass.states[this.config.entity];
+    this._gpsLat = personEntityForGps?.attributes?.latitude ?? null;
+    this._gpsLon = personEntityForGps?.attributes?.longitude ?? null;
   }
 
   _getActivityIcon() {
@@ -956,6 +966,17 @@ class PersonTrackerCard extends LitElement {
       default:
         break;
     }
+  }
+
+  _openMaps(e) {
+    if (e) e.stopPropagation();
+    if (!this._gpsLat || !this._gpsLon || !this.config.maps_provider) return;
+    const urls = {
+      google: `https://www.google.com/maps?q=${this._gpsLat},${this._gpsLon}`,
+      apple:  `https://maps.apple.com/?ll=${this._gpsLat},${this._gpsLon}`,
+      osm:    `https://www.openstreetmap.org/?mlat=${this._gpsLat}&mlon=${this._gpsLon}`,
+    };
+    window.open(urls[this.config.maps_provider] || urls.google, '_blank');
   }
 
   // Get sensor entity ID for a specific type
@@ -1215,10 +1236,11 @@ class PersonTrackerCard extends LitElement {
     if (!this._geocodedLocation || !entityId) return html``;
     const text = this._geocodedLocation;
     // Structural styles always applied; animation applied after render by _checkGeoOverflow()
+    const hasMaps = !!(this.config.maps_provider && this._gpsLat && this._gpsLon);
     return html`
       <div class="geo-marquee-outer clickable"
-           @click=${(e) => { e.stopPropagation(); this._showMoreInfo(entityId); }}
-           style="display:block;width:100%;min-width:0;max-width:100%;overflow:hidden;align-self:stretch;box-sizing:border-box;${style}">
+           @click=${(e) => { e.stopPropagation(); hasMaps ? this._openMaps(e) : this._showMoreInfo(entityId); }}
+           style="display:block;width:100%;min-width:0;max-width:100%;overflow:hidden;align-self:stretch;box-sizing:border-box;cursor:pointer;${style}">
         <span class="geo-marquee-inner">📍 ${text}</span>
       </div>`;
   }
@@ -1631,9 +1653,11 @@ class PersonTrackerCard extends LitElement {
 
               ${this.config.show_name ? html`
                 <div class="entity-state-name"
+                     @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined}
                      style="font-size: ${this.config.state_font_size};
                             color: ${stateStyles.color || 'var(--secondary-text-color)'};
-                            margin-top: ${this.config.show_person_name ? `calc(${this.config.name_font_size} * 0.3)` : (this.config.show_entity_picture ? '16px' : '0')};">
+                            margin-top: ${this.config.show_person_name ? `calc(${this.config.name_font_size} * 0.3)` : (this.config.show_entity_picture ? '16px' : '0')};
+                            ${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">
                   ${stateName}
                 </div>
               ` : ''}
@@ -1855,11 +1879,11 @@ class PersonTrackerCard extends LitElement {
             </div>
           ` : ''}
 
-          <div class="compact-location clickable" @click=${() => this._handleTapAction()} style="color: ${stateStyles.color || 'var(--secondary-text-color)'}; cursor: pointer; font-size: ${locationFontSize}px;">
+          <div class="compact-location clickable" @click=${() => this.config.maps_provider && this._gpsLat ? this._openMaps() : this._handleTapAction()} style="color: ${stateStyles.color || 'var(--secondary-text-color)'}; cursor: pointer; font-size: ${locationFontSize}px;">
             ${this.config.show_geocoded_location && this._geocodedLocation && entity.state !== 'home' ? html`
               <div class="geo-wrap" style="width:100%;">
                 <span class="geo-state">${displayLocation}</span>
-                <span class="geo-addr clickable" style="font-size:${Math.max(8, locationFontSize - 1)}px;opacity:0.85;cursor:pointer;" @click=${(e) => { e.stopPropagation(); this._showMoreInfo(geoEntityId); }}>${this._geocodedLocation}</span>
+                <span class="geo-addr clickable" style="font-size:${Math.max(8, locationFontSize - 1)}px;opacity:0.85;cursor:pointer;" @click=${(e) => { e.stopPropagation(); this.config.maps_provider && this._gpsLat ? this._openMaps(e) : this._showMoreInfo(geoEntityId); }}>${this._geocodedLocation}</span>
               </div>
             ` : displayLocation}
             ${this.config.show_last_changed ? html`
@@ -2056,7 +2080,6 @@ class PersonTrackerCard extends LitElement {
 
     // Activity
     const activityIcon = this._activityIcon;
-    const activity = this._activity;
 
     // Connection
     const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
@@ -2073,9 +2096,6 @@ class PersonTrackerCard extends LitElement {
 
     // Ring background color (adapts to theme)
     const ringBgColor = this._getRingBackgroundColor();
-
-    // Width
-    const maxWidth = this.config.modern_width || 300;
 
     // Weather
     const weatherIconMap = {'sunny':'mdi:weather-sunny','clear-night':'mdi:weather-night','partlycloudy':'mdi:weather-partly-cloudy','cloudy':'mdi:weather-cloudy','fog':'mdi:weather-fog','windy':'mdi:weather-windy','windy-variant':'mdi:weather-windy-variant','rainy':'mdi:weather-rainy','snowy-rainy':'mdi:weather-snowy-rainy','pouring':'mdi:weather-pouring','snowy':'mdi:weather-snowy','hail':'mdi:weather-hail','lightning':'mdi:weather-lightning','lightning-rainy':'mdi:weather-lightning-rainy','exceptional':'mdi:alert-circle-outline'};
@@ -2115,7 +2135,8 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
             ${this.config.show_name ? html`
-              <div style="font-size: ${this.config.modern_state_font_size || '12px'}; color: ${stateStyles.color || 'var(--secondary-text-color)'}; margin: 0; padding: 0;">
+              <div @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined}
+                   style="font-size: ${this.config.modern_state_font_size || '12px'}; color: ${stateStyles.color || 'var(--secondary-text-color)'}; margin: 0; padding: 0; ${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">
                 ${displayLocation}
               </div>
             ` : ''}
@@ -2389,7 +2410,8 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
             ${this.config.show_name ? html`
-              <div class="neon-location" style="color: ${stateColor}; text-shadow: 0 0 8px ${glowColor};">
+              <div class="neon-location" @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined}
+                   style="color: ${stateColor}; text-shadow: 0 0 8px ${glowColor}; ${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">
                 ${displayLocation}
               </div>
             ` : ''}
@@ -2599,7 +2621,8 @@ class PersonTrackerCard extends LitElement {
               ${this.config.show_name ? html`
                 <div class="glass-zone-row">
                   <span class="glass-dot" style="background:${accentColor};box-shadow:0 0 6px ${accentColor};"></span>
-                  <span class="glass-zone-text">${displayLocation}</span>
+                  <span class="glass-zone-text" @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined}
+                        style="${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">${displayLocation}</span>
                 </div>
               ` : ''}
               ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.38);margin-top:2px;') : ''}
@@ -2847,7 +2870,7 @@ class PersonTrackerCard extends LitElement {
 
             <div class="clickable" @click=${() => this._handleTapAction()} style="flex:1;min-width:0;">
               ${this.config.show_person_name ? html`<div class="bio-name">${personName}</div>` : ''}
-              ${this.config.show_name ? html`<div class="bio-zone" style="color:rgba(${sensorRgb},0.65);">◉ ${displayLocation}</div>` : ''}
+              ${this.config.show_name ? html`<div class="bio-zone" @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined} style="color:rgba(${sensorRgb},0.65);${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">◉ ${displayLocation}</div>` : ''}
               ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, `font-size:9px;color:rgba(${sensorRgb},0.38);margin-top:1px;`) : ''}
               ${this.config.show_last_changed ? html`<div style="font-size:10px;color:${this.config.last_changed_color || `rgba(${sensorRgb},0.35)`};margin-top:2px;letter-spacing:0.5px;">${this._getRelativeTime(entity.last_changed)}</div>` : ''}
             </div>
@@ -3100,7 +3123,8 @@ class PersonTrackerCard extends LitElement {
                     <div class="holo-name" style="text-shadow:0 0 20px rgba(${accentRgb},0.35),0 0 40px rgba(127,80,255,0.2);">${personName.toUpperCase()}</div>
                   ` : ''}
                   ${this.config.show_name ? html`
-                    <div class="holo-loc" style="background:linear-gradient(90deg,${accentColor},#7f50ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${displayLocation}</div>
+                    <div class="holo-loc" @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined}
+                         style="background:linear-gradient(90deg,${accentColor},#7f50ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">${displayLocation}</div>
                   ` : ''}
                   ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.35);margin-top:1px;') : ''}
                   <div class="holo-sub">
@@ -3325,7 +3349,8 @@ class PersonTrackerCard extends LitElement {
                 <div class="wx-name" @click=${() => this._handleTapAction()} style="cursor:pointer;">${personName}</div>
               ` : ''}
               ${this.config.show_name ? html`
-                <div class="wx-location">${this.config.show_geocoded_location && this._geocodedLocation && entity.state !== 'home' ? '' : '📍 '}${displayLocation}</div>
+                <div class="wx-location" @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined}
+                     style="${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">${this.config.show_geocoded_location && this._geocodedLocation && entity.state !== 'home' ? '' : '📍 '}${displayLocation}</div>
               ` : ''}
               ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, 'font-size:9px;color:rgba(255,255,255,0.38);margin-top:1px;') : ''}
               ${this.config.show_last_changed && lastChanged ? html`
@@ -3535,7 +3560,7 @@ class PersonTrackerCard extends LitElement {
             </div>
             <div style="flex:1;min-width:0;">
               ${this.config.show_person_name !== false ? html`<div class="matrix-name">${personName.toUpperCase()}</div>` : ''}
-              ${this.config.show_name !== false ? html`<div class="matrix-state">STATUS:: ${displayLocation.toUpperCase()}</div>` : ''}
+              ${this.config.show_name !== false ? html`<div class="matrix-state" @click=${this.config.maps_provider && this._gpsLat ? (e) => this._openMaps(e) : undefined} style="${this.config.maps_provider && this._gpsLat ? 'cursor:pointer;' : ''}">STATUS:: ${displayLocation.toUpperCase()}</div>` : ''}
               ${this.config.show_geocoded_location && entity.state !== 'home' ? this._renderGeocoded(geoEntityId, "font-size:8px;color:#00ff4160;margin-top:1px;font-family:'Courier New',monospace;letter-spacing:0.5px;") : ''}
               ${lastChanged ? html`<div class="matrix-last-changed" style="${this.config.last_changed_color ? `color:${this.config.last_changed_color};` : ''}">${lastChanged}</div>` : ''}
             </div>
@@ -3712,15 +3737,13 @@ class PersonTrackerCard extends LitElement {
       b: 0.25 + r() * 0.5,
     }));
 
-    // All sensors orbit as satellites
-    const showSat1 = this.config.show_battery && batteryLevel > 0;
+    // All sensors orbit as satellites (battery/device2 shown on coin back, not in orbit)
     const showSat2 = this.config.show_connection && !!this._connectionType;
     const showSat3 = this.config.show_activity && this._activity && this._activity !== 'unknown';
     const showSat4 = hasDist1 || hasTravel1;
     const showSat5 = hasDist2 || hasTravel2;
     const battery2Level = Math.round(this._battery2Level);
     const batteryColor2 = this._getBatteryColor(this._battery2Level);
-    const showSat6 = this.config.show_device_2_battery !== false && battery2Level > 0;
 
     const cardBg = this.config.transparent_background
       ? 'transparent'
@@ -3773,7 +3796,7 @@ class PersonTrackerCard extends LitElement {
 
           <!-- Zone row -->
           ${this.config.show_name ? html`
-          <div class="orb-zone clickable" @click=${() => this._handleTapAction()}>
+          <div class="orb-zone clickable" @click=${() => this.config.maps_provider && this._gpsLat ? this._openMaps() : this._handleTapAction()}>
             <div class="orb-zone-dot" style="background:${accentColor};box-shadow:0 0 8px ${accentColor};"></div>
             <span class="orb-zone-name">${displayLocation}</span>
           </div>` : ''}
@@ -5596,7 +5619,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.5 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.6 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

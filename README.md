@@ -1,7 +1,7 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.5-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.6-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **ten layout modes**.
@@ -74,6 +74,7 @@ Advanced card for Home Assistant that displays detailed information about people
 - [🔧 Configuration](#-configuration)
 - [📱 Mobile App Integration](#-mobile-app-integration)
 - [🗺️ Smart Travel Mode](#️-smart-travel-mode)
+- [📍 Maps Integration](#-maps-integration)
 - [🎭 Examples](#-examples)
 - [🎬 Animated Emoji Avatar](#-animated-emoji-avatar-memoji--ar-emoji)
 - [🔍 Troubleshooting](#-troubleshooting)
@@ -84,7 +85,8 @@ Advanced card for Home Assistant that displays detailed information about people
 ## ✨ Key Features
 
 - 🎨 **Ten Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital
-- 🪐 **Geocoded Location** — Shows reverse-geocoded street address when away from home
+- 🪐 **Geocoded Location** — Shows reverse-geocoded street address when away from home (enabled by default)
+- 🗺️ **Maps Integration** — Click the zone or address to open Google Maps, Apple Maps, or OpenStreetMap with the person's live GPS coordinates
 - 🌦️ **Rich Weather Animations** — 15 fully animated weather states as card background
 - 📱 **Auto Sensor Detection** — Automatically finds battery, activity, connection sensors from the HA Companion App
 - 🔋 **Battery Monitoring** — Phone battery with dynamic icon and color
@@ -315,8 +317,9 @@ show_weather_temperature: true  # temperature label
 | `show_weather_temperature` | bool | `true` | Temperature label |
 | `weather_entity` | string | — | `weather.xxx` entity |
 | `show_device_2_battery` | bool | `true` | Show second device (tablet/laptop) battery. Auto-detected; manual override via `device_2_battery_sensor` |
-| `show_geocoded_location` | bool | `false` | Show reverse-geocoded street address when away from home |
+| `show_geocoded_location` | bool | `true` | Show reverse-geocoded street address when away from home |
 | `geocoded_location_entity` | string | auto | Manual override for geocoded location sensor |
+| `maps_provider` | string | — | Open GPS location on click: `google` / `apple` / `osm`. Disabled if not set |
 | `show_particles` | bool | `true` | Show animated particles/orbs (Glass and Bio only) |
 | `transparent_background` | bool | `false` | Transparent card background (Glass and Bio only) |
 | `pair_travel_animation` | bool | `true` | Alternate distance/travel chips. When `false`, both show simultaneously |
@@ -468,7 +471,29 @@ zone_2: work
 - Person **at `zone_2`** (work) → show direction 1 (work→home), hide direction 2
 - Person **elsewhere** → both directions visible (with alternating animation)
 
-Supported in all 9 layouts.
+Supported in all 10 layouts.
+
+---
+
+## 📍 Maps Integration
+
+When `maps_provider` is set, clicking the **zone/state name** or the **geocoded address strip** opens the person's live GPS position in the chosen map app (new tab). Uses `person.attributes.latitude` / `longitude` — no additional sensors required.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: modern
+maps_provider: google       # google | apple | osm
+show_geocoded_location: true
+```
+
+| Value | Opens |
+|-------|-------|
+| `google` | `https://www.google.com/maps?q=lat,lon` |
+| `apple` | `https://maps.apple.com/?ll=lat,lon` |
+| `osm` | `https://www.openstreetmap.org/?mlat=lat&mlon=lon` |
+
+> **Tip:** On mobile, `apple` opens the native Maps app on iOS; `google` opens the Google Maps app if installed.
 
 ---
 
@@ -788,7 +813,8 @@ If you find this card useful:
 ## ✨ Caratteristiche Principali
 
 - 🎨 **Dieci Modalità di Layout** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital
-- 🪐 **Posizione Geocodificata** — Mostra l'indirizzo stradale quando la persona non è a casa
+- 🪐 **Posizione Geocodificata** — Mostra l'indirizzo stradale quando la persona non è a casa (attivo per impostazione predefinita)
+- 🗺️ **Integrazione Mappe** — Clicca sulla zona o sull'indirizzo per aprire Google Maps, Apple Maps o OpenStreetMap con le coordinate GPS in tempo reale
 - 🌦️ **Animazioni Meteo Ricche** — 15 stati meteo completamente animati come sfondo della card
 - 📱 **Rilevamento Automatico Sensori** — Trova automaticamente batteria, attività, connessione dall'app Companion
 - 🔋 **Monitoraggio Batteria** — Batteria telefono con icona e colore dinamici
@@ -1106,6 +1132,28 @@ zone_2: work
 - Persona **a casa** → mostra direzione 2 (casa→lavoro), nasconde direzione 1
 - Persona **a `zone_2`** (lavoro) → mostra direzione 1 (lavoro→casa), nasconde direzione 2
 - Persona **altrove** → entrambe le direzioni visibili con animazione alternata
+
+---
+
+## 📍 Integrazione Mappe
+
+Quando `maps_provider` è impostato, cliccando sul **nome della zona/stato** o sulla **strip dell'indirizzo geocodificato** si apre la posizione GPS in tempo reale nell'app mappa scelta (nuova scheda). Usa `person.attributes.latitude` / `longitude` — nessun sensore aggiuntivo necessario.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: modern
+maps_provider: google       # google | apple | osm
+show_geocoded_location: true
+```
+
+| Valore | Apre |
+|--------|------|
+| `google` | Google Maps con coordinate GPS |
+| `apple` | Apple Maps (apre l'app nativa su iOS) |
+| `osm` | OpenStreetMap |
+
+> **Suggerimento:** Su mobile, `apple` apre direttamente l'app Mappe di iOS; `google` apre l'app Google Maps se installata.
 
 ---
 

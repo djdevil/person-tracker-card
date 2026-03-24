@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.6: maps_provider dropdown added to Sensors tab; show_geocoded_location default true; editor switch/dropdown fixes
 // v1.4.5: orbital layout added to picker and validation whitelist
 // v1.4.4: show_geocoded_location toggle + geocoded_location_entity picker in Sensors tab (auto-detected)
 // v1.4.3: matrix layout added to picker and validation whitelist
@@ -93,6 +94,9 @@ class EditorLocalizationHelper {
         'editor.show_geocoded_location': 'Mostra indirizzo GPS (geocoded location)',
         'editor.geocoded_location_description': 'Mostra l\'indirizzo leggibile ottenuto dal GPS tramite sensor.xxx_geocoded_location. Visibile solo quando la persona non è a casa.',
         'editor.geocoded_location_entity': 'Entità geocoded location (auto-rilevata se vuota)',
+        'editor.maps_provider': 'Apri in Maps al click sulla posizione',
+        'editor.maps_provider_description': 'Se impostato, cliccando sulla zona o sull\'indirizzo si apre la mappa con le coordinate GPS.',
+        'editor.maps_provider_none': 'Disabilitato',
         'editor.show_device_2_battery': 'Batteria secondo dispositivo (tablet/laptop)',
         'editor.device_2_battery_sensor': 'Sensore batteria secondo dispositivo',
         'editor.device_2_battery_state_sensor': 'Stato carica secondo dispositivo',
@@ -236,6 +240,9 @@ class EditorLocalizationHelper {
         'editor.show_geocoded_location': 'Show GPS address (geocoded location)',
         'editor.geocoded_location_description': 'Shows the human-readable address from GPS via sensor.xxx_geocoded_location. Only visible when the person is not home.',
         'editor.geocoded_location_entity': 'Geocoded location entity (auto-detected if empty)',
+        'editor.maps_provider': 'Open in Maps on location click',
+        'editor.maps_provider_description': 'When set, clicking the zone or address opens the map with GPS coordinates.',
+        'editor.maps_provider_none': 'Disabled',
         'editor.show_device_2_battery': 'Second device battery (tablet/laptop)',
         'editor.device_2_battery_sensor': 'Second device battery sensor',
         'editor.device_2_battery_state_sensor': 'Second device charging state sensor',
@@ -379,6 +386,9 @@ class EditorLocalizationHelper {
         'editor.show_geocoded_location': 'Afficher adresse GPS (geocoded location)',
         'editor.geocoded_location_description': 'Affiche l\'adresse lisible obtenue via GPS grâce à sensor.xxx_geocoded_location. Visible uniquement quand la personne n\'est pas à la maison.',
         'editor.geocoded_location_entity': 'Entité geocoded location (auto-détectée si vide)',
+        'editor.maps_provider': 'Ouvrir dans Maps au clic sur la position',
+        'editor.maps_provider_description': 'Si défini, cliquer sur la zone ou l\'adresse ouvre la carte avec les coordonnées GPS.',
+        'editor.maps_provider_none': 'Désactivé',
         'editor.show_device_2_battery': 'Batterie 2e appareil (tablette/laptop)',
         'editor.device_2_battery_sensor': 'Capteur batterie 2e appareil',
         'editor.device_2_battery_state_sensor': 'Capteur état charge 2e appareil',
@@ -522,6 +532,9 @@ class EditorLocalizationHelper {
         'editor.show_geocoded_location': 'GPS-Adresse anzeigen (Geocoded Location)',
         'editor.geocoded_location_description': 'Zeigt die lesbare GPS-Adresse via sensor.xxx_geocoded_location an. Nur sichtbar wenn die Person nicht zu Hause ist.',
         'editor.geocoded_location_entity': 'Geocoded-Location-Entität (auto-erkannt wenn leer)',
+        'editor.maps_provider': 'In Maps öffnen beim Klick auf Position',
+        'editor.maps_provider_description': 'Wenn gesetzt, öffnet ein Klick auf Zone oder Adresse die Karte mit GPS-Koordinaten.',
+        'editor.maps_provider_none': 'Deaktiviert',
         'editor.show_device_2_battery': 'Zweitgerät-Akku (Tablet/Laptop)',
         'editor.device_2_battery_sensor': 'Akku-Sensor Zweitgerät',
         'editor.device_2_battery_state_sensor': 'Ladestatus-Sensor Zweitgerät',
@@ -722,6 +735,8 @@ class PersonTrackerCardEditor extends LitElement {
       modern_show_battery_ring: true,
       modern_show_travel_ring: true,
       modern_travel_max_time: 60,
+      // Geocoded location on by default
+      show_geocoded_location: true,
       ...config
     };
 
@@ -1023,7 +1038,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.5</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.6</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1436,7 +1451,7 @@ class PersonTrackerCardEditor extends LitElement {
             <ha-icon icon="mdi:map-marker-account" class="sensor-icon"></ha-icon>
             <span class="sensor-title">${this._t('editor.show_geocoded_location')}</span>
             <ha-switch
-              .checked=${this._config.show_geocoded_location === true}
+              .checked=${this._config.show_geocoded_location !== false}
               @change=${(e) => this._valueChanged(e, 'show_geocoded_location')}>
             </ha-switch>
           </div>
@@ -1450,6 +1465,34 @@ class PersonTrackerCardEditor extends LitElement {
               @value-changed=${(e) => this._entityPickerChanged(e, 'geocoded_location_entity')}>
             </ha-entity-picker>
           ` : ''}
+        </div>
+
+        <!-- Maps provider -->
+        <div class="sensor-group">
+          <div class="sensor-header">
+            <ha-icon icon="mdi:map-marker-radius" class="sensor-icon"></ha-icon>
+            <span class="sensor-title">${this._t('editor.maps_provider')}</span>
+          </div>
+          <p class="info-text">${this._t('editor.maps_provider_description')}</p>
+          <ha-select
+            label="${this._t('editor.maps_provider')}"
+            .value=${this._config.maps_provider || 'none'}
+            fixedMenuPosition
+            naturalMenuWidth
+            @request-selected=${(e) => {
+              e.stopPropagation();
+              if (e.detail && e.detail.selected === false) return;
+              const raw = e.target && e.target.getAttribute ? e.target.getAttribute('value') : null;
+              if (raw === null) return;
+              this._config = { ...this._config, maps_provider: raw === 'none' ? null : raw };
+              this._fireEvent('config-changed', { config: this._config });
+              this.requestUpdate();
+            }}>
+            <mwc-list-item value="none">${this._t('editor.maps_provider_none')}</mwc-list-item>
+            <mwc-list-item value="google">Google Maps</mwc-list-item>
+            <mwc-list-item value="apple">Apple Maps</mwc-list-item>
+            <mwc-list-item value="osm">OpenStreetMap</mwc-list-item>
+          </ha-select>
         </div>
 
       </div>

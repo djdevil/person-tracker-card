@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2026-03-24
+
+### Added
+- 🗺 **Maps integration** — New `maps_provider` config option (`google` / `apple` / `osm`). When set, clicking the zone/state name or the geocoded address strip opens the person's current GPS location in the chosen map app (new tab). Uses `person.attributes.latitude/longitude`. Disabled by default (opt-in). Configurable from the editor via a dropdown in the Sensors tab (all 4 languages).
+- 📍 **`show_geocoded_location` enabled by default** — New cards now show the geocoded address automatically without requiring manual activation.
+
+### Fixed
+- 🐛 **Maps dropdown showed empty on load** — Added `label`, `fixedMenuPosition`, `naturalMenuWidth` to `ha-select`; replaced `value=""` with `value="none"` sentinel to avoid `ha-select` empty-string matching issues.
+- 🐛 **Maps dropdown selection not saving** — Changed event from `@selected` to `@request-selected` with `getAttribute('value')` pattern, matching the rest of the editor.
+- 🐛 **Geocoded location switch showed OFF despite being enabled** — Changed check from `=== true` to `!== false` so that `undefined` (legacy cards without the key) is treated as ON.
+- 🐛 **GPS coords always null** — Fixed `this._hass` typo → `this.hass` in `_updateSensorData()`, which caused `_gpsLat`/`_gpsLon` to always be `null` and the maps click handler to never attach.
+
+---
+
 ## [1.4.5] - 2026-03-22
 
 ### Added
