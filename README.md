@@ -1,10 +1,10 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.6-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.7-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
-Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **ten layout modes**.
+Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eleven layout modes**.
 
 ---
 
@@ -58,6 +58,11 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ---
 
+### 🖋️ Liquid Ink
+![Liquid Ink Layout](images/ink.png)
+
+---
+
 **[🇬🇧 English](#english-version) | [🇮🇹 Versione Italiana](#versione-italiana)**
 
 ---
@@ -84,7 +89,7 @@ Advanced card for Home Assistant that displays detailed information about people
 
 ## ✨ Key Features
 
-- 🎨 **Ten Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital
+- 🎨 **Eleven Layout Modes** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital, Liquid Ink
 - 🪐 **Geocoded Location** — Shows reverse-geocoded street address when away from home (enabled by default)
 - 🗺️ **Maps Integration** — Click the zone or address to open Google Maps, Apple Maps, or OpenStreetMap with the person's live GPS coordinates
 - 🌦️ **Rich Weather Animations** — 15 fully animated weather states as card background
@@ -207,6 +212,17 @@ weather_entity: weather.home
 show_geocoded_location: true
 ```
 
+### Liquid Ink 🖋️
+The only **light mode** theme. Pure white background with crisp shadows and elevated elements. Horizontal layout: avatar circle with state-colored accent ring on the left, name / zone / time / geocoded address in the center, battery pill panel on the right. Below, an accent gradient separator divides the info row from the sensor chips. State accent colors: blue (home), violet (away), teal (other zones) — overrideable per state. Full geocoded address, maps integration, and weather support — when weather is active the background is replaced by the animated weather scene and text switches to high-contrast white.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: ink
+maps_provider: google
+show_geocoded_location: true
+```
+
 ---
 
 ## 🌦️ Weather Animations
@@ -302,7 +318,7 @@ show_weather_temperature: true  # temperature label
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `entity` | string | required | `person.xxx` entity |
-| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` / `matrix` / `orbital` |
+| `layout` | string | `classic` | `classic` / `compact` / `modern` / `neon` / `glass` / `bio` / `holo` / `wxstation` / `matrix` / `orbital` / `ink` |
 | `show_entity_picture` | bool | `true` | Show avatar |
 | `show_name` | bool | `true` | Show person name |
 | `show_last_changed` | bool | `true` | Show last state change time |
@@ -471,7 +487,7 @@ zone_2: work
 - Person **at `zone_2`** (work) → show direction 1 (work→home), hide direction 2
 - Person **elsewhere** → both directions visible (with alternating animation)
 
-Supported in all 10 layouts.
+Supported in all 11 layouts.
 
 ---
 
@@ -812,7 +828,7 @@ If you find this card useful:
 
 ## ✨ Caratteristiche Principali
 
-- 🎨 **Dieci Modalità di Layout** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital
+- 🎨 **Undici Modalità di Layout** — Classic, Compact, Modern, Neon, Glass, Bioluminescence, Holographic 3D, Weather Station, Matrix Rain, Orbital, Liquid Ink
 - 🪐 **Posizione Geocodificata** — Mostra l'indirizzo stradale quando la persona non è a casa (attivo per impostazione predefinita)
 - 🗺️ **Integrazione Mappe** — Clicca sulla zona o sull'indirizzo per aprire Google Maps, Apple Maps o OpenStreetMap con le coordinate GPS in tempo reale
 - 🌦️ **Animazioni Meteo Ricche** — 15 stati meteo completamente animati come sfondo della card
@@ -935,6 +951,17 @@ weather_entity: weather.home
 show_geocoded_location: true
 ```
 
+### Liquid Ink 🖋️
+L'unico tema in **modalità chiara**. Sfondo bianco puro con ombre nette ed elementi in rilievo. Layout orizzontale: foto avatar con anello colorato in base allo stato a sinistra, nome / zona / ora / indirizzo geocodificato al centro, pannello batteria a destra. Sotto, un separatore sfumato con il colore accent divide la riga info dai chip sensori. Colori accent per stato: blu (a casa), viola (lontano), teal (altre zone) — personalizzabili per stato. Supporto completo per indirizzo geocodificato, integrazione mappe e meteo — quando il meteo è attivo lo sfondo viene sostituito dalla scena meteo animata e il testo passa in bianco ad alto contrasto.
+
+```yaml
+type: custom:person-tracker-card
+entity: person.davide
+layout: ink
+maps_provider: google
+show_geocoded_location: true
+```
+
 ---
 
 ## 🌦️ Animazioni Meteo
@@ -951,7 +978,7 @@ show_weather_background: true
 show_weather_temperature: true
 ```
 
-Funziona su tutti e 10 i layout. Le opzioni `show_weather_background` e `show_weather_temperature` sono indipendenti — puoi mostrare solo la scena animata, solo la temperatura, o entrambe.
+Funziona su tutti e 11 i layout. Le opzioni `show_weather_background` e `show_weather_temperature` sono indipendenti — puoi mostrare solo la scena animata, solo la temperatura, o entrambe.
 
 ---
 

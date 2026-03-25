@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.7] - 2026-03-25
+
+### Added
+- 🖋️ **Liquid Ink layout (`ink`)** — First light-mode theme. Cream/paper white background (`#faf7f2`) with 4 animated organic ink blobs (seeded PRNG, no re-render loops). State-based accent ink colors: forest green (home), deep violet (away), navy (other zones). Avatar surrounded by a rotating dashed splash ring and a soft glow ring. All sensors shown as minimalist ink-wash pills. Pair animation for distance/travel chips. Full support for geocoded address, maps provider click, weather (with contrast overrides when weather background is active), device 2 battery, particles toggle, transparent background.
+
+---
+
 ## [1.4.6] - 2026-03-24
 
 ### Added
