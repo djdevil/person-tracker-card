@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.4.7] - 2026-03-25
 
 ### Added
-- 🖋️ **Liquid Ink layout (`ink`)** — First light-mode theme. Cream/paper white background (`#faf7f2`) with 4 animated organic ink blobs (seeded PRNG, no re-render loops). State-based accent ink colors: forest green (home), deep violet (away), navy (other zones). Avatar surrounded by a rotating dashed splash ring and a soft glow ring. All sensors shown as minimalist ink-wash pills. Pair animation for distance/travel chips. Full support for geocoded address, maps provider click, weather (with contrast overrides when weather background is active), device 2 battery, particles toggle, transparent background.
+- 🖋️ **Liquid Ink layout (`ink`)** — First light-mode theme. Pure white background with crisp shadows and elevated elements. Horizontal layout: avatar with state-colored accent ring (left) · name / zone / time / geocoded address (center) · battery pill panel with shadow (right). Accent gradient separator divides the info row from sensor chip pills. State accent colors: blue (home), violet (away), teal (other zones). Full support for geocoded address, maps provider click, weather (contrast overrides when weather background active), device 2 battery, pair travel animation, transparent background.
+
+### Fixed
+- 🐛 **Liquid Ink — separator flash**: `ink-sep` now uses `var(--ink-accent)` CSS variable instead of a per-render inline `background` style — eliminates DOM update flicker. Height `1.5px` → `2px`, `transition:none`, `transform:translateZ(0)` on `.ink-main` for GPU compositing layer.
+- 🐛 **Liquid Ink — card background ignored by HA theme**: Added `--ha-card-background:#ffffff` so the HA theme's internal CSS variable is properly overridden alongside the `background` inline style.
+- 🐛 **Liquid Ink — low readability on white card**: Chip background changed to `#f1f3f5` (was white-on-white). Text colors darkened: zone `#4b5563`, time/geo/weather `#6b7280`, chip text `#1f2937` weight 600. Photo accent ring and chip shadows strengthened.
 
 ---
 
