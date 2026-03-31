@@ -1,4 +1,4 @@
-// Person Tracker Card v1.4.7 - Multilanguage Version
+// Person Tracker Card v1.4.8 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
 // v1.4.7: Liquid Ink layout (ink) — light mode card with ink blob background, animated dashed ring avatar, ink-wash chips, pair animation; all sensors/geocoded/maps/weather supported
@@ -42,7 +42,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.7 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.8 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -284,7 +284,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.7';
+const CARD_VERSION = '1.4.8';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -598,6 +598,7 @@ class PersonTrackerCard extends LitElement {
       const d2StateId = this.config.device_2_battery_state_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_state` : null);
       if (d2StateId) entities.push(d2StateId);
     }
+    if (this.config.state_entity) entities.push(this.config.state_entity);
 
     return entities;
   }
@@ -1603,7 +1604,8 @@ class PersonTrackerCard extends LitElement {
 
 
     const stateConfig = this._getCurrentStateConfig();
-    const stateName = stateConfig?.name || this.config.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const stateName = customStateEnt?.state || stateConfig?.name || this.config.name || this._translateState(entity.state);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
     const isCustomImage = !!this.config.entity_picture;
 
@@ -1837,7 +1839,8 @@ class PersonTrackerCard extends LitElement {
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
 
     // Nome dello stato personalizzato (location)
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
 
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
@@ -2036,7 +2039,8 @@ class PersonTrackerCard extends LitElement {
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
 
     // State name (location)
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
 
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
@@ -2341,7 +2345,8 @@ class PersonTrackerCard extends LitElement {
     const stateConfig = this._getCurrentStateConfig();
 
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
@@ -2558,7 +2563,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -2790,7 +2796,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -3030,7 +3037,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -3246,7 +3254,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -3471,7 +3480,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -3695,7 +3705,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -3948,7 +3959,8 @@ class PersonTrackerCard extends LitElement {
     const entity = this.hass.states[this.config.entity];
     const stateConfig = this._getCurrentStateConfig();
     const personName = this.config.name || entity.attributes?.friendly_name || 'Person';
-    const displayLocation = stateConfig?.name || this._translateState(entity.state);
+    const customStateEnt = this.config.state_entity ? this.hass.states[this.config.state_entity] : null;
+    const displayLocation = customStateEnt?.state || stateConfig?.name || this._translateState(entity.state);
     const geoEntityId = this.config.geocoded_location_entity || (this._resolvedPrefix ? `sensor.${this._resolvedPrefix}_geocoded_location` : null);
     const entityPicture = stateConfig?.entity_picture || this.config.entity_picture || entity.attributes?.entity_picture;
 
@@ -5946,7 +5958,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.7 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.8 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

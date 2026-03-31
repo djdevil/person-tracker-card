@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.8: state_entity config option — override displayed location text with any HA sensor
 // v1.4.7: Liquid Ink layout (ink) added to picker and validation whitelist
 // v1.4.6: maps_provider dropdown added to Sensors tab; show_geocoded_location default true; editor switch/dropdown fixes
 // v1.4.5: orbital layout added to picker and validation whitelist
@@ -98,6 +99,8 @@ class EditorLocalizationHelper {
         'editor.maps_provider': 'Apri in Maps al click sulla posizione',
         'editor.maps_provider_description': 'Se impostato, cliccando sulla zona o sull\'indirizzo si apre la mappa con le coordinate GPS.',
         'editor.maps_provider_none': 'Disabilitato',
+        'editor.state_entity': 'Sensore stato personalizzato',
+        'editor.state_entity_description': 'Sovrascrive il testo della posizione visualizzata (es. sensor.mia_posizione). La logica home/away rimane invariata.',
         'editor.show_device_2_battery': 'Batteria secondo dispositivo (tablet/laptop)',
         'editor.device_2_battery_sensor': 'Sensore batteria secondo dispositivo',
         'editor.device_2_battery_state_sensor': 'Stato carica secondo dispositivo',
@@ -244,6 +247,8 @@ class EditorLocalizationHelper {
         'editor.maps_provider': 'Open in Maps on location click',
         'editor.maps_provider_description': 'When set, clicking the zone or address opens the map with GPS coordinates.',
         'editor.maps_provider_none': 'Disabled',
+        'editor.state_entity': 'Custom state sensor',
+        'editor.state_entity_description': 'Overrides the displayed location text (e.g. sensor.my_location). Home/away logic is unaffected.',
         'editor.show_device_2_battery': 'Second device battery (tablet/laptop)',
         'editor.device_2_battery_sensor': 'Second device battery sensor',
         'editor.device_2_battery_state_sensor': 'Second device charging state sensor',
@@ -390,6 +395,8 @@ class EditorLocalizationHelper {
         'editor.maps_provider': 'Ouvrir dans Maps au clic sur la position',
         'editor.maps_provider_description': 'Si défini, cliquer sur la zone ou l\'adresse ouvre la carte avec les coordonnées GPS.',
         'editor.maps_provider_none': 'Désactivé',
+        'editor.state_entity': 'Capteur d\'état personnalisé',
+        'editor.state_entity_description': 'Remplace le texte de localisation affiché. La logique home/away reste inchangée.',
         'editor.show_device_2_battery': 'Batterie 2e appareil (tablette/laptop)',
         'editor.device_2_battery_sensor': 'Capteur batterie 2e appareil',
         'editor.device_2_battery_state_sensor': 'Capteur état charge 2e appareil',
@@ -536,6 +543,8 @@ class EditorLocalizationHelper {
         'editor.maps_provider': 'In Maps öffnen beim Klick auf Position',
         'editor.maps_provider_description': 'Wenn gesetzt, öffnet ein Klick auf Zone oder Adresse die Karte mit GPS-Koordinaten.',
         'editor.maps_provider_none': 'Deaktiviert',
+        'editor.state_entity': 'Benutzerdefinierter Statussensor',
+        'editor.state_entity_description': 'Überschreibt den angezeigten Standorttext. Die Home/Away-Logik bleibt unverändert.',
         'editor.show_device_2_battery': 'Zweitgerät-Akku (Tablet/Laptop)',
         'editor.device_2_battery_sensor': 'Akku-Sensor Zweitgerät',
         'editor.device_2_battery_state_sensor': 'Ladestatus-Sensor Zweitgerät',
@@ -1039,7 +1048,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.7</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.8</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1495,6 +1504,22 @@ class PersonTrackerCardEditor extends LitElement {
             <mwc-list-item value="apple">Apple Maps</mwc-list-item>
             <mwc-list-item value="osm">OpenStreetMap</mwc-list-item>
           </ha-select>
+        </div>
+
+        <!-- Custom state entity -->
+        <div class="sensor-group">
+          <div class="sensor-header">
+            <ha-icon icon="mdi:text-box-outline" class="sensor-icon"></ha-icon>
+            <span class="sensor-title">${this._t('editor.state_entity')}</span>
+          </div>
+          <p class="info-text">${this._t('editor.state_entity_description')}</p>
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${this._config.state_entity || ''}
+            .includeDomains=${['sensor', 'input_text', 'input_select']}
+            allow-custom-entity
+            @value-changed=${(e) => this._entityPickerChanged(e, 'state_entity')}>
+          </ha-entity-picker>
         </div>
 
       </div>

@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.8] - 2026-03-31
+
+### Added
+- 🗂️ **`state_entity` config option** — Override the displayed location/state text with any HA sensor entity (e.g. `sensor.my_custom_location`). Internal home/away detection, zone logic, and travel sensors are unaffected — only the display text changes. Configurable from the editor (Sensors tab). Supported in all 11 layouts.
+
+---
+
 ## [1.4.7] - 2026-03-25
 
 ### Added
