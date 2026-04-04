@@ -1,4 +1,4 @@
-// Person Tracker Card v1.4.8 - Multilanguage Version
+// Person Tracker Card v1.4.10 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
 // v1.4.7: Liquid Ink layout (ink) — light mode card with ink blob background, animated dashed ring avatar, ink-wash chips, pair animation; all sensors/geocoded/maps/weather supported
@@ -42,7 +42,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.8 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.10 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -284,7 +284,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.8';
+const CARD_VERSION = '1.4.10';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -599,6 +599,12 @@ class PersonTrackerCard extends LitElement {
       if (d2StateId) entities.push(d2StateId);
     }
     if (this.config.state_entity) entities.push(this.config.state_entity);
+
+    if (this.config.extra_chips) {
+      for (const chip of this.config.extra_chips) {
+        if (chip.entity) entities.push(chip.entity);
+      }
+    }
 
     return entities;
   }
@@ -961,7 +967,41 @@ class PersonTrackerCard extends LitElement {
       case 'call-service': {
         if (!action.service) break;
         const [domain, service] = action.service.split('.');
-        this.hass.callService(domain, service, action.service_data || {});
+        const target = action.target && Object.keys(action.target).length ? action.target : undefined;
+        const svcData = { ...(target ? {} : { entity_id: this.config.entity }), ...(action.service_data || {}) };
+        this.hass.callService(domain, service, svcData, target);
+        break;
+      }
+      case 'none':
+      default:
+        break;
+    }
+  }
+
+  // Handle per-chip tap action (extra_chips)
+  _handleExtraChipAction(chip) {
+    const action = chip.tap_action || { action: 'more-info' };
+    switch (action.action) {
+      case 'more-info':
+        this._showMoreInfo(chip.entity);
+        break;
+      case 'navigate':
+        if (action.navigation_path) {
+          window.history.pushState(null, '', action.navigation_path);
+          window.dispatchEvent(new CustomEvent('location-changed', { bubbles: true, composed: true }));
+        }
+        break;
+      case 'url':
+        if (action.url_path) {
+          window.open(action.url_path, action.url_target || '_blank');
+        }
+        break;
+      case 'call-service': {
+        if (!action.service) break;
+        const [domain, svc] = action.service.split('.');
+        const chipTarget = action.target && Object.keys(action.target).length ? action.target : undefined;
+        const chipSvcData = { ...(chipTarget ? {} : { entity_id: chip.entity }), ...(action.service_data || {}) };
+        this.hass.callService(domain, svc, chipSvcData, chipTarget);
         break;
       }
       case 'none':
@@ -1599,6 +1639,126 @@ class PersonTrackerCard extends LitElement {
     }
   }
 
+  _getExtraChipIcon(chip, ent) {
+    if (chip.icon) return chip.icon;
+    if (ent.attributes?.icon) return ent.attributes.icon;
+    const id = chip.entity.toLowerCase();
+    const dc = (ent.attributes?.device_class || '').toLowerCase();
+    if (id.includes('bluetooth')) return 'mdi:bluetooth';
+    if (id.includes('android_auto') || id.includes('androidauto')) return 'mdi:car-wireless';
+    if (id.includes('phone_state') || id.includes('phone_call') || id.includes('in_call')) return 'mdi:phone';
+    if (id.includes('ringer') || id.includes('ringer_mode')) return 'mdi:volume-medium';
+    if (id.includes('wifi') || id.includes('wi_fi')) return 'mdi:wifi';
+    if (id.includes('charging') || dc === 'battery_charging') return 'mdi:battery-charging';
+    if (id.includes('battery')) return 'mdi:battery';
+    if (id.includes('screen') || id.includes('display')) return 'mdi:cellphone';
+    if (id.includes('headset') || id.includes('headphone')) return 'mdi:headphones';
+    if (id.includes('nfc')) return 'mdi:nfc';
+    if (id.includes('hotspot')) return 'mdi:wifi-plus';
+    if (id.includes('gps') || id.includes('location')) return 'mdi:map-marker';
+    if (id.includes('silent') || id.includes('mute')) return 'mdi:volume-off';
+    if (id.includes('dnd') || id.includes('do_not_disturb')) return 'mdi:minus-circle';
+    const domain = chip.entity.split('.')[0];
+    if (domain === 'binary_sensor') return dc === 'motion' ? 'mdi:motion-sensor' : dc === 'door' ? 'mdi:door' : dc === 'window' ? 'mdi:window-open' : 'mdi:checkbox-marked-circle';
+    if (domain === 'sensor') return dc === 'temperature' ? 'mdi:thermometer' : dc === 'humidity' ? 'mdi:water-percent' : dc === 'battery' ? 'mdi:battery' : 'mdi:eye';
+    if (domain === 'switch') return 'mdi:toggle-switch';
+    if (domain === 'light') return 'mdi:lightbulb';
+    return 'mdi:information-outline';
+  }
+
+  _getExtraChipLabel(chip, ent) {
+    if (chip.label !== undefined) return chip.label;
+    const domain = chip.entity.split('.')[0];
+    const dc = (ent.attributes?.device_class || '').toLowerCase();
+    const state = ent.state;
+    // Try HA localization first
+    const localized = this.hass.localize(`component.${domain}.entity_component.${dc}.state.${state}`)
+      || this.hass.localize(`component.${domain}.entity_component._.state.${state}`)
+      || this.hass.localize(`state.default.${state}`);
+    if (localized) return localized;
+    // Fallback translations for common states
+    const lang = this.config?.language || this.hass?.language || 'en';
+    const trans = { on: {it:'Attivo',en:'On',fr:'Actif',de:'An'}, off: {it:'Inattivo',en:'Off',fr:'Inactif',de:'Aus'} };
+    return trans[state]?.[lang] || trans[state]?.en || state;
+  }
+
+  _renderExtraChips(mode = 'full', options = {}) {
+    if (!this.config.extra_chips?.length) return html``;
+    const satClasses = ['orb-sat-6','orb-sat-1','orb-sat-2','orb-sat-3'];
+    let orbIdx = 0;
+    return this.config.extra_chips.map(chip => {
+      const ent = this.hass?.states[chip.entity];
+      if (!ent) return html``;
+      if (chip.show_when !== undefined && ent.state !== String(chip.show_when)) return html``;
+      const icon = this._getExtraChipIcon(chip, ent);
+      const colorStyle = chip.color ? `color:${chip.color};` : '';
+      const color = chip.color || '#4a9eff';
+      const showLabel = mode !== 'icon-only' && mode !== 'modern';
+      const label = showLabel ? this._getExtraChipLabel(chip, ent) : '';
+      const title = `${ent.attributes?.friendly_name || chip.entity}: ${ent.state}`;
+
+      const chipAction = (e) => { e.stopPropagation(); this._handleExtraChipAction(chip); };
+      if (mode === 'icon-only') {
+        return html`
+          <div class="compact-icon-badge extra-chip-badge clickable" title="${title}"
+               style="${colorStyle}" @click=${chipAction}>
+            <ha-icon icon="${icon}" style="--mdc-icon-size:14px;"></ha-icon>
+          </div>`;
+      }
+      if (mode === 'modern') {
+        const rs = options.ringSize || 38;
+        const is = options.ringIconSize || 22;
+        return html`
+          <div class="ring-container ring-icon-only clickable" title="${title}"
+               style="width:${rs}px;height:${rs}px;${colorStyle}"
+               @click=${chipAction}>
+            <ha-icon icon="${icon}" style="--mdc-icon-size:${is}px;"></ha-icon>
+          </div>`;
+      }
+      if (mode === 'holo') {
+        const ar = options.accentRgb || '74,158,255';
+        return html`
+          <div class="holo-metric clickable" style="cursor:pointer;${colorStyle}" title="${title}"
+               @click=${chipAction}>
+            <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${ar},0.35),transparent);"></div>
+            <ha-icon icon="${icon}" style="--mdc-icon-size:13px;"></ha-icon>
+            <div class="holo-mu">${label}</div>
+          </div>`;
+      }
+      if (mode === 'wxstation') {
+        return html`
+          <div class="wx-chip clickable" title="${title}"
+               @click=${chipAction} style="cursor:pointer;${colorStyle}">
+            <ha-icon icon="${icon}" style="--mdc-icon-size:13px;"></ha-icon>
+            ${label ? html`<span>${label}</span>` : ''}
+          </div>`;
+      }
+      if (mode === 'matrix') {
+        return html`
+          <div class="matrix-chip clickable" title="${title}"
+               @click=${chipAction} style="cursor:pointer;${colorStyle}">
+            <ha-icon icon="${icon}" style="--mdc-icon-size:11px;filter:drop-shadow(0 0 3px ${color});"></ha-icon>
+            ${label ? html`<span>${label}</span>` : ''}
+          </div>`;
+      }
+      if (mode === 'orbital') {
+        const sc = satClasses[orbIdx % satClasses.length]; orbIdx++;
+        return html`
+          <div class="orb-sat ${sc} clickable" title="${title}"
+               style="border-color:${chip.color ? `${chip.color}44` : 'rgba(74,158,255,0.5)'};box-shadow:0 0 10px rgba(74,158,255,0.12);${colorStyle || 'color:#4a9eff;'}"
+               @click=${chipAction}>
+            <ha-icon icon="${icon}" style="--mdc-icon-size:11px;"></ha-icon>
+            ${label ? html`<span>${label}</span>` : ''}
+          </div>`;
+      }
+      return html`
+        <div class="extra-chip clickable" style="${colorStyle}" @click=${chipAction}>
+          <ha-icon icon="${icon}" style="--mdc-icon-size:13px;"></ha-icon>
+          ${label ? html`<span>${label}</span>` : ''}
+        </div>`;
+    });
+  }
+
   _renderClassicLayout() {
     const entity = this.hass.states[this.config.entity];
 
@@ -1827,6 +1987,10 @@ class PersonTrackerCard extends LitElement {
 
           </div>
         </div>
+        ${this.config.extra_chips?.length ? html`
+        <div class="extra-chips-row" style="padding:4px 12px 10px;">
+          ${this._renderExtraChips('full')}
+        </div>` : ''}
       </ha-card>
     `;
   }
@@ -2023,6 +2187,8 @@ class PersonTrackerCard extends LitElement {
                 `}
               `;
             })()}
+
+            ${this._renderExtraChips('icon-only')}
 
           </div>
         </div>
@@ -2229,6 +2395,9 @@ class PersonTrackerCard extends LitElement {
                 <ha-icon icon="${this._connectionIcon || connectionIcon}" style="color: ${connectionColor}; --mdc-icon-size: ${ringIconSize}px;"></ha-icon>
               </div>
             ` : ''}
+
+            <!-- Extra chips as ring circles -->
+            ${this._renderExtraChips('modern', {ringSize, ringIconSize})}
 
             <!-- Direction 1: distance + travel (animated pair if both) -->
             ${pairDir1Modern ? html`
@@ -2552,6 +2721,8 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
+            ${this._renderExtraChips('full')}
+
           </div>
 
         </div>
@@ -2774,6 +2945,8 @@ class PersonTrackerCard extends LitElement {
                 <span>${this._steps.toLocaleString()}</span>
               </div>
             ` : ''}
+
+            ${this._renderExtraChips('full')}
 
           </div>
 
@@ -3014,6 +3187,8 @@ class PersonTrackerCard extends LitElement {
               </div>
             ` : ''}
 
+            ${this._renderExtraChips('full')}
+
           </div>
 
           <!-- Weather footer -->
@@ -3241,6 +3416,7 @@ class PersonTrackerCard extends LitElement {
                       </div>
                     ` : ''}
                   `}
+                  ${this._renderExtraChips('holo', {accentRgb})}
                 </div>
               </div>
             </div>
@@ -3404,8 +3580,8 @@ class PersonTrackerCard extends LitElement {
           </div>
         ` : ''}
 
-        <!-- Travel / distance chips + overflow sensors -->
-        ${(hasChips || overflowGauges.length > 0) ? html`
+        <!-- Travel / distance chips + overflow sensors + extra chips -->
+        ${(hasChips || overflowGauges.length > 0 || this.config.extra_chips?.length) ? html`
           <div class="wx-chips">
             ${overflowGauges.map(g => html`
               <div class="wx-chip" @click=${() => g.entityId ? this._showMoreInfo(g.entityId) : g.entityType ? this._showMoreInfo(this._getSensorEntityId(g.entityType)) : g.weatherClick ? this._showMoreInfo(this.config.weather_entity) : null} style="cursor:${g.entityId || g.entityType || g.weatherClick ? 'pointer' : 'default'};color:${g.color};">
@@ -3463,6 +3639,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
               ` : ''}
             `}
+            ${this._renderExtraChips('wxstation')}
           </div>
         ` : ''}
 
@@ -3624,7 +3801,7 @@ class PersonTrackerCard extends LitElement {
           </div>
 
           <!-- Chips: activity, connection, travel/distance -->
-          ${hasChips ? html`
+          ${hasChips || this.config.extra_chips?.length ? html`
             <div class="matrix-chips-row">
               ${this.config.show_activity && this._activity && this._activity !== 'unknown' ? html`
                 <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('activity'))} style="cursor:pointer;">
@@ -3688,6 +3865,7 @@ class PersonTrackerCard extends LitElement {
                   </div>
                 ` : ''}
               `}
+              ${this._renderExtraChips('matrix')}
             </div>
           ` : ''}
 
@@ -3873,6 +4051,7 @@ class PersonTrackerCard extends LitElement {
                 <span style="color:${travelColor};">${travelTime} min</span>
               `}
             </div>` : ''}
+            ${this._renderExtraChips('orbital', {accentRgb})}
             ${showSat5 ? html`
             <div class="orb-sat orb-sat-5" style="overflow:hidden;border-color:rgba(0,212,255,0.45);">
               ${pairDir2 ? html`
@@ -4157,6 +4336,7 @@ class PersonTrackerCard extends LitElement {
               <ha-icon icon="${this._activityIcon || 'mdi:run'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
               <span>${this._activity}</span>
             </div>` : ''}
+            ${this._renderExtraChips('full')}
           </div><!-- /ink-chips -->
 
           <!-- ── WEATHER FOOTER ── -->
@@ -5950,6 +6130,36 @@ class PersonTrackerCard extends LitElement {
         box-shadow:none !important;
       }
       .weather-active .ink-bat-pct { color:#fff !important; }
+      .weather-active .ink-chips .extra-chip {
+        background:rgba(0,0,0,0.45) !important;
+        color:#fff !important;
+        box-shadow:none !important;
+      }
+
+      /* ── EXTRA CHIPS ── */
+      .extra-chip {
+        display:inline-flex;align-items:center;gap:4px;
+        padding:4px 10px;border-radius:20px;
+        font-size:11px;font-weight:500;
+        background:rgba(255,255,255,0.08);
+        color:rgba(255,255,255,0.75);
+        border:1px solid rgba(255,255,255,0.12);
+        cursor:pointer;white-space:nowrap;
+        transition:background 0.15s;
+      }
+      .extra-chip:hover { background:rgba(255,255,255,0.14); }
+      /* light mode (ink layout) */
+      .ink-chips .extra-chip {
+        background:#f1f3f5;color:#1f2937;
+        border:none;
+        box-shadow:0 2px 6px rgba(0,0,0,0.08),0 0 0 1px rgba(0,0,0,0.07);
+      }
+      .ink-chips .extra-chip:hover { background:#e9ecef; }
+      .extra-chips-row {
+        display:flex;flex-wrap:wrap;gap:6px;
+        padding:8px 12px 10px;
+        border-top:1px solid rgba(255,255,255,0.07);
+      }
     `;
   }
 }
@@ -5958,7 +6168,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.8 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.10 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
