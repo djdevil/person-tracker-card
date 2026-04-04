@@ -356,6 +356,7 @@ show_weather_temperature: true  # temperature label
 | `device_2_battery_state_sensor` | Second device charging state sensor |
 | `activity_sensor` | Activity sensor (auto-detected) |
 | `connection_sensor` | Connection type sensor (auto-detected) |
+| `wifi_ssid_sensor` | Sensor that reports the Wi-Fi SSID name (e.g. `sensor.phone_wi_fi_connection`). Displays the network name instead of "WiFi" when connected. Optional. |
 | `distance_sensor` | Distance/travel time sensor (Waze/Google Routes) |
 | `travel_sensor` | Travel time sensor (may be same as distance) |
 | `distance_sensor_2` | Second direction sensor (smart travel mode) |
@@ -753,8 +754,11 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 - 🧩 **`extra_chips` — Tap actions** — Each extra chip now supports a configurable `tap_action`: `more-info` (default), `call-service`, `navigate`, `url`, or `none`
 - 🔧 **`call-service` via HA native picker** — `ha-service-control` is used in both the chip tap action editor and the main card tap action editor, showing the full HA service UI (service picker, target entity selector, schema-based data fields)
 - 🎨 **Chip color applies to icon + text** — `color` now tints both the icon and the label simultaneously
+- 📶 **`wifi_ssid_sensor`** — Shows the actual Wi-Fi SSID name instead of "WiFi" across all 11 layouts when the device is connected to Wi-Fi
+- 📡 **Classic & Neon connection chip** — Now shows icon + connection text label (was icon-only)
 - 🐛 Fixed delete button (✕) not rendering in extra chips editor
-- 🐛 Fixed auto-populate label removed (was filling wrong name); icon auto-fill now uses only real HA entity attribute icon
+- 🐛 Fixed `call-service` not executing in some HA versions
+- 🐛 Fixed extra chips invisible when weather background is active (classic layout)
 - 🐛 Fixed color picker showing misleading default blue when no color is set
 
 ### v1.4.9 (2026-04-03)
@@ -1133,6 +1137,7 @@ battery_sensor: sensor.iphonedavide_battery_level
 watch_battery_sensor: sensor.watch_davide_battery_level
 activity_sensor: sensor.iphonedavide_activity
 connection_sensor: sensor.iphonedavide_connection_type
+wifi_ssid_sensor: sensor.iphonedavide_wi_fi_connection  # opzionale: mostra nome rete Wi-Fi
 distance_sensor: sensor.waze_davide
 
 # Stile
@@ -1464,8 +1469,11 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 - 🧩 **`extra_chips` — Azioni al tocco** — Ogni chip extra ora supporta un `tap_action` configurabile: `more-info` (default), `call-service`, `navigate`, `url`, `none`
 - 🔧 **`call-service` tramite picker nativo HA** — `ha-service-control` usato sia nell'editor azioni chip che nell'editor azione card principale (picker servizio, selettore entità target, campi dati basati sullo schema)
 - 🎨 **Colore chip su icona e testo** — `color` colora simultaneamente sia l'icona che l'etichetta
+- 📶 **`wifi_ssid_sensor`** — Mostra il nome reale della rete Wi-Fi al posto di "WiFi" in tutti gli 11 layout quando il dispositivo è connesso al Wi-Fi
+- 📡 **Chip connessione Classic e Neon** — Ora mostrano icona + testo del tipo di connessione (prima era solo icona)
 - 🐛 Fix pulsante elimina chip (✕) non visibile nell'editor
-- 🐛 Fix auto-compilazione etichetta rimossa; icona si auto-compila solo dall'attributo reale dell'entità HA
+- 🐛 Fix `call-service` non eseguito in alcune versioni di HA
+- 🐛 Fix chip extra non visibili quando lo sfondo meteo è attivo (layout classic)
 - 🐛 Fix color picker che mostrava blu di default quando nessun colore era impostato
 
 ### v1.4.9 (2026-04-03)

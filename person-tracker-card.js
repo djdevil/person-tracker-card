@@ -313,6 +313,7 @@ class PersonTrackerCard extends LitElement {
       _battery2Level: { state: true },
       _battery2Icon: { state: true },
       _battery2Charging: { state: true },
+      _wifiSSID: { state: true },
     };
   }
 
@@ -342,6 +343,7 @@ class PersonTrackerCard extends LitElement {
     this._battery2Level = 0;
     this._battery2Icon = 'mdi:battery';
     this._battery2Charging = false;
+    this._wifiSSID = null;
     this._resolvedPrefix2 = null;
     this._localize = null;
   }
@@ -606,6 +608,8 @@ class PersonTrackerCard extends LitElement {
       }
     }
 
+    if (this.config.wifi_ssid_sensor) entities.push(this.config.wifi_ssid_sensor);
+
     return entities;
   }
 
@@ -824,6 +828,15 @@ class PersonTrackerCard extends LitElement {
       this._geocodedLocation = null;
     }
 
+    // Wi-Fi SSID
+    if (this.config.wifi_ssid_sensor) {
+      const ssidEntity = this.hass.states[this.config.wifi_ssid_sensor];
+      const ssidVal = (ssidEntity && ssidEntity.state !== 'unavailable' && ssidEntity.state !== 'unknown') ? ssidEntity.state : null;
+      if (this._wifiSSID !== ssidVal) this._wifiSSID = ssidVal;
+    } else {
+      this._wifiSSID = null;
+    }
+
     // GPS coordinates for maps integration
     const personEntityForGps = this.hass.states[this.config.entity];
     this._gpsLat = personEntityForGps?.attributes?.latitude ?? null;
@@ -879,6 +892,11 @@ class PersonTrackerCard extends LitElement {
     if (!connectionType) return false;
     const normalized = connectionType.toLowerCase().replace(/[-_\s]/g, '');
     return normalized === 'wifi';
+  }
+
+  // Returns the WiFi label: SSID from wifi_ssid_sensor if configured, otherwise 'WiFi'
+  _getWifiLabel() {
+    return this._wifiSSID || 'WiFi';
   }
 
   // Resolve the mobile_app device prefix for the configured person entity.
@@ -1772,6 +1790,7 @@ class PersonTrackerCard extends LitElement {
     const stateStyles = stateConfig?.styles?.name || {};
     const activityIcon = this._activityIcon;
     const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
+    const connectionColor = this._isWifiConnection(this._connectionType) ? '#4CAF50' : '#FF9800';
 
     // Calcola aspect ratio
     const [widthRatio, heightRatio] = (this.config.aspect_ratio || '1/1')
@@ -1981,7 +2000,8 @@ class PersonTrackerCard extends LitElement {
                    @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}
                    style="font-size: ${this.config.connection_font_size};
                           ${Object.entries(connectionPos).map(([k, v]) => `${k}: ${v}`).join('; ')}">
-                <ha-icon icon="${this._connectionIcon || connectionIcon}" .style=${iconStyle}></ha-icon>
+                <ha-icon icon="${this._connectionIcon || connectionIcon}" style="width:${this.config.classic_icon_size||16}px;height:${this.config.classic_icon_size||16}px;color:${connectionColor};"></ha-icon>
+                <span style="color:${connectionColor};font-weight:600;">${this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : this._connectionType}</span>
               </div>
             ` : ''}
 
@@ -2718,6 +2738,7 @@ class PersonTrackerCard extends LitElement {
                    @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}
                    style="border-color: ${connectionColor}; box-shadow: 0 0 6px ${connectionColor}44;">
                 <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:13px; color:${connectionColor};"></ha-icon>
+                <span style="color:${connectionColor};">${this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : this._connectionType}</span>
               </div>
             ` : ''}
 
@@ -2844,7 +2865,7 @@ class PersonTrackerCard extends LitElement {
                 ${this.config.show_connection ? html`
                   <div class="glass-conn-pill clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))}>
                     <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:16px;color:${connectionColor};"></ha-icon>
-                    <span style="font-size:10px;color:${connectionColor};font-weight:600;">${this._connectionType}</span>
+                    <span style="font-size:10px;color:${connectionColor};font-weight:600;">${this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : this._connectionType}</span>
                   </div>
                 ` : ''}
               </div>
@@ -3093,7 +3114,7 @@ class PersonTrackerCard extends LitElement {
                 ${this.config.show_connection ? html`
                   <div class="clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="display:flex;align-items:center;gap:4px;cursor:pointer;">
                     <ha-icon icon="${this._connectionIcon || connectionIcon}" style="--mdc-icon-size:14px;color:${connectionColor};"></ha-icon>
-                    <span style="font-size:10px;color:${connectionColor};font-weight:600;">${this._connectionType}</span>
+                    <span style="font-size:10px;color:${connectionColor};font-weight:600;">${this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : this._connectionType}</span>
                   </div>
                 ` : ''}
               </div>
@@ -3357,7 +3378,7 @@ class PersonTrackerCard extends LitElement {
                     <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <ha-icon icon="${connectionIcon}" style="--mdc-icon-size:13px;color:rgba(${accentRgb},0.75);"></ha-icon>
-                      <div class="holo-mu">${this._isWifiConnection(this._connectionType) ? 'WiFi' : 'LTE'}</div>
+                      <div class="holo-mu">${this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : 'LTE'}</div>
                     </div>
                   ` : ''}
                   ${pairDir1 ? html`
@@ -3507,7 +3528,7 @@ class PersonTrackerCard extends LitElement {
     if (this.config.show_weather && weatherHumidity != null)
       gauges.push({ icon: 'mdi:water-percent', val: `${weatherHumidity}%`, label: this._t('wx.humidity'), color: wxGaugeColor, weatherClick: true });
     if (this.config.show_connection && this._connectionType)
-      gauges.push({ icon: connectionIcon, val: this._isWifiConnection(this._connectionType) ? 'WiFi' : this._connectionType, label: this._t('wx.network'), color: connectionColor, entityType: 'connection' });
+      gauges.push({ icon: connectionIcon, val: this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : this._connectionType, label: this._t('wx.network'), color: connectionColor, entityType: 'connection' });
     if (this.config.show_activity && this._activity)
       gauges.push({ icon: activityIcon, val: this._activity, label: this._t('wx.activity'), color: wxGaugeColor, entityType: 'activity' });
     if (this.config.show_weather && weatherAttr.pressure != null)
@@ -3812,7 +3833,7 @@ class PersonTrackerCard extends LitElement {
               ${this.config.show_connection && this._connectionType ? html`
                 <div class="matrix-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('connection'))} style="cursor:pointer;">
                   <ha-icon icon="${connectionIcon}" style="--mdc-icon-size:12px;color:#00ff41;"></ha-icon>
-                  <span>${this._isWifiConnection(this._connectionType) ? 'WIFI' : 'LTE'}</span>
+                  <span>${this._isWifiConnection(this._connectionType) ? this._getWifiLabel().toUpperCase() : 'LTE'}</span>
                 </div>
               ` : ''}
               ${pairDir1 ? html`
@@ -3900,7 +3921,7 @@ class PersonTrackerCard extends LitElement {
     const travelColor = this._getTravelTimeColor(travelTime);
     const travelColor2 = this._getTravelTimeColor(travelTime2);
     const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
-    const connectionLabel = this._isWifiConnection(this._connectionType) ? 'WiFi' : '4G';
+    const connectionLabel = this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : '4G';
     const distPrecision = this.config.distance_precision ?? 1;
 
     const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
@@ -4156,7 +4177,7 @@ class PersonTrackerCard extends LitElement {
     const travelTime = Math.round(this._travelTime);
     const travelTime2 = Math.round(this._travelTime2);
     const connectionIcon = this._isWifiConnection(this._connectionType) ? 'mdi:wifi' : 'mdi:signal';
-    const connectionLabel = this._isWifiConnection(this._connectionType) ? 'WiFi' : '4G';
+    const connectionLabel = this._isWifiConnection(this._connectionType) ? this._getWifiLabel() : '4G';
     const distPrecision = this.config.distance_precision ?? 1;
 
     const hasDir1 = !!(this.config.travel_sensor || this.config.distance_sensor);
@@ -6159,6 +6180,7 @@ class PersonTrackerCard extends LitElement {
         display:flex;flex-wrap:wrap;gap:6px;
         padding:8px 12px 10px;
         border-top:1px solid rgba(255,255,255,0.07);
+        position:relative;z-index:1;
       }
     `;
   }

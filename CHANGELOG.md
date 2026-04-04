@@ -6,26 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.4.10] - 2026-04-04
 
 ### Added
+- 🧩 **`extra_chips` config option** — Add any HA entity as a custom chip in all 11 layouts. Each chip supports: `entity` (required), `icon` (mdi:xxx, auto-detected if omitted), `show_when` (only display when entity state matches), `color` (icon+text color), `label` (custom text, defaults to translated entity state). Classic, Modern, Neon, Glass, Bio, Matrix, Orbital, Ink: chips appended to existing chip row. Compact: icon-only mini badges. WxStation, Holo, Orbital: dedicated section. Fully configurable from the visual editor (Sensors tab) with add/remove UI and tap_action.
 - 🧩 **`extra_chips` — tap_action** — Each extra chip now supports a `tap_action` object: `more-info` (default), `call-service`, `navigate`, `url`, `none`. Configured from the visual editor with action-type dropdown and conditional fields per action.
 - 🔧 **`ha-service-control` for `call-service`** — Both the extra chip tap action editor and the main card tap action editor now use HA's native `ha-service-control` component (full service picker, target entity selector, schema-based data fields, `.showAdvanced=true`). Value format: `{ action: 'domain.service', target: {…}, data: {…} }`.
+- 📶 **`wifi_ssid_sensor`** — Optional sensor that reports the Wi-Fi network name the device is connected to (e.g. `sensor.phone_wi_fi_connection`). When set, the card displays the actual SSID instead of the generic "WiFi" label in all 11 layouts. When on mobile data the raw connection type is shown as before. Configurable from the visual editor (Sensors tab → Connection section). All 4 languages translated.
 
 ### Changed
 - 🎨 **Chip color applies to icon + text** — `extra_chips[].color` now tints both the icon and the text label simultaneously (applied to the container via CSS inheritance, removing the per-icon inline style).
 - 🖊️ **Editor — icon and label auto-populate**: removed auto-fill of label from entity friendly name; icon now auto-fills only from the real HA entity attribute (`ent.attributes.icon`) on first entity selection. Pattern-matching inference removed.
 - 🎨 **Editor — color picker default**: shows a striped "no color" pattern when no color is configured, instead of a misleading blue default swatch.
+- 📡 **Classic layout — connection chip now shows text label** — Previously only the icon was visible. Now shows icon + connection type text (or SSID when `wifi_ssid_sensor` is set), colored green for WiFi / orange for mobile.
+- 📡 **Neon layout — connection badge now shows text label** — Previously only the icon was visible inside the neon badge. Now shows icon + text side by side with the neon accent color.
 
 ### Fixed
-- 🐛 **Editor delete button (✕)** — replaced `<ha-icon>` inside `<button>` with plain Unicode `✕`; removed duplicate second delete button from previous refactor.
-- 🐛 **`call-service` not executing** — `hass.callService` now passes `entity_id` inside `serviceData` (compatible with all HA versions) in addition to using the `target` parameter; fixes services called without target having no effect.
+- 🐛 **Delete button (✕) not rendering** in extra chips editor — replaced `<ha-icon>` inside `<button>` (unreliable in HA editor context) with a plain Unicode ✕ character.
+- 🐛 **`call-service` not executing** — `hass.callService` 4th `target` param is ignored in some HA versions; entity_id now always included in `serviceData` as compatibility fallback.
+- 🐛 **Extra chips invisible when weather background active** (classic layout) — `.extra-chips-row` now has `position:relative; z-index:1` so it always renders above the weather background layer.
 
----
 
-## [1.4.9] - 2026-04-03
 
-### Added
-- 🧩 **`extra_chips` config option** — Add any HA entity as a custom chip in all 11 layouts. Each chip supports: `entity` (required), `icon` (mdi:xxx, auto-detected if omitted), `show_when` (only display when entity state matches), `color` (icon+text color), `label` (custom text, defaults to translated entity state). Classic, Modern, Neon, Glass, Bio, Matrix, Orbital, Ink: chips appended to existing chip row. Compact: icon-only mini badges. WxStation, Holo, Orbital: dedicated section. Fully configurable from the visual editor (Sensors tab) with add/remove UI and tap_action.
-
----
 
 ## [1.4.8] - 2026-03-31
 

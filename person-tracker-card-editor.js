@@ -215,7 +215,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service': 'Servizio (es. light.turn_on)',
         'editor.extra_chip_service_data': 'Dati extra (JSON, opzionale)',
         'editor.extra_chip_nav_path': 'Percorso navigazione',
-        'editor.extra_chip_url_path': 'URL'
+        'editor.extra_chip_url_path': 'URL',
+        'editor.wifi_ssid_sensor': 'Sensore SSID Wi-Fi',
+        'editor.wifi_ssid_sensor_description': 'Sensore che riporta il nome della rete Wi-Fi a cui è connesso il dispositivo (es. sensor.elliot_s_phone_wi_fi_connection). Quando impostato, il nome della rete viene mostrato al posto di "WiFi".'
       },
       'en': {
         'editor.entity': 'Entity',
@@ -381,7 +383,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service': 'Service (e.g. light.turn_on)',
         'editor.extra_chip_service_data': 'Extra data (JSON, optional)',
         'editor.extra_chip_nav_path': 'Navigation path',
-        'editor.extra_chip_url_path': 'URL'
+        'editor.extra_chip_url_path': 'URL',
+        'editor.wifi_ssid_sensor': 'Wi-Fi SSID sensor',
+        'editor.wifi_ssid_sensor_description': 'Sensor that reports the Wi-Fi network name the device is connected to (e.g. sensor.elliot_s_phone_wi_fi_connection). When set, the network name is shown instead of "WiFi".'
       },
       'fr': {
         'editor.entity': 'Entité',
@@ -547,7 +551,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service': 'Service (ex. light.turn_on)',
         'editor.extra_chip_service_data': 'Données extra (JSON, optionnel)',
         'editor.extra_chip_nav_path': 'Chemin de navigation',
-        'editor.extra_chip_url_path': 'URL'
+        'editor.extra_chip_url_path': 'URL',
+        'editor.wifi_ssid_sensor': 'Capteur SSID Wi-Fi',
+        'editor.wifi_ssid_sensor_description': 'Capteur indiquant le nom du réseau Wi-Fi auquel l\'appareil est connecté. Quand configuré, le nom du réseau s\'affiche à la place de "WiFi".'
       },
       'de': {
         'editor.entity': 'Entität',
@@ -713,7 +719,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service': 'Dienst (z.B. light.turn_on)',
         'editor.extra_chip_service_data': 'Zusatzdaten (JSON, optional)',
         'editor.extra_chip_nav_path': 'Navigationspfad',
-        'editor.extra_chip_url_path': 'URL'
+        'editor.extra_chip_url_path': 'URL',
+        'editor.wifi_ssid_sensor': 'WLAN-SSID-Sensor',
+        'editor.wifi_ssid_sensor_description': 'Sensor, der den Namen des WLAN-Netzwerks meldet, mit dem das Gerät verbunden ist. Wenn gesetzt, wird der Netzwerkname statt "WiFi" angezeigt.'
       }
     };
   }
@@ -1545,6 +1553,18 @@ class PersonTrackerCardEditor extends LitElement {
             allow-custom-entity
             @value-changed=${(e) => this._valueChanged(e, 'connection_sensor')}>
           </ha-entity-picker>
+
+          ${this._config.show_connection !== false ? html`
+            <p class="info-text" style="margin:8px 0 4px;">${this._t('editor.wifi_ssid_sensor_description')}</p>
+            <ha-entity-picker
+              .hass=${this.hass}
+              .value=${this._config.wifi_ssid_sensor || ''}
+              .label=${this._t('editor.wifi_ssid_sensor')}
+              .includeDomains=${['sensor']}
+              allow-custom-entity
+              @value-changed=${(e) => this._entityPickerChanged(e, 'wifi_ssid_sensor')}>
+            </ha-entity-picker>
+          ` : ''}
         </div>
 
         <!-- Geocoded Location -->
