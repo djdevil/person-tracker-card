@@ -1,4 +1,4 @@
-// Person Tracker Card v1.4.10 - Multilanguage Version
+// Person Tracker Card v1.4.11 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
 // v1.4.7: Liquid Ink layout (ink) — light mode card with ink blob background, animated dashed ring avatar, ink-wash chips, pair animation; all sensors/geocoded/maps/weather supported
@@ -42,7 +42,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.10 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.11 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -284,7 +284,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.10';
+const CARD_VERSION = '1.4.11';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -3351,14 +3351,14 @@ class PersonTrackerCard extends LitElement {
                   ${this.config.show_battery && batteryLevel > 0 ? html`
                     <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
-                      <div class="holo-mv" style="color:${batteryColor};">${batteryLevel}%</div>
+                      <div class="holo-mv" style="color:${this._batteryCharging ? '#4ade80' : batteryColor};">${batteryLevel}%${this._batteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;vertical-align:middle;margin-left:2px;"></ha-icon>` : ''}</div>
                       <div class="holo-mu">🔋</div>
                     </div>
                   ` : ''}
                   ${this.config.show_watch_battery && watchBatteryLevel > 0 ? html`
                     <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
-                      <div class="holo-mv" style="color:${watchBatteryColor};">${watchBatteryLevel}%</div>
+                      <div class="holo-mv" style="color:${this._watchBatteryCharging ? '#4ade80' : watchBatteryColor};">${watchBatteryLevel}%${this._watchBatteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;vertical-align:middle;margin-left:2px;"></ha-icon>` : ''}</div>
                       <div class="holo-mu">⌚</div>
                     </div>
                   ` : ''}
@@ -3369,8 +3369,8 @@ class PersonTrackerCard extends LitElement {
                     return html`
                       <div class="holo-metric clickable" @click=${() => this._showMoreInfo(d2p)} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
-                        <div class="holo-mv" style="color:${bat2Color};">${Math.round(this._battery2Level)}%</div>
-                        <div class="holo-mu"><ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:13px;color:${bat2Color};"></ha-icon></div>
+                        <div class="holo-mv" style="color:${this._battery2Charging ? '#4ade80' : bat2Color};">${Math.round(this._battery2Level)}%${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;vertical-align:middle;margin-left:2px;"></ha-icon>` : ''}</div>
+                        <div class="holo-mu"><ha-icon icon="${this._getDeviceIcon(d2p)}" style="--mdc-icon-size:13px;color:${this._battery2Charging ? '#4ade80' : bat2Color};"></ha-icon></div>
                       </div>
                     `;
                   })()}
@@ -3514,13 +3514,13 @@ class PersonTrackerCard extends LitElement {
     // Build gauge list — up to 4 shown
     const gauges = [];
     if (this.config.show_battery && batteryLevel > 0)
-      gauges.push({ icon: 'mdi:battery', val: `${batteryLevel}%`, label: this._t('wx.battery'), color: batteryColor, entityType: 'battery' });
+      gauges.push({ icon: 'mdi:battery', val: `${batteryLevel}%`, label: this._t('wx.battery'), color: batteryColor, entityType: 'battery', charging: this._batteryCharging });
     if (this.config.show_watch_battery && watchBatteryLevel > 0)
-      gauges.push({ icon: 'mdi:watch-vibrate', val: `${watchBatteryLevel}%`, label: this._t('wx.watch'), color: watchBatteryColor, entityType: 'watch_battery' });
+      gauges.push({ icon: 'mdi:watch-vibrate', val: `${watchBatteryLevel}%`, label: this._t('wx.watch'), color: watchBatteryColor, entityType: 'watch_battery', charging: this._watchBatteryCharging });
     const wxD2Id = this.config.device_2_battery_sensor || (this._resolvedPrefix2 ? `sensor.${this._resolvedPrefix2}_battery_level` : null);
     if (this.config.show_device_2_battery !== false && wxD2Id && this._battery2Level > 0) {
       const bat2Color = this._getBatteryColor(this._battery2Level);
-      gauges.push({ icon: this._getDeviceIcon(wxD2Id), val: `${Math.round(this._battery2Level)}%`, label: this._t('wx.device2'), color: bat2Color, entityId: wxD2Id });
+      gauges.push({ icon: this._getDeviceIcon(wxD2Id), val: `${Math.round(this._battery2Level)}%`, label: this._t('wx.device2'), color: bat2Color, entityId: wxD2Id, charging: this._battery2Charging });
     }
     const wxGaugeColor = 'rgba(150,200,255,0.85)';
     if (this.config.show_weather && weatherWindSpeed != null)
@@ -3593,8 +3593,11 @@ class PersonTrackerCard extends LitElement {
           <div class="wx-gauges" style="grid-template-columns:repeat(${gridCols},1fr);">
             ${visibleGauges.map(g => html`
               <div class="wx-gauge" @click=${() => g.entityId ? this._showMoreInfo(g.entityId) : g.entityType ? this._showMoreInfo(this._getSensorEntityId(g.entityType)) : g.weatherClick ? this._showMoreInfo(this.config.weather_entity) : null} style="cursor:${g.entityId || g.entityType || g.weatherClick ? 'pointer' : 'default'};">
-                <div class="wx-gauge-icon"><ha-icon icon="${g.icon}" style="--mdc-icon-size:20px;color:${g.color};"></ha-icon></div>
-                <div class="wx-gauge-val" style="color:${g.color};">${g.val}</div>
+                <div class="wx-gauge-icon" style="position:relative;">
+                  <ha-icon icon="${g.charging ? 'mdi:battery-charging' : g.icon}" style="--mdc-icon-size:20px;color:${g.charging ? '#4ade80' : g.color};"></ha-icon>
+                  ${g.charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:10px;color:#4ade80;position:absolute;top:-3px;right:-4px;"></ha-icon>` : ''}
+                </div>
+                <div class="wx-gauge-val" style="color:${g.charging ? '#4ade80' : g.color};">${g.val}</div>
                 <div class="wx-gauge-label">${g.label}</div>
               </div>
             `)}
@@ -3793,23 +3796,23 @@ class PersonTrackerCard extends LitElement {
           <div class="matrix-stats">
             ${this.config.show_battery && batteryLevel > 0 ? html`
               <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))} style="cursor:pointer;">
-                <div class="matrix-stat-label">BATTERY</div>
-                <div class="matrix-stat-val" style="color:${batteryColor};">${batteryLevel}%</div>
-                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${batteryLevel}%;background:${batteryColor};box-shadow:0 0 5px ${batteryColor};"></div></div>
+                <div class="matrix-stat-label">BATTERY${this._batteryCharging ? html` <ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4ade80;vertical-align:middle;"></ha-icon>` : ''}</div>
+                <div class="matrix-stat-val" style="color:${this._batteryCharging ? '#4ade80' : batteryColor};">${batteryLevel}%</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${batteryLevel}%;background:${this._batteryCharging ? '#4ade80' : batteryColor};box-shadow:0 0 5px ${this._batteryCharging ? '#4ade80' : batteryColor};"></div></div>
               </div>
             ` : ''}
             ${this.config.show_watch_battery && watchBatteryLevel > 0 ? html`
               <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))} style="cursor:pointer;">
-                <div class="matrix-stat-label">WATCH</div>
-                <div class="matrix-stat-val" style="color:${watchBatteryColor};">${watchBatteryLevel}%</div>
-                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${watchBatteryLevel}%;background:${watchBatteryColor};box-shadow:0 0 5px ${watchBatteryColor};"></div></div>
+                <div class="matrix-stat-label">WATCH${this._watchBatteryCharging ? html` <ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4ade80;vertical-align:middle;"></ha-icon>` : ''}</div>
+                <div class="matrix-stat-val" style="color:${this._watchBatteryCharging ? '#4ade80' : watchBatteryColor};">${watchBatteryLevel}%</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${watchBatteryLevel}%;background:${this._watchBatteryCharging ? '#4ade80' : watchBatteryColor};box-shadow:0 0 5px ${this._watchBatteryCharging ? '#4ade80' : watchBatteryColor};"></div></div>
               </div>
             ` : ''}
             ${showDevice2 ? html`
               <div class="matrix-stat-block clickable" @click=${() => this._showMoreInfo(d2p)} style="cursor:pointer;">
-                <div class="matrix-stat-label">DEV.2</div>
-                <div class="matrix-stat-val" style="color:${battery2Color};">${battery2Level}%</div>
-                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${battery2Level}%;background:${battery2Color};box-shadow:0 0 5px ${battery2Color};"></div></div>
+                <div class="matrix-stat-label">DEV.2${this._battery2Charging ? html` <ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4ade80;vertical-align:middle;"></ha-icon>` : ''}</div>
+                <div class="matrix-stat-val" style="color:${this._battery2Charging ? '#4ade80' : battery2Color};">${battery2Level}%</div>
+                <div class="matrix-stat-bar"><div class="matrix-stat-bar-fill" style="width:${battery2Level}%;background:${this._battery2Charging ? '#4ade80' : battery2Color};box-shadow:0 0 5px ${this._battery2Charging ? '#4ade80' : battery2Color};"></div></div>
               </div>
             ` : ''}
             ${this.config.show_weather && this._weatherTemp ? html`
@@ -4107,18 +4110,21 @@ class PersonTrackerCard extends LitElement {
               <div class="orb-face orb-back" style="border-color:rgba(${accentRgb},0.45);box-shadow:0 0 20px rgba(${accentRgb},0.15);">
                 ${batteryLevel > 0 ? html`
                 <div class="orb-back-bat clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('battery'))}>
-                  <ha-icon icon="mdi:cellphone" style="--mdc-icon-size:11px;color:${batteryColor};"></ha-icon>
-                  <span style="color:${batteryColor};">${batteryLevel}%</span>
+                  <ha-icon icon="mdi:cellphone" style="--mdc-icon-size:11px;color:${this._batteryCharging ? '#4ade80' : batteryColor};"></ha-icon>
+                  <span style="color:${this._batteryCharging ? '#4ade80' : batteryColor};">${batteryLevel}%</span>
+                  ${this._batteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4ade80;"></ha-icon>` : ''}
                 </div>` : ''}
                 ${this._watchBatteryLevel > 0 ? html`
                 <div class="orb-back-bat clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))}>
-                  <ha-icon icon="mdi:watch" style="--mdc-icon-size:11px;color:${this._getBatteryColor(this._watchBatteryLevel)};"></ha-icon>
-                  <span style="color:${this._getBatteryColor(this._watchBatteryLevel)};">${Math.round(this._watchBatteryLevel)}%</span>
+                  <ha-icon icon="mdi:watch" style="--mdc-icon-size:11px;color:${this._watchBatteryCharging ? '#4ade80' : this._getBatteryColor(this._watchBatteryLevel)};"></ha-icon>
+                  <span style="color:${this._watchBatteryCharging ? '#4ade80' : this._getBatteryColor(this._watchBatteryLevel)};">${Math.round(this._watchBatteryLevel)}%</span>
+                  ${this._watchBatteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4ade80;"></ha-icon>` : ''}
                 </div>` : ''}
                 ${battery2Level > 0 ? html`
                 <div class="orb-back-bat clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('device_2_battery'))}>
-                  <ha-icon icon="${this._getDeviceIcon(this._resolvedPrefix2 || this.config.device_2_prefix)}" style="--mdc-icon-size:11px;color:${batteryColor2};"></ha-icon>
-                  <span style="color:${batteryColor2};">${battery2Level}%</span>
+                  <ha-icon icon="${this._getDeviceIcon(this._resolvedPrefix2 || this.config.device_2_prefix)}" style="--mdc-icon-size:11px;color:${this._battery2Charging ? '#4ade80' : batteryColor2};"></ha-icon>
+                  <span style="color:${this._battery2Charging ? '#4ade80' : batteryColor2};">${battery2Level}%</span>
+                  ${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4ade80;"></ha-icon>` : ''}
                 </div>` : ''}
                 <span class="orb-back-lbl" style="margin-top:3px;">batteries</span>
               </div>
@@ -4297,16 +4303,17 @@ class PersonTrackerCard extends LitElement {
             <!-- Watch battery -->
             ${this.config.show_watch_battery && this._watchBatteryLevel > 0 ? html`
             <div class="ink-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('watch_battery'))}>
-              <ha-icon icon="mdi:watch" style="--mdc-icon-size:13px;color:${this._getBatteryColor(this._watchBatteryLevel)};"></ha-icon>
+              <ha-icon icon="mdi:watch" style="--mdc-icon-size:13px;color:${this._watchBatteryCharging ? '#4caf50' : this._getBatteryColor(this._watchBatteryLevel)};"></ha-icon>
               <span>${Math.round(this._watchBatteryLevel)}%</span>
-              ${this._watchCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4caf50;"></ha-icon>` : ''}
+              ${this._watchBatteryCharging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4caf50;"></ha-icon>` : ''}
             </div>` : ''}
 
             <!-- Device 2 battery -->
             ${this.config.show_device_2_battery !== false && battery2Level > 0 ? html`
             <div class="ink-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('device_2_battery'))}>
-              <ha-icon icon="${this._getDeviceIcon(this._resolvedPrefix2 || this.config.device_2_prefix)}" style="--mdc-icon-size:13px;color:${batteryColor2};"></ha-icon>
+              <ha-icon icon="${this._getDeviceIcon(this._resolvedPrefix2 || this.config.device_2_prefix)}" style="--mdc-icon-size:13px;color:${this._battery2Charging ? '#4caf50' : batteryColor2};"></ha-icon>
               <span>${battery2Level}%</span>
+              ${this._battery2Charging ? html`<ha-icon icon="mdi:lightning-bolt" style="--mdc-icon-size:9px;color:#4caf50;"></ha-icon>` : ''}
             </div>` : ''}
 
             <!-- Travel dir 1 -->
@@ -6190,7 +6197,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.10 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.11 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

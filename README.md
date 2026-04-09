@@ -1,7 +1,7 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.10-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.11-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eleven layout modes**.
@@ -750,6 +750,12 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 
 ## 📝 Changelog
 
+### v1.4.11 (2026-04-09)
+- 🐛 **Charging indicator fix** — WxStation, Holo, Matrix, Orbital, and Ink layouts now correctly show the charging animation/icon for phone battery, watch battery, and second device when charging. Ink layout also had a typo (`_watchCharging`) that prevented the watch indicator from ever showing.
+- 📶 **`wifi_ssid_sensor`** — Shows actual Wi-Fi network name instead of "WiFi" in all 11 layouts
+- 📡 **Classic & Neon** — Connection chip now shows icon + text label (was icon-only)
+- 🐛 Extra chips no longer hidden behind weather background in classic layout
+
 ### v1.4.10 (2026-04-04)
 - 🧩 **`extra_chips` — Tap actions** — Each extra chip now supports a configurable `tap_action`: `more-info` (default), `call-service`, `navigate`, `url`, or `none`
 - 🔧 **`call-service` via HA native picker** — `ha-service-control` is used in both the chip tap action editor and the main card tap action editor, showing the full HA service UI (service picker, target entity selector, schema-based data fields)
@@ -1464,6 +1470,12 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 ---
 
 ## 📝 Changelog
+
+### v1.4.11 (2026-04-09)
+- 🐛 **Fix indicatore di ricarica** — Layout WxStation, Holo, Matrix, Orbital e Ink mostrano ora correttamente l'animazione/icona di ricarica per telefono, smartwatch e secondo dispositivo. Nel layout Ink era presente un typo (`_watchCharging`) che impediva lo showing dell'indicatore watch.
+- 📶 **`wifi_ssid_sensor`** — Mostra il nome reale della rete Wi-Fi invece di "WiFi" in tutti gli 11 layout
+- 📡 **Classic e Neon** — Il chip connessione mostra ora icona + testo (prima era solo icona)
+- 🐛 I chip extra non vengono più nascosti dallo sfondo meteo nel layout classic
 
 ### v1.4.10 (2026-04-04)
 - 🧩 **`extra_chips` — Azioni al tocco** — Ogni chip extra ora supporta un `tap_action` configurabile: `more-info` (default), `call-service`, `navigate`, `url`, `none`

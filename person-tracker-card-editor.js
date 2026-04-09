@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.4.10: extra_chips tap_action (call-service/navigate/url/none); ha-service-control for call-service; chip color on icon+text; ha-service-control fix (action key)
+// v1.4.11: charging indicator fix for WxStation/Holo/Matrix/Orbital/Ink layouts; connection text label in Classic/Neon; wifi_ssid_sensor; extra chips z-index over weather bg
 // v1.4.9: extra_chips config option — add any HA entity as custom chip in all 11 layouts
 // v1.4.8: state_entity config option — override displayed location text with any HA sensor
 // v1.4.7: Liquid Ink layout (ink) added to picker and validation whitelist
@@ -1130,7 +1130,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.10</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.11</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"

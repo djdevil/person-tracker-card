@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.11] - 2026-04-09
+
+### Fixed
+- 🐛 **Charging indicator missing in WxStation** — Battery, watch battery, and second device gauges now show a green charging icon and turn green when charging. Battery icon switches to `mdi:battery-charging` with a `⚡` badge overlay.
+- 🐛 **Charging indicator missing in Holo** — Battery, watch battery, and device 2 metrics now turn green and show `⚡` when charging.
+- 🐛 **Charging indicator missing in Matrix** — Battery stat blocks (BATTERY / WATCH / DEV.2) now turn green with `⚡` in the label and the progress bar fills green when charging.
+- 🐛 **Charging indicator missing in Orbital** — Coin back-face battery rows now turn green and show `⚡` when charging.
+- 🐛 **Charging indicator broken in Ink** — `_watchCharging` typo fixed to `_watchBatteryCharging` (watch charging indicator was never showing); device 2 chip now also shows `⚡` when charging.
+
+### Added
+- 📶 **`wifi_ssid_sensor`** — Shows the actual Wi-Fi SSID name instead of "WiFi" across all 11 layouts (see v1.4.10 notes). Configurable from the visual editor.
+- 📡 **Classic & Neon connection chip now shows text** — Icon + connection type label side by side (was icon-only). WiFi = green, mobile = orange.
+
+### Fixed (also in this release)
+- 🐛 **Extra chips invisible when weather background is active** (classic layout) — `.extra-chips-row` now has `position:relative; z-index:1`.
+
+---
+
 ## [1.4.10] - 2026-04-04
 
 ### Added
