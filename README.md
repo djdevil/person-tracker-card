@@ -1,7 +1,7 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.11-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.12-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eleven layout modes**.
@@ -750,6 +750,9 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 
 ## 📝 Changelog
 
+### v1.4.12 (2026-05-01)
+- ⏱️ **Travel time hours:minutes** — Travel time ≥ 60 min now shows as `Xh Ym` (e.g. `3h 27m`). Template sensors returning `h:mm` or `HH:MM:SS` strings are now parsed correctly (previously `3:27` was silently truncated to `3 min`).
+
 ### v1.4.11 (2026-04-09)
 - 🐛 **Charging indicator fix** — WxStation, Holo, Matrix, Orbital, and Ink layouts now correctly show the charging animation/icon for phone battery, watch battery, and second device when charging. Ink layout also had a typo (`_watchCharging`) that prevented the watch indicator from ever showing.
 - 📶 **`wifi_ssid_sensor`** — Shows actual Wi-Fi network name instead of "WiFi" in all 11 layouts
@@ -1470,6 +1473,9 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 ---
 
 ## 📝 Changelog
+
+### v1.4.12 (2026-05-01)
+- ⏱️ **Tempo di viaggio ore:minuti** — Il tempo di viaggio ≥ 60 min viene ora mostrato come `Xh Ym` (es. `3h 27m`). I sensori template che restituiscono stringhe `h:mm` o `HH:MM:SS` vengono ora interpretati correttamente (in precedenza `3:27` veniva silenziosamente troncato a `3 min`).
 
 ### v1.4.11 (2026-04-09)
 - 🐛 **Fix indicatore di ricarica** — Layout WxStation, Holo, Matrix, Orbital e Ink mostrano ora correttamente l'animazione/icona di ricarica per telefono, smartwatch e secondo dispositivo. Nel layout Ink era presente un typo (`_watchCharging`) che impediva lo showing dell'indicatore watch.
