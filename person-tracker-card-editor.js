@@ -1,6 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
-// v1.4.11: charging indicator fix for WxStation/Holo/Matrix/Orbital/Ink layouts; connection text label in Classic/Neon; wifi_ssid_sensor; extra chips z-index over weather bg
+// v1.4.12: travel time h:mm parsing + Xh Ym formatting; charging fix WxStation/Holo/Matrix/Orbital/Ink; wifi_ssid_sensor; classic/neon connection text
 // v1.4.9: extra_chips config option — add any HA entity as custom chip in all 11 layouts
 // v1.4.8: state_entity config option — override displayed location text with any HA sensor
 // v1.4.7: Liquid Ink layout (ink) added to picker and validation whitelist
@@ -117,6 +117,7 @@ class EditorLocalizationHelper {
         'editor.modern_show_battery_ring': 'Mostra anello batteria',
         'editor.modern_show_travel_ring': 'Mostra anello tempo viaggio',
         'editor.modern_travel_max_time': 'Tempo viaggio massimo (min)',
+        'editor.modern_distance_max': 'Distanza massima (km)',
         'editor.modern_ring_size': 'Dimensione cerchi (px)',
         'editor.classic_icon_size': 'Dimensione icone (px)',
         'editor.compact_icon_size': 'Dimensione icone (px)',
@@ -285,6 +286,7 @@ class EditorLocalizationHelper {
         'editor.modern_show_battery_ring': 'Show battery ring',
         'editor.modern_show_travel_ring': 'Show travel time ring',
         'editor.modern_travel_max_time': 'Max travel time (min)',
+        'editor.modern_distance_max': 'Max distance (km)',
         'editor.modern_ring_size': 'Ring size (px)',
         'editor.classic_icon_size': 'Icon size (px)',
         'editor.compact_icon_size': 'Icon size (px)',
@@ -453,6 +455,7 @@ class EditorLocalizationHelper {
         'editor.modern_show_battery_ring': 'Afficher anneau batterie',
         'editor.modern_show_travel_ring': 'Afficher anneau temps trajet',
         'editor.modern_travel_max_time': 'Temps trajet max (min)',
+        'editor.modern_distance_max': 'Distance max (km)',
         'editor.modern_ring_size': 'Taille anneaux (px)',
         'editor.classic_icon_size': 'Taille icônes (px)',
         'editor.compact_icon_size': 'Taille icônes (px)',
@@ -621,6 +624,7 @@ class EditorLocalizationHelper {
         'editor.modern_show_battery_ring': 'Batteriering anzeigen',
         'editor.modern_show_travel_ring': 'Reisezeitring anzeigen',
         'editor.modern_travel_max_time': 'Max Reisezeit (min)',
+        'editor.modern_distance_max': 'Max Entfernung (km)',
         'editor.modern_ring_size': 'Ringgröße (px)',
         'editor.classic_icon_size': 'Symbolgröße (px)',
         'editor.compact_icon_size': 'Symbolgröße (px)',
@@ -827,6 +831,7 @@ class PersonTrackerCardEditor extends LitElement {
       modern_show_battery_ring: true,
       modern_show_travel_ring: true,
       modern_travel_max_time: 60,
+      modern_distance_max: 100,
       // Geocoded location on by default
       show_geocoded_location: true,
       ...config
@@ -1130,7 +1135,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.11</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.12</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -2254,6 +2259,16 @@ class PersonTrackerCardEditor extends LitElement {
             .value=${this._config.modern_travel_max_time || '60'}
             @input=${(e) => this._valueChanged(e, 'modern_travel_max_time')}
             helper-text="Default: 60 min (used for progress ring calculation)">
+          </ha-textfield>
+
+          <ha-textfield
+            label="${this._t('editor.modern_distance_max')}"
+            type="number"
+            min="1"
+            max="5000"
+            .value=${this._config.modern_distance_max || '100'}
+            @input=${(e) => this._valueChanged(e, 'modern_distance_max')}
+            helper-text="Default: 100 km (used for distance ring calculation)">
           </ha-textfield>
         </div>
       ` : ''}

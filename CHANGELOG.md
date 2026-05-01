@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.12] - 2026-05-01
+
+### Added
+- ⏱️ **Travel time in hours:minutes format** — Travel time is now displayed as `Xh Ym` when ≥ 60 minutes (e.g. `3h 27m` instead of `207 min`). Sensors that return a numeric value in minutes continue to work unchanged. Sensors that return an `h:mm` or `HH:MM:SS` string (template sensors) are now parsed correctly — previously `parseFloat("3:27")` silently truncated to `3 min`. All 11 layouts updated. Modern ring shows `3h` / `27m` split across value and unit lines.
+- 📏 **`modern_distance_max`** — New config option (default: `100`) that sets the maximum distance for the Modern layout distance progress ring, analogous to `modern_travel_max_time`. Configurable from the visual editor under **Layout → Modern Options** ("Max distance (km)"). The color thresholds (green → orange → red) scale proportionally with this value.
+
+### Fixed
+- 🐛 **Classic layout — chips overflow on narrow cards** — Absolutely positioned chips (distance, battery, travel, etc.) could extend beyond the card edge on narrow columns. Added `overflow: hidden` to the card content container so all chips are always clipped within card bounds. Use `distance_position: top-right` (or via the editor) to anchor the distance chip to the right edge.
+- 🐛 **Modern layout — rings overflow on narrow cards** — When many rings were visible (battery + watch + device2 + distance + travel) on a narrow card, the rings row could extend beyond the right edge. Rings now wrap to a second row instead of overflowing.
+- 🐛 **Modern layout — `modern_width` option had no effect** — The `modern_width` config option was defined in the editor but was never applied to the card. Now sets `max-width` on the card when configured.
+
+---
+
 ## [1.4.11] - 2026-04-09
 
 ### Fixed

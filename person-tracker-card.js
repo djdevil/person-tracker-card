@@ -1,4 +1,4 @@
-// Person Tracker Card v1.4.11 - Multilanguage Version
+// Person Tracker Card v1.4.12 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
 // v1.4.7: Liquid Ink layout (ink) — light mode card with ink blob background, animated dashed ring avatar, ink-wash chips, pair animation; all sensors/geocoded/maps/weather supported
@@ -42,7 +42,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.11 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.12 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -284,7 +284,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.11';
+const CARD_VERSION = '1.4.12';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -423,7 +423,6 @@ class PersonTrackerCard extends LitElement {
       // Layout
       layout: 'classic',
       compact_width: 300,
-      modern_width: 300,
       // Display
       show_entity_picture: true,
       show_person_name: true,
@@ -497,6 +496,7 @@ class PersonTrackerCard extends LitElement {
       modern_show_battery_ring: true,
       modern_show_travel_ring: true,
       modern_travel_max_time: 60,
+      modern_distance_max: 100,
       modern_name_font_size: '14px',
       modern_state_font_size: '12px',
       ...config
@@ -769,7 +769,7 @@ class PersonTrackerCard extends LitElement {
       const travelEntityId = this.config.travel_sensor || `sensor.home_work_${entityBase}`;
       const travelEntity = this.hass.states[travelEntityId];
       if (travelEntity) {
-        this._travelTime = parseFloat(travelEntity.state) || 0;
+        this._travelTime = this._parseTravelMinutes(travelEntity.state);
         // Legge l'icona dall'entità se disponibile
         this._travelIcon = travelEntity.attributes?.icon || 'mdi:car-clock';
       }
@@ -798,7 +798,7 @@ class PersonTrackerCard extends LitElement {
     if (this.config.show_travel_time_2 && this.config.travel_sensor_2) {
       const t2Entity = this.hass.states[this.config.travel_sensor_2];
       if (t2Entity) {
-        this._travelTime2 = parseFloat(t2Entity.state) || 0;
+        this._travelTime2 = this._parseTravelMinutes(t2Entity.state);
         this._travelIcon2 = t2Entity.attributes?.icon || 'mdi:car-clock';
       }
     }
@@ -1614,6 +1614,31 @@ class PersonTrackerCard extends LitElement {
     return '#50A14F'; // green
   }
 
+  // Parse travel time state into total minutes.
+  // Handles: numeric "197", "h:mm" "3:27", "HH:MM:SS" "03:27:00"
+  _parseTravelMinutes(state) {
+    if (!state || state === 'unavailable' || state === 'unknown') return 0;
+    const s = String(state).trim();
+    if (s.includes(':')) {
+      const parts = s.split(':').map(Number);
+      if (parts.length >= 2 && !parts.some(isNaN)) {
+        // h:mm or HH:MM or HH:MM:SS
+        return parts[0] * 60 + parts[1];
+      }
+    }
+    return parseFloat(s) || 0;
+  }
+
+  // Format total minutes as "Xh Ym" when >= 60, otherwise "X min"
+  _formatTravelTime(minutes) {
+    if (minutes >= 60) {
+      const h = Math.floor(minutes / 60);
+      const m = Math.round(minutes % 60);
+      return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    }
+    return `${Math.round(minutes)} min`;
+  }
+
   render() {
     if (!this.hass || !this.config) {
       return html``;
@@ -1948,7 +1973,7 @@ class PersonTrackerCard extends LitElement {
                     </span>
                     <span class="pair-b" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}>
                       <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" .style=${iconStyle}></ha-icon>
-                      ${Math.round(this._travelTime)} min
+                      ${this._formatTravelTime(this._travelTime)}
                     </span>
                   </div>
                 ` : html`
@@ -1961,7 +1986,7 @@ class PersonTrackerCard extends LitElement {
                   ${hasTravel1 ? html`
                     <div class="custom-field travel clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="${travStyle}">
                       <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" .style=${iconStyle}></ha-icon>
-                      <span>${Math.round(this._travelTime)} min</span>
+                      <span>${this._formatTravelTime(this._travelTime)}</span>
                     </div>
                   ` : ''}
                 `}
@@ -1975,7 +2000,7 @@ class PersonTrackerCard extends LitElement {
                     </span>
                     <span class="pair-b" style="animation-delay:-4s;" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}>
                       <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" .style=${iconStyle}></ha-icon>
-                      ${Math.round(this._travelTime2)} min
+                      ${this._formatTravelTime(this._travelTime2)}
                     </span>
                   </div>
                 ` : html`
@@ -1988,7 +2013,7 @@ class PersonTrackerCard extends LitElement {
                   ${hasTravel2 ? html`
                     <div class="custom-field travel clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="${travStyle}">
                       <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" .style=${iconStyle}></ha-icon>
-                      <span>${Math.round(this._travelTime2)} min</span>
+                      <span>${this._formatTravelTime(this._travelTime2)}</span>
                     </div>
                   ` : ''}
                 `}
@@ -2162,7 +2187,7 @@ class PersonTrackerCard extends LitElement {
                     </div>
                     <div class="compact-icon-badge pair-b-compact clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="${badgeBaseStyle}">
                       <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:${smallIconSize}px;"></ha-icon>
-                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${Math.round(this._travelTime)}m</span>
+                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${this._formatTravelTime(this._travelTime)}</span>
                     </div>
                   </div>
                 ` : html`
@@ -2175,7 +2200,7 @@ class PersonTrackerCard extends LitElement {
                   ${hasTravel1 ? html`
                     <div class="compact-icon-badge clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="${badgeBaseStyle}">
                       <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:${smallIconSize}px;"></ha-icon>
-                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${Math.round(this._travelTime)}m</span>
+                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${this._formatTravelTime(this._travelTime)}</span>
                     </div>
                   ` : ''}
                 `}
@@ -2188,7 +2213,7 @@ class PersonTrackerCard extends LitElement {
                     </div>
                     <div class="compact-icon-badge pair-b-compact clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="${badgeBaseStyle};animation-delay:-4s;">
                       <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:${smallIconSize}px;"></ha-icon>
-                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${Math.round(this._travelTime2)}m</span>
+                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${this._formatTravelTime(this._travelTime2)}</span>
                     </div>
                   </div>
                 ` : html`
@@ -2201,7 +2226,7 @@ class PersonTrackerCard extends LitElement {
                   ${hasTravel2 ? html`
                     <div class="compact-icon-badge clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="${badgeBaseStyle}">
                       <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:${smallIconSize}px;"></ha-icon>
-                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${Math.round(this._travelTime2)}m</span>
+                      <span style="font-size:${smallFontSize}px;font-weight:bold;line-height:1;">${this._formatTravelTime(this._travelTime2)}</span>
                     </div>
                   ` : ''}
                 `}
@@ -2303,7 +2328,7 @@ class PersonTrackerCard extends LitElement {
 
     return html`
       <style>${this._getPairAnimationStyles('modern')}</style>
-      <ha-card class="${this.config.show_weather && this._weatherState && this.config.show_weather_background !== false ? 'weather-active' : ''}" style="background: ${this.config.card_background}; border-radius: ${this.config.card_border_radius}; padding: 10px 12px;">
+      <ha-card class="${this.config.show_weather && this._weatherState && this.config.show_weather_background !== false ? 'weather-active' : ''}" style="background: ${this.config.card_background}; border-radius: ${this.config.card_border_radius}; padding: 10px 12px;${this.config.modern_width ? ` max-width: ${this.config.modern_width}px;` : ''}">
         ${this._renderWeatherBg()}
         <div class="modern-container">
           <!-- Picture with state-colored border - clicks open person entity -->
@@ -2438,8 +2463,8 @@ class PersonTrackerCard extends LitElement {
                     <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${travelColor}" stroke-width="3" stroke-dasharray="${travelPercentage}, 100" stroke-linecap="round"/>
                   </svg>
                   <div class="ring-text">
-                    <span class="ring-value" style="font-size:${ringValueFontSize}px;">${travelTime}</span>
-                    <span class="ring-unit" style="font-size:${ringUnitFontSize}px;">min</span>
+                    <span class="ring-value" style="font-size:${travelTime >= 60 ? Math.max(7, ringValueFontSize - 3) : ringValueFontSize}px;">${travelTime >= 60 ? `${Math.floor(travelTime/60)}h` : travelTime}</span>
+                    <span class="ring-unit" style="font-size:${ringUnitFontSize}px;">${travelTime >= 60 ? `${Math.round(travelTime%60)}m` : 'min'}</span>
                   </div>
                 </div>
               </div>
@@ -2463,8 +2488,8 @@ class PersonTrackerCard extends LitElement {
                     <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${travelColor}" stroke-width="3" stroke-dasharray="${travelPercentage}, 100" stroke-linecap="round"/>
                   </svg>
                   <div class="ring-text">
-                    <span class="ring-value" style="font-size:${ringValueFontSize}px;">${travelTime}</span>
-                    <span class="ring-unit" style="font-size:${ringUnitFontSize}px;">min</span>
+                    <span class="ring-value" style="font-size:${travelTime >= 60 ? Math.max(7, ringValueFontSize - 3) : ringValueFontSize}px;">${travelTime >= 60 ? `${Math.floor(travelTime/60)}h` : travelTime}</span>
+                    <span class="ring-unit" style="font-size:${ringUnitFontSize}px;">${travelTime >= 60 ? `${Math.round(travelTime%60)}m` : 'min'}</span>
                   </div>
                 </div>
               ` : ''}
@@ -2680,7 +2705,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
                 <div class="neon-badge pair-b-neon clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="border-color:${travelColor};box-shadow:0 0 6px ${travelColor}44;">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span style="color:${travelColor};">${travelTime} min</span>
+                  <span style="color:${travelColor};">${this._formatTravelTime(travelTime)}</span>
                 </div>
               </div>
             ` : html`
@@ -2693,7 +2718,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel1Neon ? html`
                 <div class="neon-badge clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="border-color:${travelColor};box-shadow:0 0 6px ${travelColor}44;">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span style="color:${travelColor};">${travelTime} min</span>
+                  <span style="color:${travelColor};">${this._formatTravelTime(travelTime)}</span>
                 </div>
               ` : ''}
             `}
@@ -2706,7 +2731,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
                 <div class="neon-badge pair-b-neon clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="border-color:${travelColor2};box-shadow:0 0 6px ${travelColor2}44;">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span style="color:${travelColor2};">${travelTime2} min</span>
+                  <span style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</span>
                 </div>
               </div>
             ` : html`
@@ -2719,7 +2744,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel2Neon ? html`
                 <div class="neon-badge clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="border-color:${travelColor2};box-shadow:0 0 6px ${travelColor2}44;">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span style="color:${travelColor2};">${travelTime2} min</span>
+                  <span style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</span>
                 </div>
               ` : ''}
             `}
@@ -2905,7 +2930,7 @@ class PersonTrackerCard extends LitElement {
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}
                      style="border-color:${travelColor}50;color:${travelColor};">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span>${travelTime} min</span>
+                  <span>${this._formatTravelTime(travelTime)}</span>
                 </div>
               </div>
             ` : html`
@@ -2918,7 +2943,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel1 ? html`
                 <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="border-color:${travelColor}50;color:${travelColor};">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span>${travelTime} min</span>
+                  <span>${this._formatTravelTime(travelTime)}</span>
                 </div>
               ` : ''}
             `}
@@ -2935,7 +2960,7 @@ class PersonTrackerCard extends LitElement {
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}
                      style="border-color:${travelColor2}50;color:${travelColor2};">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span>${travelTime2} min</span>
+                  <span>${this._formatTravelTime(travelTime2)}</span>
                 </div>
               </div>
             ` : html`
@@ -2948,7 +2973,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel2 ? html`
                 <div class="glass-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="border-color:${travelColor2}50;color:${travelColor2};">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span>${travelTime2} min</span>
+                  <span>${this._formatTravelTime(travelTime2)}</span>
                 </div>
               ` : ''}
             `}
@@ -3150,7 +3175,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
                 <div class="bio-chip pair-b-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-color:${travelColor}44;color:${travelColor};">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span>${travelTime} min</span>
+                  <span>${this._formatTravelTime(travelTime)}</span>
                 </div>
               </div>
             ` : html`
@@ -3163,7 +3188,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel1 ? html`
                 <div class="bio-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="border-color:${travelColor}44;color:${travelColor};">
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span>${travelTime} min</span>
+                  <span>${this._formatTravelTime(travelTime)}</span>
                 </div>
               ` : ''}
             `}
@@ -3176,7 +3201,7 @@ class PersonTrackerCard extends LitElement {
                 </div>
                 <div class="bio-chip pair-b-bio clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-color:${travelColor2}44;color:${travelColor2};">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span>${travelTime2} min</span>
+                  <span>${this._formatTravelTime(travelTime2)}</span>
                 </div>
               </div>
             ` : html`
@@ -3189,7 +3214,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel2 ? html`
                 <div class="bio-chip clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="border-color:${travelColor2}44;color:${travelColor2};">
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span>${travelTime2} min</span>
+                  <span>${this._formatTravelTime(travelTime2)}</span>
                 </div>
               ` : ''}
             `}
@@ -3385,7 +3410,7 @@ class PersonTrackerCard extends LitElement {
                     <div class="holo-metric sensor-pair-holo clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <div class="pair-a-holo">
-                        <div class="holo-mv" style="color:${travelColor};">${travelTime}m</div>
+                        <div class="holo-mv" style="color:${travelColor};">${this._formatTravelTime(travelTime)}</div>
                         <div class="holo-mu">🚗</div>
                       </div>
                       <div class="pair-b-holo">
@@ -3397,7 +3422,7 @@ class PersonTrackerCard extends LitElement {
                     ${hasTravel1 ? html`
                       <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
-                        <div class="holo-mv" style="color:${travelColor};">${travelTime}m</div>
+                        <div class="holo-mv" style="color:${travelColor};">${this._formatTravelTime(travelTime)}</div>
                         <div class="holo-mu">🚗</div>
                       </div>
                     ` : ''}
@@ -3413,7 +3438,7 @@ class PersonTrackerCard extends LitElement {
                     <div class="holo-metric sensor-pair-holo clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;animation-delay:-4s;">
                       <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
                       <div class="pair-a-holo" style="animation-delay:-4s;">
-                        <div class="holo-mv" style="color:${travelColor2};">${travelTime2}m</div>
+                        <div class="holo-mv" style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</div>
                         <div class="holo-mu">🚗</div>
                       </div>
                       <div class="pair-b-holo" style="animation-delay:-4s;">
@@ -3425,7 +3450,7 @@ class PersonTrackerCard extends LitElement {
                     ${hasTravel2 ? html`
                       <div class="holo-metric clickable" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;">
                         <div class="holo-metric-line" style="background:linear-gradient(90deg,transparent,rgba(${accentRgb},0.35),transparent);"></div>
-                        <div class="holo-mv" style="color:${travelColor2};">${travelTime2}m</div>
+                        <div class="holo-mv" style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</div>
                         <div class="holo-mu">🚗</div>
                       </div>
                     ` : ''}
@@ -3617,7 +3642,7 @@ class PersonTrackerCard extends LitElement {
               <div class="wx-chip sensor-pair-wx" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
                 <div class="pair-a-wx">
                   <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span style="color:${travelColor};">${travelTime}m</span>
+                  <span style="color:${travelColor};">${this._formatTravelTime(travelTime)}</span>
                 </div>
                 <div class="pair-b-wx">
                   <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:13px;"></ha-icon>
@@ -3628,7 +3653,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel1 ? html`
                 <div class="wx-chip" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))} style="cursor:pointer;">
                   <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor};"></ha-icon>
-                  <span style="color:${travelColor};">${travelTime}m</span>
+                  <span style="color:${travelColor};">${this._formatTravelTime(travelTime)}</span>
                 </div>
               ` : ''}
               ${hasDist1 ? html`
@@ -3642,7 +3667,7 @@ class PersonTrackerCard extends LitElement {
               <div class="wx-chip sensor-pair-wx" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;animation-delay:-4s;">
                 <div class="pair-a-wx" style="animation-delay:-4s;">
                   <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span style="color:${travelColor2};">${travelTime2}m</span>
+                  <span style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</span>
                 </div>
                 <div class="pair-b-wx" style="animation-delay:-4s;">
                   <ha-icon icon="mdi:map-marker" style="--mdc-icon-size:13px;"></ha-icon>
@@ -3653,7 +3678,7 @@ class PersonTrackerCard extends LitElement {
               ${hasTravel2 ? html`
                 <div class="wx-chip" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))} style="cursor:pointer;">
                   <ha-icon icon="mdi:car" style="--mdc-icon-size:13px;color:${travelColor2};"></ha-icon>
-                  <span style="color:${travelColor2};">${travelTime2}m</span>
+                  <span style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</span>
                 </div>
               ` : ''}
               ${hasDist2 ? html`
@@ -4065,14 +4090,14 @@ class PersonTrackerCard extends LitElement {
                 <div class="pair-b-orbital" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;color:${travelColor};"
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}>
                   <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:11px;"></ha-icon>
-                  <span>${travelTime} min</span>
+                  <span>${this._formatTravelTime(travelTime)}</span>
                 </div>
               ` : hasDist1 ? html`
                 <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:11px;color:#00d4ff;"></ha-icon>
                 <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
               ` : html`
                 <ha-icon icon="${this._travelIcon || 'mdi:car-clock'}" style="--mdc-icon-size:11px;color:${travelColor};"></ha-icon>
-                <span style="color:${travelColor};">${travelTime} min</span>
+                <span style="color:${travelColor};">${this._formatTravelTime(travelTime)}</span>
               `}
             </div>` : ''}
             ${this._renderExtraChips('orbital', {accentRgb})}
@@ -4087,14 +4112,14 @@ class PersonTrackerCard extends LitElement {
                 <div class="pair-b-orbital" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;color:${travelColor2};"
                      @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}>
                   <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:11px;"></ha-icon>
-                  <span>${travelTime2} min</span>
+                  <span>${this._formatTravelTime(travelTime2)}</span>
                 </div>
               ` : hasDist2 ? html`
                 <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:11px;color:#00d4ff;"></ha-icon>
                 <span style="color:#00d4ff;">${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
               ` : html`
                 <ha-icon icon="${this._travelIcon2 || 'mdi:car-clock'}" style="--mdc-icon-size:11px;color:${travelColor2};"></ha-icon>
-                <span style="color:${travelColor2};">${travelTime2} min</span>
+                <span style="color:${travelColor2};">${this._formatTravelTime(travelTime2)}</span>
               `}
             </div>` : ''}
             <!-- 3D Coin (front=photo, back=batteries) -->
@@ -4322,7 +4347,7 @@ class PersonTrackerCard extends LitElement {
               ${pairDir1 ? html`
                 <div class="pair-a-ink" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel'))}>
                   <ha-icon icon="${this._travelIcon || 'mdi:home-clock'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
-                  <span>${travelTime} min</span>
+                  <span>${this._formatTravelTime(travelTime)}</span>
                 </div>
                 <div class="pair-b-ink" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance'))}>
                   <ha-icon icon="${this._distanceIcon || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
@@ -4333,7 +4358,7 @@ class PersonTrackerCard extends LitElement {
                 <span>${parseFloat(this._distanceFromHome.toFixed(distPrecision))} ${this._distanceUnit}</span>
               ` : html`
                 <ha-icon icon="${this._travelIcon || 'mdi:home-clock'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
-                <span>${travelTime} min</span>
+                <span>${this._formatTravelTime(travelTime)}</span>
               `}
             </div>` : ''}
 
@@ -4343,7 +4368,7 @@ class PersonTrackerCard extends LitElement {
               ${pairDir2 ? html`
                 <div class="pair-a-ink" @click=${() => this._showMoreInfo(this._getSensorEntityId('travel_2'))}>
                   <ha-icon icon="${this._travelIcon2 || 'mdi:office-building-marker'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
-                  <span>${travelTime2} min</span>
+                  <span>${this._formatTravelTime(travelTime2)}</span>
                 </div>
                 <div class="pair-b-ink" @click=${() => this._showMoreInfo(this._getSensorEntityId('distance_2'))}>
                   <ha-icon icon="${this._distanceIcon2 || 'mdi:map-marker-distance'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
@@ -4354,7 +4379,7 @@ class PersonTrackerCard extends LitElement {
                 <span>${parseFloat(this._distanceFromHome2.toFixed(distPrecision))} ${this._distanceUnit2}</span>
               ` : html`
                 <ha-icon icon="${this._travelIcon2 || 'mdi:office-building-marker'}" style="--mdc-icon-size:13px;color:#6b7280;"></ha-icon>
-                <span>${travelTime2} min</span>
+                <span>${this._formatTravelTime(travelTime2)}</span>
               `}
             </div>` : ''}
 
@@ -4449,6 +4474,7 @@ class PersonTrackerCard extends LitElement {
         align-items: center;
         justify-content: space-between;
         padding: 16px;
+        overflow: hidden;
       }
 
       .content-top {
@@ -4783,6 +4809,7 @@ class PersonTrackerCard extends LitElement {
         align-items: center;
         gap: 12px;
         width: 100%;
+        overflow: hidden;
       }
 
       .modern-picture {
@@ -4808,8 +4835,11 @@ class PersonTrackerCard extends LitElement {
         display: flex;
         flex-direction: row;
         gap: 6px;
-        flex-shrink: 0;
+        flex-shrink: 1;
+        flex-wrap: wrap;
+        justify-content: flex-end;
         margin-left: auto;
+        min-width: 0;
       }
 
       .ring-container {
@@ -6197,7 +6227,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.11 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.12 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
