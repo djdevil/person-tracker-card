@@ -1,7 +1,7 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.12-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.13-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eleven layout modes**.
@@ -102,8 +102,8 @@ Advanced card for Home Assistant that displays detailed information about people
 - 📶 **Connection Type** — WiFi or mobile network indicator
 - 🎨 **Customizable States** — Different colors and images for each location
 - 🖼️ **Custom Images** — PNG/GIF with transparency support
-- 🎯 **Complete Visual Editor** — User-friendly GUI configuration in 4 languages
-- 🌍 **Multilanguage** — Italian, English, French, German
+- 🎯 **Complete Visual Editor** — User-friendly GUI configuration in 5 languages
+- 🌍 **Multilanguage** — Italian, English, French, German, Dutch
 
 ---
 
@@ -750,6 +750,10 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 
 ## 📝 Changelog
 
+### v1.4.13 (2026-05-24)
+- 🐛 **French/German `show_last_changed` word order** — Fixed "2 heures il y a" → "il y a 2 heures" and "2 Stunden vor" → "vor 2 Stunden".
+- 🌍 **Dutch language** — Full Dutch (`nl`) localization added to card and editor. Activates automatically when HA is set to Dutch.
+
 ### v1.4.12 (2026-05-01)
 - ⏱️ **Travel time hours:minutes** — Travel time ≥ 60 min now shows as `Xh Ym` (e.g. `3h 27m`). Template sensors returning `h:mm` or `HH:MM:SS` strings are now parsed correctly (previously `3:27` was silently truncated to `3 min`).
 
@@ -918,8 +922,8 @@ If you find this card useful:
 - 📶 **Tipo Connessione** — Indicatore WiFi o rete mobile
 - 🎨 **Stati Personalizzabili** — Colori e immagini diverse per ogni posizione
 - 🖼️ **Immagini Personalizzate** — Supporto PNG/GIF con trasparenza
-- 🎯 **Editor Visuale Completo** — Configurazione tramite GUI in 4 lingue
-- 🌍 **Multilingua** — Italiano, Inglese, Francese, Tedesco
+- 🎯 **Editor Visuale Completo** — Configurazione tramite GUI in 5 lingue
+- 🌍 **Multilingua** — Italiano, Inglese, Francese, Tedesco, Olandese
 
 ---
 
@@ -1473,6 +1477,10 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 ---
 
 ## 📝 Changelog
+
+### v1.4.13 (2026-05-24)
+- 🐛 **Ordine parole `show_last_changed` in francese/tedesco** — Corretto "2 heures il y a" → "il y a 2 heures" e "2 Stunden vor" → "vor 2 Stunden".
+- 🌍 **Lingua olandese** — Supporto completo olandese (`nl`) aggiunto a card e editor. Si attiva automaticamente quando HA è impostato in olandese.
 
 ### v1.4.12 (2026-05-01)
 - ⏱️ **Tempo di viaggio ore:minuti** — Il tempo di viaggio ≥ 60 min viene ora mostrato come `Xh Ym` (es. `3h 27m`). I sensori template che restituiscono stringhe `h:mm` o `HH:MM:SS` vengono ora interpretati correttamente (in precedenza `3:27` veniva silenziosamente troncato a `3 min`).

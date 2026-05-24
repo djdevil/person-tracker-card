@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.13] - 2026-05-24
+
+### Fixed
+- 🐛 **French/German `show_last_changed` word order** — Relative time was showing "2 heures il y a" (fr) and "2 Stunden vor" (de) instead of the correct "il y a 2 heures" / "vor 2 Stunden". Added a `time.prefix` translation key for prefix-order languages; `_getRelativeTime` now renders `{prefix} {n} {unit}` for French and German, and the existing `{n} {unit} {ago}` for Italian and English.
+
+- 🌍 **Dutch language support** — Full Dutch (`nl`) localization added to both card and editor. Covers all UI labels, weather states, sensor attributes, time expressions, and editor sections. Activated automatically when Home Assistant is set to Dutch (`nl`, `nl-NL`, `nl-BE`).
+
+---
+
 ## [1.4.12] - 2026-05-01
 
 ### Added

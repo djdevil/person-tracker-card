@@ -1,4 +1,4 @@
-// Person Tracker Card v1.4.12 - Multilanguage Version
+// Person Tracker Card v1.4.13 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
 // v1.4.7: Liquid Ink layout (ink) — light mode card with ink blob background, animated dashed ring avatar, ink-wash chips, pair animation; all sensors/geocoded/maps/weather supported
@@ -42,7 +42,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.12 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.13 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -73,7 +73,10 @@ class LocalizationHelper {
       'fr': 'fr',
       'fr-FR': 'fr',
       'de': 'de',
-      'de-DE': 'de'
+      'de-DE': 'de',
+      'nl': 'nl',
+      'nl-NL': 'nl',
+      'nl-BE': 'nl'
     };
 
     this.currentLanguage = languageMap[haLanguage] || 'en';
@@ -199,6 +202,7 @@ class LocalizationHelper {
         'time.day': 'jour',
         'time.days': 'jours',
         'time.ago': 'il y a',
+        'time.prefix': 'il y a',
         'weather.sunny': 'Ensoleillé',
         'weather.clear-night': 'Nuit claire',
         'weather.cloudy': 'Nuageux',
@@ -245,6 +249,7 @@ class LocalizationHelper {
         'time.day': 'Tag',
         'time.days': 'Tage',
         'time.ago': 'vor',
+        'time.prefix': 'vor',
         'weather.sunny': 'Sonnig',
         'weather.clear-night': 'Klare Nacht',
         'weather.cloudy': 'Bewölkt',
@@ -263,6 +268,52 @@ class LocalizationHelper {
         'wx.battery': 'Batterie', 'wx.watch': 'Uhr', 'wx.wind': 'Wind',
         'wx.humidity': 'Luftfeuchte', 'wx.network': 'Netzwerk', 'wx.activity': 'Aktivität',
         'wx.pressure': 'Druck', 'wx.feels': 'Gefühlt', 'wx.device2': 'Gerät 2',
+      },
+      'nl': {
+        'common.person_tracker': 'Persoon Tracker',
+        'common.unknown': 'Onbekend',
+        'common.home': 'Thuis',
+        'common.away': 'Weg',
+        'common.not_home': 'Niet thuis',
+        'attributes.battery': 'Batterij',
+        'attributes.speed': 'Snelheid',
+        'attributes.direction': 'Richting',
+        'attributes.accuracy': 'Nauwkeurigheid',
+        'attributes.gps_accuracy': 'GPS-nauwkeurigheid',
+        'attributes.altitude': 'Hoogte',
+        'attributes.source': 'Bron',
+        'attributes.last_changed': 'Laatste wijziging',
+        'attributes.distance': 'Afstand',
+        'units.km': 'km',
+        'units.m': 'm',
+        'units.km_h': 'km/u',
+        'units.percent': '%',
+        'time.just_now': 'Zojuist',
+        'time.minute': 'minuut',
+        'time.minutes': 'minuten',
+        'time.hour': 'uur',
+        'time.hours': 'uur',
+        'time.day': 'dag',
+        'time.days': 'dagen',
+        'time.ago': 'geleden',
+        'weather.sunny': 'Zonnig',
+        'weather.clear-night': 'Heldere nacht',
+        'weather.cloudy': 'Bewolkt',
+        'weather.partlycloudy': 'Gedeeltelijk bewolkt',
+        'weather.fog': 'Mistig',
+        'weather.hail': 'Hagel',
+        'weather.lightning': 'Bliksem',
+        'weather.lightning-rainy': 'Onweer',
+        'weather.pouring': 'Stortbui',
+        'weather.rainy': 'Regenachtig',
+        'weather.snowy': 'Sneeuw',
+        'weather.snowy-rainy': 'Natte sneeuw',
+        'weather.windy': 'Windig',
+        'weather.windy-variant': 'Zeer windig',
+        'weather.exceptional': 'Uitzonderlijk',
+        'wx.battery': 'Batterij', 'wx.watch': 'Horloge', 'wx.wind': 'Wind',
+        'wx.humidity': 'Vochtigheid', 'wx.network': 'Netwerk', 'wx.activity': 'Activiteit',
+        'wx.pressure': 'Druk', 'wx.feels': 'Gevoeld', 'wx.device2': 'Appar.2',
       }
     };
   }
@@ -284,7 +335,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.12';
+const CARD_VERSION = '1.4.13';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -1074,18 +1125,15 @@ class PersonTrackerCard extends LitElement {
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
 
-    if (diffDay > 0) {
-      const unit = diffDay === 1 ? this._t('time.day') : this._t('time.days');
-      return `${diffDay} ${unit} ${this._t('time.ago')}`;
-    } else if (diffHour > 0) {
-      const unit = diffHour === 1 ? this._t('time.hour') : this._t('time.hours');
-      return `${diffHour} ${unit} ${this._t('time.ago')}`;
-    } else if (diffMin > 0) {
-      const unit = diffMin === 1 ? this._t('time.minute') : this._t('time.minutes');
-      return `${diffMin} ${unit} ${this._t('time.ago')}`;
-    } else {
-      return this._t('time.just_now');
-    }
+    const prefix = this._t('time.prefix');
+    const hasPrefix = prefix !== 'time.prefix';
+    const ago = this._t('time.ago');
+    const fmt = (n, unit) => hasPrefix ? `${prefix} ${n} ${unit}` : `${n} ${unit} ${ago}`;
+
+    if (diffDay > 0) return fmt(diffDay, diffDay === 1 ? this._t('time.day') : this._t('time.days'));
+    if (diffHour > 0) return fmt(diffHour, diffHour === 1 ? this._t('time.hour') : this._t('time.hours'));
+    if (diffMin > 0) return fmt(diffMin, diffMin === 1 ? this._t('time.minute') : this._t('time.minutes'));
+    return this._t('time.just_now');
   }
 
   _getPositionStyles(position) {
@@ -6227,7 +6275,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.12 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.13 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
