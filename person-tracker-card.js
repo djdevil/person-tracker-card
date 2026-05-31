@@ -2118,7 +2118,8 @@ class PersonTrackerCard extends LitElement {
     const batteryColor = this._getBatteryColor();
 
     // Larghezza configurabile
-    const maxWidth = this.config.compact_width || 300;
+    const compactStretch = this.config.compact_stretch || false;
+    const maxWidth = compactStretch ? null : (this.config.compact_width || 300);
 
     // Icon size configurabile - tutto si scala proporzionalmente
     const iconSize = this.config.compact_icon_size || 16;
@@ -2134,9 +2135,9 @@ class PersonTrackerCard extends LitElement {
 
     return html`
       <style>${this._getPairAnimationStyles('compact')}</style>
-      <ha-card class="${this.config.show_weather && this._weatherState && this.config.show_weather_background !== false ? 'weather-active' : ''}" style="background: ${this.config.card_background}; border-radius: ${this.config.card_border_radius}; padding: ${cardPadding}px; max-width: ${maxWidth}px;">
+      <ha-card class="${this.config.show_weather && this._weatherState && this.config.show_weather_background !== false ? 'weather-active' : ''}" style="background: ${this.config.card_background}; border-radius: ${this.config.card_border_radius}; padding: ${cardPadding}px;${maxWidth ? ` max-width: ${maxWidth}px;` : ' width: 100%; box-sizing: border-box;'}">
         ${this._renderWeatherBg()}
-        <div class="compact-grid">
+        <div class="${compactStretch ? 'compact-grid-stretch' : 'compact-grid'}">
           ${this.config.show_entity_picture && entityPicture ? html`
             <div class="compact-picture clickable" @click=${() => this._handleTapAction()}>
               <img src="${entityPicture}" alt="${personName}" style="width: ${pictureSize}px; height: ${pictureSize}px;${stateStyles.color ? ` border-color: ${stateStyles.color};` : ''}" />
@@ -4461,13 +4462,16 @@ class PersonTrackerCard extends LitElement {
     return css`
       :host {
         display: block;
+        width: 100%;
       }
 
       ha-card {
         height: 100%;
+        width: 100%;
         overflow: hidden;
         position: relative;
         transition: all 0.3s ease;
+        box-sizing: border-box;
       }
 
       ha-card:hover {
@@ -4734,6 +4738,51 @@ class PersonTrackerCard extends LitElement {
         padding-top: 6px;
         border-top: 1px solid var(--divider-color, rgba(255,255,255,0.1));
         margin-top: 3px;
+      }
+
+      /* Compact Stretch Layout - full width, icons on the right */
+      .compact-grid-stretch {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+          "picture name icons"
+          "picture location icons";
+        row-gap: 1px;
+        width: 100%;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      .compact-grid-stretch .compact-picture {
+        grid-area: picture;
+        justify-self: start;
+        align-self: center;
+        margin-right: 8px;
+      }
+
+      .compact-grid-stretch .compact-name {
+        grid-area: name;
+        justify-self: start;
+        align-self: end;
+      }
+
+      .compact-grid-stretch .compact-location {
+        grid-area: location;
+        justify-self: start;
+        align-self: start;
+      }
+
+      .compact-grid-stretch .compact-icons {
+        grid-area: icons;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+        padding-top: 0;
+        border-top: none;
+        margin-top: 0;
       }
 
       .compact-icon-badge {
