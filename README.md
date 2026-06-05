@@ -1,7 +1,7 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.13-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Version](https://img.shields.io/badge/version-1.4.14-blue.svg)](https://github.com/djdevil/person-tracker-card)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eleven layout modes**.
@@ -750,6 +750,9 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 
 ## 📝 Changelog
 
+### v1.4.14 (2026-06-05)
+- 📐 **`compact_stretch`** — Compact layout can now expand to fill full container width. Toggle in visual editor under Layout → Compact Options.
+
 ### v1.4.13 (2026-05-24)
 - 🐛 **French/German `show_last_changed` word order** — Fixed "2 heures il y a" → "il y a 2 heures" and "2 Stunden vor" → "vor 2 Stunden".
 - 🌍 **Dutch language** — Full Dutch (`nl`) localization added to card and editor. Activates automatically when HA is set to Dutch.
@@ -1477,6 +1480,9 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 ---
 
 ## 📝 Changelog
+
+### v1.4.14 (2026-06-05)
+- 📐 **`compact_stretch`** — Il layout Compact può ora espandersi a tutta larghezza del contenitore. Toggle nell'editor visuale sotto Layout → Opzioni Compact.
 
 ### v1.4.13 (2026-05-24)
 - 🐛 **Ordine parole `show_last_changed` in francese/tedesco** — Corretto "2 heures il y a" → "il y a 2 heures" e "2 Stunden vor" → "vor 2 Stunden".

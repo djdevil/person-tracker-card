@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.14: compact_stretch option — full-width compact layout (PR #41); translations IT/FR/DE/NL added
 // v1.4.13: French/German relative time word order fix (il y a 2 heures, vor 2 Stunden); Dutch (nl) language support
 // v1.4.12: travel time h:mm parsing + Xh Ym formatting; charging fix WxStation/Holo/Matrix/Orbital/Ink; wifi_ssid_sensor; classic/neon connection text
 // v1.4.9: extra_chips config option — add any HA entity as custom chip in all 11 layouts
@@ -87,6 +88,7 @@ class EditorLocalizationHelper {
         'editor.positions': 'Posizioni',
         'editor.advanced': 'Avanzate',
         'editor.compact_width': 'Larghezza compatta (px)',
+        'editor.compact_stretch': 'Espandi a tutta larghezza',
         'editor.modern_width': 'Larghezza modern (px)',
         'editor.custom_image_url': 'URL immagine personalizzata',
         'editor.aspect_ratio': 'Proporzioni',
@@ -426,6 +428,7 @@ class EditorLocalizationHelper {
         'editor.advanced': 'Avancé',
         'editor.show_last_updated': 'Afficher dernière mise à jour',
         'editor.compact_width': 'Largeur compacte (px)',
+        'editor.compact_stretch': 'Étirer sur toute la largeur',
         'editor.modern_width': 'Largeur moderne (px)',
         'editor.custom_image_url': 'URL image personnalisée',
         'editor.aspect_ratio': 'Ratio d\'aspect',
@@ -595,6 +598,7 @@ class EditorLocalizationHelper {
         'editor.advanced': 'Erweitert',
         'editor.show_last_updated': 'Letzte Aktualisierung anzeigen',
         'editor.compact_width': 'Kompakte Breite (px)',
+        'editor.compact_stretch': 'Auf volle Breite dehnen',
         'editor.modern_width': 'Moderne Breite (px)',
         'editor.custom_image_url': 'Benutzerdefinierte Bild-URL',
         'editor.aspect_ratio': 'Seitenverhältnis',
@@ -764,6 +768,7 @@ class EditorLocalizationHelper {
         'editor.positions': 'Posities',
         'editor.advanced': 'Geavanceerd',
         'editor.compact_width': 'Compacte breedte (px)',
+        'editor.compact_stretch': 'Uitrekken tot volledige breedte',
         'editor.modern_width': 'Moderne breedte (px)',
         'editor.custom_image_url': 'Aangepaste afbeeldings-URL',
         'editor.aspect_ratio': 'Beeldverhouding',
@@ -1309,7 +1314,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.13</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.14</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -1401,9 +1406,8 @@ class PersonTrackerCardEditor extends LitElement {
             @input=${(e) => this._valueChanged(e, 'compact_width')}
             helper-text="Maximum width in pixels (default: 300px)">
           </ha-textfield>
-
           <div class="config-row">
-            <span class="config-label">${this._t('editor.compact_stretch') || 'Stretch to fill width'}</span>
+            <span class="config-label">${this._t('editor.compact_stretch')}</span>
             <ha-switch
               .checked=${this._config.compact_stretch === true}
               @change=${(e) => this._valueChanged(e, 'compact_stretch')}>
