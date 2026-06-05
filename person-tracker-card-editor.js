@@ -256,6 +256,7 @@ class EditorLocalizationHelper {
         'editor.positions': 'Positions',
         'editor.advanced': 'Advanced',
         'editor.compact_width': 'Compact width (px)',
+        'editor.compact_stretch': 'Stretch to fill width',
         'editor.modern_width': 'Modern width (px)',
         'editor.custom_image_url': 'Custom image URL',
         'editor.aspect_ratio': 'Aspect ratio',
@@ -1400,6 +1401,14 @@ class PersonTrackerCardEditor extends LitElement {
             @input=${(e) => this._valueChanged(e, 'compact_width')}
             helper-text="Maximum width in pixels (default: 300px)">
           </ha-textfield>
+
+          <div class="config-row">
+            <span class="config-label">${this._t('editor.compact_stretch') || 'Stretch to fill width'}</span>
+            <ha-switch
+              .checked=${this._config.compact_stretch === true}
+              @change=${(e) => this._valueChanged(e, 'compact_stretch')}>
+            </ha-switch>
+          </div>
         ` : ''}
 
         ${this._config.layout === 'modern' ? html`
