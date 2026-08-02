@@ -1,5 +1,7 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.15: home_icon option for ink layout — customize home state location icon; "auto" uses device icon
+//          Polish (pl) language support added — card + editor full translation (PR #43 by @zalexandr)
 // v1.4.14: compact_stretch option — full-width compact layout (PR #41); translations IT/FR/DE/NL added
 // v1.4.13: French/German relative time word order fix (il y a 2 heures, vor 2 Stunden); Dutch (nl) language support
 // v1.4.12: travel time h:mm parsing + Xh Ym formatting; charging fix WxStation/Holo/Matrix/Orbital/Ink; wifi_ssid_sensor; classic/neon connection text
@@ -50,7 +52,9 @@ class EditorLocalizationHelper {
       'de-DE': 'de',
       'nl': 'nl',
       'nl-NL': 'nl',
-      'nl-BE': 'nl'
+      'nl-BE': 'nl',
+      'pl': 'pl',
+      'pl-PL': 'pl'
     };
 
     this.currentLanguage = languageMap[haLanguage] || 'en';
@@ -224,7 +228,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_nav_path': 'Percorso navigazione',
         'editor.extra_chip_url_path': 'URL',
         'editor.wifi_ssid_sensor': 'Sensore SSID Wi-Fi',
-        'editor.wifi_ssid_sensor_description': 'Sensore che riporta il nome della rete Wi-Fi a cui è connesso il dispositivo (es. sensor.elliot_s_phone_wi_fi_connection). Quando impostato, il nome della rete viene mostrato al posto di "WiFi".'
+        'editor.wifi_ssid_sensor_description': 'Sensore che riporta il nome della rete Wi-Fi a cui è connesso il dispositivo (es. sensor.elliot_s_phone_wi_fi_connection). Quando impostato, il nome della rete viene mostrato al posto di "WiFi".',
+        'editor.home_icon': 'Icona posizione casa (solo layout Ink)',
+        'editor.home_icon_description': 'Icona MDI mostrata quando la persona è a casa. Lascia vuoto per il predefinito (mdi:home). Usa "auto" per rilevare automaticamente il tipo di dispositivo (cellulare/tablet/laptop). Es: mdi:cellphone, mdi:watch, mdi:devices'
       },
       'en': {
         'editor.entity': 'Entity',
@@ -394,7 +400,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_nav_path': 'Navigation path',
         'editor.extra_chip_url_path': 'URL',
         'editor.wifi_ssid_sensor': 'Wi-Fi SSID sensor',
-        'editor.wifi_ssid_sensor_description': 'Sensor that reports the Wi-Fi network name the device is connected to (e.g. sensor.elliot_s_phone_wi_fi_connection). When set, the network name is shown instead of "WiFi".'
+        'editor.wifi_ssid_sensor_description': 'Sensor that reports the Wi-Fi network name the device is connected to (e.g. sensor.elliot_s_phone_wi_fi_connection). When set, the network name is shown instead of "WiFi".',
+        'editor.home_icon': 'Home location icon (Ink layout only)',
+        'editor.home_icon_description': 'MDI icon shown next to the location when at home. Leave empty for the default (mdi:home). Use "auto" to automatically detect the device type (phone/tablet/laptop). E.g: mdi:cellphone, mdi:watch, mdi:devices'
       },
       'fr': {
         'editor.entity': 'Entité',
@@ -564,7 +572,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_nav_path': 'Chemin de navigation',
         'editor.extra_chip_url_path': 'URL',
         'editor.wifi_ssid_sensor': 'Capteur SSID Wi-Fi',
-        'editor.wifi_ssid_sensor_description': 'Capteur indiquant le nom du réseau Wi-Fi auquel l\'appareil est connecté. Quand configuré, le nom du réseau s\'affiche à la place de "WiFi".'
+        'editor.wifi_ssid_sensor_description': 'Capteur indiquant le nom du réseau Wi-Fi auquel l\'appareil est connecté. Quand configuré, le nom du réseau s\'affiche à la place de "WiFi".',
+        'editor.home_icon': 'Icône de localisation maison (layout Ink uniquement)',
+        'editor.home_icon_description': 'Icône MDI affichée à côté de la localisation quand la personne est à la maison. Laisser vide pour la valeur par défaut (mdi:home). Utilisez "auto" pour détecter automatiquement le type d\'appareil (téléphone/tablette/ordinateur). Ex : mdi:cellphone, mdi:watch, mdi:devices'
       },
       'de': {
         'editor.entity': 'Entität',
@@ -734,7 +744,181 @@ class EditorLocalizationHelper {
         'editor.extra_chip_nav_path': 'Navigationspfad',
         'editor.extra_chip_url_path': 'URL',
         'editor.wifi_ssid_sensor': 'WLAN-SSID-Sensor',
-        'editor.wifi_ssid_sensor_description': 'Sensor, der den Namen des WLAN-Netzwerks meldet, mit dem das Gerät verbunden ist. Wenn gesetzt, wird der Netzwerkname statt "WiFi" angezeigt.'
+        'editor.wifi_ssid_sensor_description': 'Sensor, der den Namen des WLAN-Netzwerks meldet, mit dem das Gerät verbunden ist. Wenn gesetzt, wird der Netzwerkname statt "WiFi" angezeigt.',
+        'editor.home_icon': 'Heimsymbol (nur Ink-Layout)',
+        'editor.home_icon_description': 'MDI-Symbol neben der Position, wenn die Person zu Hause ist. Leer lassen für den Standard (mdi:home). Verwenden Sie "auto" zur automatischen Erkennung des Gerätetyps (Handy/Tablet/Laptop). Z.B.: mdi:cellphone, mdi:watch, mdi:devices'
+      },
+      'pl': {
+        'editor.entity': 'Encja',
+        'editor.name': 'Nazwa (opcjonalna)',
+        'editor.show_last_changed': 'Pokaż ostatnią zmianę',
+        'editor.show_last_updated': 'Pokaż ostatnią aktualizację',
+        'editor.show_distance': 'Pokaż odległość',
+        'editor.show_battery': 'Pokaż baterię',
+        'editor.show_speed': 'Pokaż prędkość',
+        'editor.show_direction': 'Pokaż kierunek',
+        'editor.show_accuracy': 'Pokaż dokładność',
+        'editor.show_gps_accuracy': 'Pokaż dokładność GPS',
+        'editor.show_altitude': 'Pokaż wysokość',
+        'editor.show_source': 'Pokaż źródło',
+        'editor.show_entity_picture': 'Pokaż zdjęcie',
+        'editor.show_name': 'Pokaż status',
+        'editor.show_person_name': 'Pokaż imię osoby',
+        'editor.show_activity': 'Pokaż aktywność',
+        'editor.show_watch_battery': 'Pokaż baterię zegarka',
+        'editor.show_travel_time': 'Pokaż czas podróży',
+        'editor.show_connection': 'Pokaż połączenie',
+        'editor.custom_icon': 'Niestandardowa ikona',
+        'editor.icon_color': 'Kolor ikony',
+        'editor.background_color': 'Kolor tła',
+        'editor.text_color': 'Kolor tekstu',
+        'editor.required': 'Wymagane',
+        'editor.optional': 'Opcjonalne',
+        'editor.layout': 'Układ',
+        'editor.appearance': 'Wygląd',
+        'editor.display_options': 'Opcje wyświetlania',
+        'editor.positions': 'Pozycje',
+        'editor.advanced': 'Zaawansowane',
+        'editor.compact_width': 'Szerokość kompaktowa (px)',
+        'editor.compact_stretch': 'Rozciągnij do pełnej szerokości',
+        'editor.modern_width': 'Szerokość modern (px)',
+        'editor.custom_image_url': 'Niestandardowy URL obrazu',
+        'editor.aspect_ratio': 'Proporcje',
+        'editor.state_value': 'Wartość stanu',
+        'editor.displayed_name': 'Wyświetlana nazwa',
+        'editor.custom_image': 'Niestandardowy obraz',
+        'editor.name_font_size': 'Rozmiar czcionki nazwy',
+        'editor.state_font_size': 'Rozmiar czcionki stanu',
+        'editor.last_changed_font_size': 'Rozmiar czcionki ostatniej zmiany',
+        'editor.card_background': 'Tło karty',
+        'editor.transparent_background': 'Przezroczyste tło (tylko Glass/Bio)',
+        'editor.show_particles': 'Pokaż animowane cząstki (tylko Glass/Bio)',
+        'editor.show_geocoded_location': 'Pokaż adres GPS (geocoded location)',
+        'editor.geocoded_location_description': 'Pokazuje czytelny adres z GPS przez sensor.xxx_geocoded_location. Widoczne tylko gdy osoba nie jest w domu.',
+        'editor.geocoded_location_entity': 'Encja geocoded location (automatyczna gdy pusta)',
+        'editor.maps_provider': 'Otwórz w mapach po kliknięciu lokalizacji',
+        'editor.maps_provider_description': 'Gdy ustawione, kliknięcie na strefę lub adres otwiera mapę ze współrzędnymi GPS.',
+        'editor.maps_provider_none': 'Wyłączone',
+        'editor.state_entity': 'Niestandardowy sensor stanu',
+        'editor.state_entity_description': 'Zastępuje wyświetlany tekst lokalizacji. Logika dom/poza domem pozostaje niezmieniona.',
+        'editor.show_device_2_battery': 'Bateria drugiego urządzenia (tablet/laptop)',
+        'editor.device_2_battery_sensor': 'Sensor baterii drugiego urządzenia',
+        'editor.device_2_battery_state_sensor': 'Sensor stanu ładowania drugiego urządzenia',
+        'wx.battery': 'Bateria', 'wx.watch': 'Zegarek', 'wx.wind': 'Wiatr',
+        'wx.humidity': 'Wilgotność', 'wx.network': 'Sieć', 'wx.activity': 'Aktywność',
+        'wx.pressure': 'Ciśn.', 'wx.feels': 'Odczuwalna', 'wx.device2': 'Urządz.2',
+        'editor.border_radius': 'Promień narożnika',
+        'editor.image_size': 'Rozmiar obrazu (%)',
+        'editor.modern_picture_size': 'Rozmiar obrazu (px)',
+        'editor.modern_name_font_size': 'Rozmiar czcionki nazwy',
+        'editor.modern_state_font_size': 'Rozmiar czcionki stanu',
+        'editor.modern_show_battery_ring': 'Pokaż pierścień baterii',
+        'editor.modern_show_travel_ring': 'Pokaż pierścień czasu podróży',
+        'editor.modern_travel_max_time': 'Maks. czas podróży (min)',
+        'editor.modern_distance_max': 'Maks. odległość (km)',
+        'editor.modern_ring_size': 'Rozmiar pierścienia (px)',
+        'editor.classic_icon_size': 'Rozmiar ikony (px)',
+        'editor.compact_icon_size': 'Rozmiar ikony (px)',
+        'editor.battery_font_size': 'Rozmiar czcionki baterii',
+        'editor.activity_font_size': 'Rozmiar czcionki aktywności',
+        'editor.battery_state_sensor': 'Sensor stanu ładowania telefonu',
+        'editor.battery_charging_value': 'Wartość stanu ładowania (opcjonalna)',
+        'editor.watch_battery_state_sensor': 'Sensor stanu ładowania zegarka',
+        'editor.watch_battery_charging_value': 'Wartość stanu ładowania zegarka (opcjonalna)',
+        'editor.charging_helper': 'Zostaw puste dla auto-wykrywania (charging, full, on, true...)',
+        'section.automatic_sensors': 'Automatyczne sensory',
+        'section.sensors_description': 'Sensory są automatycznie wykrywane z aplikacji mobilnej powiązanej z encją osoby. Wykryty prefiks:',
+        'section.auto_detect_btn': 'Automatycznie wykryj sensory',
+        'section.auto_detect_found': 'sensorów znaleziono',
+        'section.auto_detect_none': 'Nie znaleziono pasujących sensorów',
+        'section.element_positions': 'Pozycje elementów',
+        'section.positions_description': 'Skonfiguruj pozycję każdego elementu na karcie. Dostępne tylko w układzie Classic.',
+        'section.custom_states': 'Niestandardowe stany',
+        'section.states_description': 'Skonfiguruj sposób wyświetlania różnych stanów osoby',
+        'section.card_style': 'Styl karty',
+        'section.modern_options': 'Opcje układu Modern',
+        'section.classic_options': 'Opcje układu Classic',
+        'section.compact_options': 'Opcje układu Compact',
+        'section.neon_options': 'Opcje układu Neon',
+        'section.neon_description': 'Ciemny cyberpunk z animowanym świecącym pierścieniem i neon-badges. Kolory automatycznie dostosowują się do stanu osoby (zielony = w domu, czerwony = poza domem).',
+        'section.glass_options': 'Opcje układu Glass',
+        'section.glass_description': 'Ciemny glassmorphism z przezroczystymi chipami, kolorowymi kulami i animowaną kropką stanu. Kolor akcentu automatycznie dostosowuje się do bieżącej strefy.',
+        'section.bio_options': 'Opcje układu Bioluminescent',
+        'section.bio_description': 'Motyw głębokiego oceanu z animowanymi kulami bioluminescencyjnymi, unoszącymi się cząstkami i podwójnym pulsującym pierścieniem wokół awatara. Kolor akcentu zmienia się ze strefą.',
+        'section.holo_options': 'Opcje układu Holographic 3D',
+        'section.holo_description': 'Holograficzny motyw z trójwymiarową pochyloną kartą, obracającymi się pierścieniami wokół awatara, animowanym skanerem i iryzującym tłem. Kolor akcentu zmienia się ze stanem osoby.',
+        'section.weather': '🌤 Pogoda',
+        'editor.show_weather': 'Pokaż pogodę',
+        'editor.weather_entity': 'Encja pogody',
+        'editor.show_weather_background': 'Pokaż animowane tło pogody',
+        'editor.show_weather_temperature': 'Pokaż warunki i temperaturę',
+        'editor.weather_text_color': 'Kolor tekstu pogody',
+        'editor.weather_text_color_description': 'Kolor temperatury, ikony i etykiety warunków. Pozostaw puste dla domyślnego koloru układu.',
+        'editor.last_changed_color': 'Kolor tekstu aktualizacji',
+        'editor.last_changed_color_description': 'Kolor znacznika czasu ostatniej aktualizacji. Pozostaw puste dla koloru domyślnego.',
+        'section.weather_description': 'Dodaje animowane tło pogody do karty (deszcz, śnieg, słońce, gwiazdy, pioruny…). Działa na wszystkich układach.',
+        'section.travel_sensor_2': '🏢 Sensory Dom ↔ Praca',
+        'section.travel_sensor_2_description': 'Sensor 1 (dom→praca): widoczny w domu i w drodze, ukryty w pracy. Sensor 2 (praca→dom): widoczny w pracy i w drodze, ukryty w domu. Wyłącz tryb smart, aby zawsze pokazywać oba.',
+        'editor.travel_sensor_2': 'Sensor czasu podróży (praca → dom)',
+        'editor.zone_2': 'Strefa pracy',
+        'editor.show_travel_time_2': 'Pokaż czas podróży (Praca → Dom)',
+        'editor.smart_travel_mode': 'Tryb smart (ukryj na podstawie lokalizacji)',
+        'editor.pair_travel_animation': 'Naprzemienna animacja odległość/czas (wyłączona = pokaż oba osobno)',
+        'editor.distance_precision': 'Miejsca dziesiętne odległości (0=całkowita, 1=jedno, 2=dwa)',
+        'editor.distance_unit': 'Jednostka odległości (np. km, mi)',
+        'editor.distance_unit_description': 'Pozostaw puste dla auto-wykrywania. Dla sensorów Waze/Google użyj km lub mi.',
+        'editor.direction_home_work': 'Dom → Praca',
+        'editor.direction_work_home': 'Praca → Dom',
+        'editor.travel_sensor_home_work': 'Sensor czasu podróży (Dom → Praca)',
+        'editor.travel_sensor_work_home': 'Sensor czasu podróży (Praca → Dom)',
+        'editor.distance_sensor_home_work': 'Sensor odległości (Dom → Praca)',
+        'editor.distance_sensor_work_home': 'Sensor odległości (Praca → Dom)',
+        'editor.show_distance_2': 'Pokaż odległość',
+        'section.distance_optional': '📍 Odległość (opcjonalna)',
+        'section.distance_optional_description': 'Wyświetl odległość w km. Zawsze widoczne niezależnie od pozycji.',
+        'position.battery': 'Pozycja baterii',
+        'position.watch_battery': 'Pozycja baterii zegarka',
+        'position.activity': 'Pozycja aktywności',
+        'position.distance': 'Pozycja odległości',
+        'position.travel': 'Pozycja czasu podróży',
+        'position.connection': 'Pozycja połączenia',
+        'state.name_color': 'Kolor nazwy',
+        'state.add_state': 'Dodaj stan',
+        'default_state.home': '🏡 W domu',
+        'default_state.away': '🏃‍♂️ Poza domem',
+        'default_state.office': '🏢 Biuro',
+        'default_state.unknown': '❓ Nieznany',
+        'state.default_states': 'Domyślne stany',
+        'state.add_default_states': 'Dodaj domyślne stany',
+        'tabs.base': 'Podstawowe',
+        'tabs.layout': 'Układ',
+        'tabs.display': 'Wyświetlanie',
+        'tabs.positions': 'Pozycje',
+        'tabs.states': 'Stany',
+        'tabs.sensors': 'Sensory',
+        'tabs.style': 'Styl',
+        'section.extra_chips': 'Niestandardowe chipy',
+        'editor.extra_chips_description': 'Dodaj dodatkowe encje jako chipy. Z show_when chip pojawia się tylko gdy stan pasuje.',
+        'editor.extra_chip_entity': 'Encja',
+        'editor.extra_chip_show_when': 'Pokaż gdy (stan)',
+        'editor.extra_chip_label': 'Etykieta (opcjonalna)',
+        'editor.extra_chip_color': 'Kolor ikony i tekstu',
+        'editor.extra_chip_add': '+ Dodaj chip',
+        'editor.extra_chip_tap_action': 'Akcja dotknięcia',
+        'editor.extra_chip_tap_more_info': 'Pokaż info (more-info)',
+        'editor.extra_chip_tap_call_service': 'Wywołaj usługę',
+        'editor.extra_chip_tap_navigate': 'Nawiguj',
+        'editor.extra_chip_tap_url': 'Otwórz URL',
+        'editor.extra_chip_tap_none': 'Brak akcji',
+        'editor.extra_chip_icon_label': 'Ikona (domyślnie: ikona encji)',
+        'editor.extra_chip_service': 'Usługa (np. light.turn_on)',
+        'editor.extra_chip_service_data': 'Dodatkowe dane (JSON, opcjonalne)',
+        'editor.extra_chip_nav_path': 'Ścieżka nawigacji',
+        'editor.extra_chip_url_path': 'URL',
+        'editor.wifi_ssid_sensor': 'Sensor SSID Wi-Fi',
+        'editor.wifi_ssid_sensor_description': 'Sensor raportujący nazwę sieci Wi-Fi, z którą połączone jest urządzenie. Gdy ustawiony, wyświetlana jest nazwa sieci zamiast "WiFi".',
+        'editor.home_icon': 'Ikona lokalizacji domu (tylko układ Ink)',
+        'editor.home_icon_description': 'Ikona MDI wyświetlana obok lokalizacji gdy osoba jest w domu. Pozostaw puste dla domyślnej (mdi:home). Użyj "auto" dla automatycznego wykrycia urządzenia (telefon/tablet/laptop). Np.: mdi:cellphone, mdi:watch, mdi:devices'
       },
       'nl': {
         'editor.entity': 'Entiteit',
@@ -904,7 +1088,9 @@ class EditorLocalizationHelper {
         'editor.extra_chip_nav_path': 'Navigatiepad',
         'editor.extra_chip_url_path': 'URL',
         'editor.wifi_ssid_sensor': 'Wi-Fi SSID-sensor',
-        'editor.wifi_ssid_sensor_description': 'Sensor die de naam meldt van het Wi-Fi-netwerk waarmee het apparaat verbonden is. Indien ingesteld, wordt de netwerknaam weergegeven in plaats van "WiFi".'
+        'editor.wifi_ssid_sensor_description': 'Sensor die de naam meldt van het Wi-Fi-netwerk waarmee het apparaat verbonden is. Indien ingesteld, wordt de netwerknaam weergegeven in plaats van "WiFi".',
+        'editor.home_icon': 'Thuispictogram locatie (alleen Ink-lay-out)',
+        'editor.home_icon_description': 'MDI-pictogram naast de locatie wanneer de persoon thuis is. Leeg laten voor de standaard (mdi:home). Gebruik "auto" om het apparaattype automatisch te detecteren (telefoon/tablet/laptop). Bijv.: mdi:cellphone, mdi:watch, mdi:devices'
       }
     };
   }
@@ -1314,7 +1500,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.14</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.15</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -2283,6 +2469,18 @@ class PersonTrackerCardEditor extends LitElement {
               </ha-switch>
             </div>
           </div>
+        ` : ''}
+
+        ${this._config.layout === 'ink' ? html`
+          <ha-textfield
+            label="${this._t('editor.home_icon')}"
+            .value=${this._config.home_icon || ''}
+            placeholder="mdi:home"
+            @input=${(e) => this._valueChanged(e, 'home_icon')}>
+          </ha-textfield>
+          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
+            ${this._t('editor.home_icon_description')}
+          </p>
         ` : ''}
 
         <ha-textfield

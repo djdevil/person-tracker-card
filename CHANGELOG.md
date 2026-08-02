@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.15] - 2026-08-02
+
+### Added
+- 🏠 **`home_icon`** — New option for the **Ink layout** that lets you customize the location icon shown next to the state/zone text when the person is at home (previously always `mdi:home`). Set it to any MDI icon (e.g. `mdi:cellphone`, `mdi:watch`, `mdi:devices`) or use the special value `"auto"` to automatically pick the detected device icon (`mdi:cellphone` / `mdi:tablet` / `mdi:laptop`) based on the mobile app sensor prefix. Leave empty to keep the default `mdi:home` icon. Configurable from the visual editor under **Style → Home location icon**. *(Addresses issue #45)*
+- 🇵🇱 **Polish language support** — Full Polish (`pl`) localization added to both card and editor. Covers all UI labels, weather states, sensor attributes, time expressions, editor sections, and all new keys. Activated automatically when Home Assistant is set to Polish (`pl`, `pl-PL`). *(Based on PR #43 by @zalexandr)*
+
+---
+
 ## [1.4.14] - 2026-06-05
 
 ### Added
