@@ -1,6 +1,7 @@
-// Person Tracker Card v1.4.15 - Multilanguage Version
+// Person Tracker Card v1.4.16 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.16: home_icon_entity option for ink layout — read home state icon dynamically from a HA entity state
 // v1.4.15: home_icon config option for ink layout — customize the location icon shown when at home; supports any MDI icon or "auto" to use the detected device icon (phone/tablet/laptop)
 //          Polish (pl) language support added to card and editor (PR #43 by @zalexandr)
 // v1.4.7: Liquid Ink layout (ink) — light mode card with ink blob background, animated dashed ring avatar, ink-wash chips, pair animation; all sensors/geocoded/maps/weather supported
@@ -44,7 +45,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.15 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.16 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -385,7 +386,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.15';
+const CARD_VERSION = '1.4.16';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -711,6 +712,7 @@ class PersonTrackerCard extends LitElement {
     }
 
     if (this.config.wifi_ssid_sensor) entities.push(this.config.wifi_ssid_sensor);
+    if (this.config.home_icon_entity) entities.push(this.config.home_icon_entity);
 
     return entities;
   }
@@ -4336,9 +4338,13 @@ class PersonTrackerCard extends LitElement {
     // Zone icon from HA zone entity
     const zoneEntity = entity.state !== 'home' && entity.state !== 'not_home'
       ? (this.hass.states[`zone.${entity.state}`] || null) : null;
-    const homeIcon = this.config.home_icon === 'auto'
-      ? this._getDeviceIcon(this._resolvedPrefix)
-      : (this.config.home_icon || 'mdi:home');
+    const homeIconFromEntity = this.config.home_icon_entity
+      ? (this.hass.states[this.config.home_icon_entity]?.state || null)
+      : null;
+    const homeIcon = homeIconFromEntity
+      || (this.config.home_icon === 'auto'
+        ? this._getDeviceIcon(this._resolvedPrefix)
+        : (this.config.home_icon || 'mdi:home'));
     const zoneHaIcon = zoneEntity?.attributes?.icon
       || (entity.state === 'home' ? homeIcon : entity.state === 'not_home' ? 'mdi:map-marker-off' : 'mdi:map-marker');
 
@@ -6375,7 +6381,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.15 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.16 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

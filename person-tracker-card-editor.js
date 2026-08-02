@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.16: home_icon_entity option for ink layout — read home state icon dynamically from a HA entity state
 // v1.4.15: home_icon option for ink layout — customize home state location icon; "auto" uses device icon
 //          Polish (pl) language support added — card + editor full translation (PR #43 by @zalexandr)
 // v1.4.14: compact_stretch option — full-width compact layout (PR #41); translations IT/FR/DE/NL added
@@ -230,7 +231,9 @@ class EditorLocalizationHelper {
         'editor.wifi_ssid_sensor': 'Sensore SSID Wi-Fi',
         'editor.wifi_ssid_sensor_description': 'Sensore che riporta il nome della rete Wi-Fi a cui è connesso il dispositivo (es. sensor.elliot_s_phone_wi_fi_connection). Quando impostato, il nome della rete viene mostrato al posto di "WiFi".',
         'editor.home_icon': 'Icona posizione casa (solo layout Ink)',
-        'editor.home_icon_description': 'Icona MDI mostrata quando la persona è a casa. Lascia vuoto per il predefinito (mdi:home). Usa "auto" per rilevare automaticamente il tipo di dispositivo (cellulare/tablet/laptop). Es: mdi:cellphone, mdi:watch, mdi:devices'
+        'editor.home_icon_description': 'Icona MDI mostrata quando la persona è a casa. Lascia vuoto per il predefinito (mdi:home). Usa "auto" per rilevare automaticamente il tipo di dispositivo (cellulare/tablet/laptop). Es: mdi:cellphone, mdi:watch, mdi:devices',
+        'editor.home_icon_entity': 'Entità icona casa dinamica (solo layout Ink)',
+        'editor.home_icon_entity_description': 'Entità HA il cui stato viene usato come icona MDI a casa (es. sensor.tracking_source_icon → mdi:cellphone). Priorità su home_icon se impostata.'
       },
       'en': {
         'editor.entity': 'Entity',
@@ -402,7 +405,9 @@ class EditorLocalizationHelper {
         'editor.wifi_ssid_sensor': 'Wi-Fi SSID sensor',
         'editor.wifi_ssid_sensor_description': 'Sensor that reports the Wi-Fi network name the device is connected to (e.g. sensor.elliot_s_phone_wi_fi_connection). When set, the network name is shown instead of "WiFi".',
         'editor.home_icon': 'Home location icon (Ink layout only)',
-        'editor.home_icon_description': 'MDI icon shown next to the location when at home. Leave empty for the default (mdi:home). Use "auto" to automatically detect the device type (phone/tablet/laptop). E.g: mdi:cellphone, mdi:watch, mdi:devices'
+        'editor.home_icon_description': 'MDI icon shown next to the location when at home. Leave empty for the default (mdi:home). Use "auto" to automatically detect the device type (phone/tablet/laptop). E.g: mdi:cellphone, mdi:watch, mdi:devices',
+        'editor.home_icon_entity': 'Dynamic home icon entity (Ink layout only)',
+        'editor.home_icon_entity_description': 'HA entity whose state is used as the MDI icon when at home (e.g. sensor.tracking_source_icon → mdi:cellphone). Takes priority over home_icon when set.'
       },
       'fr': {
         'editor.entity': 'Entité',
@@ -574,7 +579,9 @@ class EditorLocalizationHelper {
         'editor.wifi_ssid_sensor': 'Capteur SSID Wi-Fi',
         'editor.wifi_ssid_sensor_description': 'Capteur indiquant le nom du réseau Wi-Fi auquel l\'appareil est connecté. Quand configuré, le nom du réseau s\'affiche à la place de "WiFi".',
         'editor.home_icon': 'Icône de localisation maison (layout Ink uniquement)',
-        'editor.home_icon_description': 'Icône MDI affichée à côté de la localisation quand la personne est à la maison. Laisser vide pour la valeur par défaut (mdi:home). Utilisez "auto" pour détecter automatiquement le type d\'appareil (téléphone/tablette/ordinateur). Ex : mdi:cellphone, mdi:watch, mdi:devices'
+        'editor.home_icon_description': 'Icône MDI affichée à côté de la localisation quand la personne est à la maison. Laisser vide pour la valeur par défaut (mdi:home). Utilisez "auto" pour détecter automatiquement le type d\'appareil (téléphone/tablette/ordinateur). Ex : mdi:cellphone, mdi:watch, mdi:devices',
+        'editor.home_icon_entity': 'Entité icône maison dynamique (layout Ink uniquement)',
+        'editor.home_icon_entity_description': 'Entité HA dont l\'état est utilisé comme icône MDI à la maison (ex. sensor.tracking_source_icon → mdi:cellphone). Prioritaire sur home_icon si définie.'
       },
       'de': {
         'editor.entity': 'Entität',
@@ -746,7 +753,9 @@ class EditorLocalizationHelper {
         'editor.wifi_ssid_sensor': 'WLAN-SSID-Sensor',
         'editor.wifi_ssid_sensor_description': 'Sensor, der den Namen des WLAN-Netzwerks meldet, mit dem das Gerät verbunden ist. Wenn gesetzt, wird der Netzwerkname statt "WiFi" angezeigt.',
         'editor.home_icon': 'Heimsymbol (nur Ink-Layout)',
-        'editor.home_icon_description': 'MDI-Symbol neben der Position, wenn die Person zu Hause ist. Leer lassen für den Standard (mdi:home). Verwenden Sie "auto" zur automatischen Erkennung des Gerätetyps (Handy/Tablet/Laptop). Z.B.: mdi:cellphone, mdi:watch, mdi:devices'
+        'editor.home_icon_description': 'MDI-Symbol neben der Position, wenn die Person zu Hause ist. Leer lassen für den Standard (mdi:home). Verwenden Sie "auto" zur automatischen Erkennung des Gerätetyps (Handy/Tablet/Laptop). Z.B.: mdi:cellphone, mdi:watch, mdi:devices',
+        'editor.home_icon_entity': 'Dynamisches Heim-Symbol Entität (nur Ink-Layout)',
+        'editor.home_icon_entity_description': 'HA-Entität, deren Zustand als MDI-Symbol zu Hause verwendet wird (z.B. sensor.tracking_source_icon → mdi:cellphone). Hat Vorrang vor home_icon wenn gesetzt.'
       },
       'pl': {
         'editor.entity': 'Encja',
@@ -918,7 +927,9 @@ class EditorLocalizationHelper {
         'editor.wifi_ssid_sensor': 'Sensor SSID Wi-Fi',
         'editor.wifi_ssid_sensor_description': 'Sensor raportujący nazwę sieci Wi-Fi, z którą połączone jest urządzenie. Gdy ustawiony, wyświetlana jest nazwa sieci zamiast "WiFi".',
         'editor.home_icon': 'Ikona lokalizacji domu (tylko układ Ink)',
-        'editor.home_icon_description': 'Ikona MDI wyświetlana obok lokalizacji gdy osoba jest w domu. Pozostaw puste dla domyślnej (mdi:home). Użyj "auto" dla automatycznego wykrycia urządzenia (telefon/tablet/laptop). Np.: mdi:cellphone, mdi:watch, mdi:devices'
+        'editor.home_icon_description': 'Ikona MDI wyświetlana obok lokalizacji gdy osoba jest w domu. Pozostaw puste dla domyślnej (mdi:home). Użyj "auto" dla automatycznego wykrycia urządzenia (telefon/tablet/laptop). Np.: mdi:cellphone, mdi:watch, mdi:devices',
+        'editor.home_icon_entity': 'Dynamiczna encja ikony domu (tylko układ Ink)',
+        'editor.home_icon_entity_description': 'Encja HA, której stan jest używany jako ikona MDI w domu (np. sensor.tracking_source_icon → mdi:cellphone). Ma pierwszeństwo przed home_icon gdy ustawiona.'
       },
       'nl': {
         'editor.entity': 'Entiteit',
@@ -1090,7 +1101,9 @@ class EditorLocalizationHelper {
         'editor.wifi_ssid_sensor': 'Wi-Fi SSID-sensor',
         'editor.wifi_ssid_sensor_description': 'Sensor die de naam meldt van het Wi-Fi-netwerk waarmee het apparaat verbonden is. Indien ingesteld, wordt de netwerknaam weergegeven in plaats van "WiFi".',
         'editor.home_icon': 'Thuispictogram locatie (alleen Ink-lay-out)',
-        'editor.home_icon_description': 'MDI-pictogram naast de locatie wanneer de persoon thuis is. Leeg laten voor de standaard (mdi:home). Gebruik "auto" om het apparaattype automatisch te detecteren (telefoon/tablet/laptop). Bijv.: mdi:cellphone, mdi:watch, mdi:devices'
+        'editor.home_icon_description': 'MDI-pictogram naast de locatie wanneer de persoon thuis is. Leeg laten voor de standaard (mdi:home). Gebruik "auto" om het apparaattype automatisch te detecteren (telefoon/tablet/laptop). Bijv.: mdi:cellphone, mdi:watch, mdi:devices',
+        'editor.home_icon_entity': 'Dynamische thuispictogram entiteit (alleen Ink-lay-out)',
+        'editor.home_icon_entity_description': 'HA-entiteit waarvan de status als MDI-pictogram thuis wordt gebruikt (bijv. sensor.tracking_source_icon → mdi:cellphone). Heeft voorrang op home_icon indien ingesteld.'
       }
     };
   }
@@ -1500,7 +1513,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.15</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.16</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -2480,6 +2493,16 @@ class PersonTrackerCardEditor extends LitElement {
           </ha-textfield>
           <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
             ${this._t('editor.home_icon_description')}
+          </p>
+          <ha-entity-picker
+            label="${this._t('editor.home_icon_entity')}"
+            .hass=${this.hass}
+            .value=${this._config.home_icon_entity || ''}
+            allow-custom-entity
+            @value-changed=${(e) => this._valueChanged(e, 'home_icon_entity')}>
+          </ha-entity-picker>
+          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
+            ${this._t('editor.home_icon_entity_description')}
           </p>
         ` : ''}
 

@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.16] - 2026-08-02
+
+### Added
+- 🔗 **`home_icon_entity`** — New option for the **Ink layout** that reads the MDI icon name dynamically from a HA entity's state. When set, its value takes priority over `home_icon`. Useful when you have a template sensor that already maps your tracking source (phone/watch/unknown) to an icon string (e.g. `mdi:cellphone`, `mdi:watch`). Configurable from the visual editor under **Style → Dynamic home icon entity**. *(Addresses issue #45 follow-up)*
+
+---
+
 ## [1.4.15] - 2026-08-02
 
 ### Added
