@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.17: No editor changes — bump only for card-side perf fix (PR #48)
 // v1.4.16: home_icon_entity option for ink layout — read home state icon dynamically from a HA entity state
 // v1.4.15: home_icon option for ink layout — customize home state location icon; "auto" uses device icon
 //          Polish (pl) language support added — card + editor full translation (PR #43 by @zalexandr)
@@ -1513,7 +1514,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.16</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.17</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
