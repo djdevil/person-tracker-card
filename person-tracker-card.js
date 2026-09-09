@@ -1,6 +1,7 @@
-// Person Tracker Card v1.4.16 - Multilanguage Version
+// Person Tracker Card v1.4.17 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.17: Removed Object.keys(hass.states) fallback scan from _resolveDevicePrefix() — restores client-side entity-update filtering on dashboards (PR #48 by @davidcoulson)
 // v1.4.16: home_icon_entity option for ink layout — read home state icon dynamically from a HA entity state
 // v1.4.15: home_icon config option for ink layout — customize the location icon shown when at home; supports any MDI icon or "auto" to use the detected device icon (phone/tablet/laptop)
 //          Polish (pl) language support added to card and editor (PR #43 by @zalexandr)
@@ -45,7 +46,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.16 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.17 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -386,7 +387,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.16';
+const CARD_VERSION = '1.4.17';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -6384,7 +6385,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.16 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.17 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
