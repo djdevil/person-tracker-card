@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- ⚡ **Removed full `hass.states` scan from `_resolveDevicePrefix()`** — The device-prefix resolver's fallback path (matching a `device_tracker` entity by substring against the person's name) enumerated every entity on the system via `Object.keys(hass.states)`, on every `hass` update, for every card instance. Besides being unnecessary work, that access pattern is exactly what Home Assistant's own frontend and third-party clients (e.g. Kiosk Satellite) use to detect "this view needs every entity," which permanently disables their client-side entity-update filtering for the page. The card now only resolves a device prefix from the person's own `device_trackers` attribute (the officially tracked list), which is both cheaper and more correct — no behavior change for the intended case, since a real match was already found there first.
+
+---
+
 ## [1.4.16] - 2026-08-02
 
 ### Added

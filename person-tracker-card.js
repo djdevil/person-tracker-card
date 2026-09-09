@@ -1007,7 +1007,20 @@ class PersonTrackerCard extends LitElement {
   // Reads person.attributes.device_trackers, finds the first device_tracker
   // that has a corresponding battery sensor in hass, and returns its suffix
   // (e.g. "iphonedavide" from "device_tracker.iphonedavide").
-  // Falls back to scanning all device_trackers whose name contains the person name.
+  //
+  // Intentionally does NOT fall back to scanning every entity in hass.states
+  // for a name-substring match. This card calls _resolveDevicePrefix() from
+  // updated() on every hass change (not just once), so an Object.keys(hass.states)
+  // fallback here means at least one full enumeration of every entity on the
+  // system per card instance per update. Home Assistant's own frontend, and
+  // third-party clients like Kiosk Satellite, use exactly that access pattern
+  // (Object.keys/values/entries on hass.states) to detect "this view needs
+  // every entity" and permanently disable any client-side entity-update
+  // filtering for the page/view — so the fallback silently defeated filtering
+  // on any dashboard that included this card, with no way to opt out. The
+  // person.attributes.device_trackers list is the officially tracked set of a
+  // person's devices, so relying on it alone is also more correct than
+  // guessing by substring match against unrelated device_trackers.
   _resolveDevicePrefix() {
     if (!this.hass || !this.config.entity) return null;
     const personEntity = this.hass.states[this.config.entity];
@@ -1017,16 +1030,6 @@ class PersonTrackerCard extends LitElement {
     for (const dt of deviceTrackers) {
       const prefix = dt.replace('device_tracker.', '');
       if (this.hass.states[`sensor.${prefix}_battery_level`]) return prefix;
-    }
-
-    // Fallback: scan all device_trackers whose name contains the person name
-    const personName = this.config.entity.replace('person.', '');
-    for (const entityId of Object.keys(this.hass.states)) {
-      if (!entityId.startsWith('device_tracker.')) continue;
-      const prefix = entityId.replace('device_tracker.', '');
-      if (prefix.includes(personName) && this.hass.states[`sensor.${prefix}_battery_level`]) {
-        return prefix;
-      }
     }
 
     return null;
