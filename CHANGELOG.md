@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.18] - 2026-11-14
+
+### Added
+- 🎨 **`location_color`** — One global color for the zone/state text, applied to every location in all 11 layouts. No more adding a `state` entry per zone just to change the color. A color set for a single state (`state[].styles.name.color`) still takes priority. Applied with `!important` so it stays readable with the animated weather background (it overrides the weather-contrast defaults). On the Holo layout it replaces the gradient text with a solid color. *(Addresses issue #49)*
+- 📍 **`geocoded_location_color`** — Color for the GPS address (geocoded location). Falls back to `location_color`, then to the layout default.
+- Both options are available in the visual editor under **Style**, translated in all 6 languages.
+
+```yaml
+location_color: "#ffffff"
+geocoded_location_color: "#ffd54f"
+```
+
+### Fixed
+- 🐛 **`not_home` state color ignored** — Some trackers report the state as `away` instead of `not_home`. The card showed it as "Away", but a `state` entry with `value: not_home` never matched, so the location fell back to the orange "other zone" color. State matching now falls back to a tolerant comparison (case-insensitive, trimmed, `away` ≡ `not_home`), and every layout's default away color treats `away` like `not_home`. Exact matches still win. *(Issue #49)*
+
+---
+
 ## [1.4.17] - 2026-09-09
 
 ### Fixed
