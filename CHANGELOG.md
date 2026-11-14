@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.19] - 2026-11-14
+
+### Fixed
+- 🐛 **Editor text fields missing on Home Assistant 2026.5+** — Home Assistant removed the `ha-textfield` component, so every text and number field in the editor (widths, sizes, font sizes, colors, max travel time…) rendered blank and only section titles and switches were left. The editor now ships its own text field and no longer depends on it.
+- 🐛 **Modern layout: rings wrapping when the address is shown** — a long geocoded address widened the text column and pushed the rings onto a second row. The address no longer affects the layout width; it scrolls in the space available.
+- 🐛 **Position buttons** (Classic) had no styling and the default positions (`top-right-2`, `top-left-2`) could not be selected. The new picker offers all 10 positions the card supports.
+- 🐛 **"Add state"** mutated the config array in place, which fails when Home Assistant passes a frozen config.
+- 🐛 Switching away from the Classic layout while on the **Positions** tab left the editor on a tab that no longer existed.
+- 🌍 Hardcoded English/Italian strings in the editor (tap action section, remove buttons) are now translated; added the missing French `wx.device2` key.
+- ⚡ The editor's device-prefix lookup ran up to four times per render with a full entity scan; the scan result is now cached.
+
+### Changed
+- 🎨 **Redesigned visual editor** — header with the person's picture, pill tabs, sections as cards, a **visual layout picker** (11 preview tiles), segmented choices for tap action and maps provider, unified color rows with a clear button, and a diagram-style position picker. Sensor groups collapse when their switch is off.
+- 🧱 The editor no longer uses `ha-select`, `mwc-list-item`, `mwc-button` or `ha-icon-button` (internal Home Assistant components that custom cards shouldn't rely on). It still uses `ha-entity-picker`, `ha-icon-picker`, `ha-service-control`, `ha-switch` and `ha-icon`.
+- Classic font sizes and image size moved into **Style → Classic Layout Options**; layout descriptions now appear under the layout picker.
+
+---
+
 ## [1.4.18] - 2026-11-14
 
 ### Added
