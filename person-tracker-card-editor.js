@@ -1,5 +1,7 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.19: Editor redesign + audit — own text field (ha-textfield was removed in HA 2026.5, fields were blank), no more ha-select/mwc-button/ha-icon-button;
+//          visual layout picker, card sections, segmented choices, 10-slot position picker, unified color rows; fixes listed in CHANGELOG
 // v1.4.18: location_color + geocoded_location_color pickers in Style tab (all layouts); 6 languages translated
 // v1.4.17: No editor changes — bump only for card-side perf fix (PR #48)
 // v1.4.16: home_icon_entity option for ink layout — read home state icon dynamically from a HA entity state
@@ -30,6 +32,80 @@ const LitElement = Object.getPrototypeOf(
 );
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
+
+// Self-contained text field (v1.4.19). HA removed ha-textfield in 2026.5 (replaced by the internal
+// ha-input), which left every text field in this editor blank. Same API the editor used:
+// label, value, type, min, max, step, placeholder, pattern, helper / helper-text; fires input + change.
+class PtcTextfield extends LitElement {
+  static get properties() {
+    return {
+      label: { type: String },
+      value: {},
+      type: { type: String },
+      min: {},
+      max: {},
+      step: {},
+      placeholder: { type: String },
+      pattern: { type: String },
+      helper: { type: String },
+      helperText: { type: String, attribute: 'helper-text' },
+    };
+  }
+
+  static get styles() {
+    return css`
+      :host { display: block; }
+      label { display: block; font-size: 12px; line-height: 1.3; color: var(--secondary-text-color); margin: 0 0 5px 2px; }
+      input {
+        box-sizing: border-box; width: 100%; height: 40px; padding: 0 12px;
+        font: inherit; font-size: 14px; color: var(--primary-text-color);
+        background: var(--ha-color-form-background, var(--input-fill-color, rgba(127,127,127,0.1)));
+        border: 1px solid var(--divider-color, rgba(127,127,127,0.3));
+        border-radius: 10px; outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      input::placeholder { color: var(--secondary-text-color); opacity: 0.6; }
+      input:hover { border-color: var(--secondary-text-color); }
+      input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); }
+      input:invalid { border-color: var(--error-color, #db4437); box-shadow: none; }
+      .helper { font-size: 11px; line-height: 1.4; color: var(--secondary-text-color); margin: 4px 0 0 2px; }
+    `;
+  }
+
+  render() {
+    const helper = this.helper || this.helperText;
+    return html`
+      ${this.label ? html`<label for="i">${this.label}</label>` : ''}
+      <input id="i"
+        .type=${this.type || 'text'}
+        .value=${this.value === undefined || this.value === null ? '' : String(this.value)}
+        min=${this.min ?? ''} max=${this.max ?? ''} step=${this.step ?? 'any'}
+        placeholder=${this.placeholder || ''}
+        pattern=${this.pattern || '.*'}
+        @input=${(e) => { this.value = e.target.value; }}
+        @change=${(e) => { this.value = e.target.value; this.dispatchEvent(new Event('change', { bubbles: true, composed: true })); }}>
+      ${helper ? html`<div class="helper">${helper}</div>` : ''}
+    `;
+  }
+}
+if (!customElements.get('ptc-textfield')) customElements.define('ptc-textfield', PtcTextfield);
+
+const PTC_EDITOR_VERSION = '1.4.19';
+
+// Layout picker tiles: id, display name and the palette of the mini preview
+const PTC_LAYOUTS = [
+  { id: 'classic',   name: 'Classic',         bg: 'linear-gradient(135deg,#3a4250,#2a303b)', accent: '#7DDA9F' },
+  { id: 'compact',   name: 'Compact',         bg: 'linear-gradient(135deg,#2f3640,#232830)', accent: '#93ADCB' },
+  { id: 'modern',    name: 'Modern',          bg: 'linear-gradient(135deg,#263238,#1c2529)', accent: '#50A14F' },
+  { id: 'neon',      name: 'Neon',            bg: 'linear-gradient(160deg,#080810,#12202a)', accent: '#00ff88' },
+  { id: 'glass',     name: 'Glass',           bg: 'linear-gradient(135deg,#1b2440,#3a2a5a)', accent: '#7fb3ff' },
+  { id: 'bio',       name: 'Bioluminescence', bg: 'linear-gradient(160deg,#000a0d,#003340)', accent: '#00ffb4' },
+  { id: 'holo',      name: 'Holographic 3D',  bg: 'linear-gradient(135deg,#0d1030,#3a1a6a 60%,#0a4a6a)', accent: '#00d4ff' },
+  { id: 'wxstation', name: 'Weather Station', bg: 'linear-gradient(160deg,#1e4a7a,#4a90c8)', accent: '#ffd54f' },
+  { id: 'matrix',    name: 'Matrix Rain',     bg: 'linear-gradient(180deg,#000,#001a06)', accent: '#00ff41' },
+  { id: 'orbital',   name: 'Orbital',         bg: 'radial-gradient(circle at 30% 40%,#1a1040,#05050f)', accent: '#00d4aa' },
+  { id: 'ink',       name: 'Liquid Ink',      bg: 'linear-gradient(135deg,#faf7f2,#e9e2d6)', accent: '#2d6a4f', light: true },
+];
 
 // Localization Helper for Editor
 class EditorLocalizationHelper {
@@ -234,6 +310,8 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service_data': 'Dati extra (JSON, opzionale)',
         'editor.extra_chip_nav_path': 'Percorso navigazione',
         'editor.extra_chip_url_path': 'URL',
+        'editor.tap_entity': 'Entità (vuoto = entità persona)',
+        'common.remove': 'Rimuovi',
         'editor.wifi_ssid_sensor': 'Sensore SSID Wi-Fi',
         'editor.wifi_ssid_sensor_description': 'Sensore che riporta il nome della rete Wi-Fi a cui è connesso il dispositivo (es. sensor.elliot_s_phone_wi_fi_connection). Quando impostato, il nome della rete viene mostrato al posto di "WiFi".',
         'editor.home_icon': 'Icona posizione casa (solo layout Ink)',
@@ -412,6 +490,8 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service_data': 'Extra data (JSON, optional)',
         'editor.extra_chip_nav_path': 'Navigation path',
         'editor.extra_chip_url_path': 'URL',
+        'editor.tap_entity': 'Entity (empty = person entity)',
+        'common.remove': 'Remove',
         'editor.wifi_ssid_sensor': 'Wi-Fi SSID sensor',
         'editor.wifi_ssid_sensor_description': 'Sensor that reports the Wi-Fi network name the device is connected to (e.g. sensor.elliot_s_phone_wi_fi_connection). When set, the network name is shown instead of "WiFi".',
         'editor.home_icon': 'Home location icon (Ink layout only)',
@@ -477,7 +557,7 @@ class EditorLocalizationHelper {
         'editor.device_2_battery_state_sensor': 'Capteur état charge 2e appareil',
         'wx.battery': 'Batterie', 'wx.watch': 'Montre', 'wx.wind': 'Vent',
         'wx.humidity': 'Humidité', 'wx.network': 'Réseau', 'wx.activity': 'Activité',
-        'wx.pressure': 'Press.', 'wx.feels': 'Ressenti',
+        'wx.pressure': 'Press.', 'wx.feels': 'Ressenti', 'wx.device2': 'Appar.2',
         'editor.border_radius': 'Rayon bordure',
         'editor.image_size': 'Taille image (%)',
         'editor.modern_picture_size': 'Taille image (px)',
@@ -590,6 +670,8 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service_data': 'Données extra (JSON, optionnel)',
         'editor.extra_chip_nav_path': 'Chemin de navigation',
         'editor.extra_chip_url_path': 'URL',
+        'editor.tap_entity': 'Entité (vide = entité personne)',
+        'common.remove': 'Supprimer',
         'editor.wifi_ssid_sensor': 'Capteur SSID Wi-Fi',
         'editor.wifi_ssid_sensor_description': 'Capteur indiquant le nom du réseau Wi-Fi auquel l\'appareil est connecté. Quand configuré, le nom du réseau s\'affiche à la place de "WiFi".',
         'editor.home_icon': 'Icône de localisation maison (layout Ink uniquement)',
@@ -768,6 +850,8 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service_data': 'Zusatzdaten (JSON, optional)',
         'editor.extra_chip_nav_path': 'Navigationspfad',
         'editor.extra_chip_url_path': 'URL',
+        'editor.tap_entity': 'Entität (leer = Personen-Entität)',
+        'common.remove': 'Entfernen',
         'editor.wifi_ssid_sensor': 'WLAN-SSID-Sensor',
         'editor.wifi_ssid_sensor_description': 'Sensor, der den Namen des WLAN-Netzwerks meldet, mit dem das Gerät verbunden ist. Wenn gesetzt, wird der Netzwerkname statt "WiFi" angezeigt.',
         'editor.home_icon': 'Heimsymbol (nur Ink-Layout)',
@@ -946,6 +1030,8 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service_data': 'Dodatkowe dane (JSON, opcjonalne)',
         'editor.extra_chip_nav_path': 'Ścieżka nawigacji',
         'editor.extra_chip_url_path': 'URL',
+        'editor.tap_entity': 'Encja (puste = encja osoby)',
+        'common.remove': 'Usuń',
         'editor.wifi_ssid_sensor': 'Sensor SSID Wi-Fi',
         'editor.wifi_ssid_sensor_description': 'Sensor raportujący nazwę sieci Wi-Fi, z którą połączone jest urządzenie. Gdy ustawiony, wyświetlana jest nazwa sieci zamiast "WiFi".',
         'editor.home_icon': 'Ikona lokalizacji domu (tylko układ Ink)',
@@ -1124,6 +1210,8 @@ class EditorLocalizationHelper {
         'editor.extra_chip_service_data': 'Extra gegevens (JSON, optioneel)',
         'editor.extra_chip_nav_path': 'Navigatiepad',
         'editor.extra_chip_url_path': 'URL',
+        'editor.tap_entity': 'Entiteit (leeg = persoonsentiteit)',
+        'common.remove': 'Verwijderen',
         'editor.wifi_ssid_sensor': 'Wi-Fi SSID-sensor',
         'editor.wifi_ssid_sensor_description': 'Sensor die de naam meldt van het Wi-Fi-netwerk waarmee het apparaat verbonden is. Indien ingesteld, wordt de netwerknaam weergegeven in plaats van "WiFi".',
         'editor.home_icon': 'Thuispictogram locatie (alleen Ink-lay-out)',
@@ -1265,501 +1353,537 @@ class PersonTrackerCardEditor extends LitElement {
 
   static get styles() {
     return css`
-      .card-config {
-        padding: 16px;
+      :host {
+        display: block;
+        --ptc-accent: var(--primary-color, #03a9f4);
+        --ptc-on-accent: var(--text-primary-color, #fff);
+        --ptc-text: var(--primary-text-color, #e1e1e1);
+        --ptc-muted: var(--secondary-text-color, #9b9b9b);
+        --ptc-line: var(--divider-color, rgba(127,127,127,0.25));
+        --ptc-surface: rgba(127,127,127,0.08);
+        --ptc-surface-2: rgba(127,127,127,0.16);
+        --ptc-inner: var(--card-background-color, transparent);
+        --ptc-accent-soft: rgba(3,169,244,0.16);
+      }
+      @supports (color: color-mix(in srgb, red, blue)) {
+        :host { --ptc-accent-soft: color-mix(in srgb, var(--ptc-accent) 16%, transparent); }
       }
 
-      .editor-version-badge {
-        font-size: 10px;
-        color: var(--secondary-text-color, #888);
-        text-align: right;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
+      .ptc { padding: 4px 0 16px; color: var(--ptc-text); }
+      .pane { animation: ptc-in 0.22s ease; }
+      @keyframes ptc-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+      @media (prefers-reduced-motion: reduce) { .pane { animation: none; } * { transition: none !important; } }
+
+      /* ── Header ── */
+      .hero {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 16px; margin-bottom: 14px;
+        border: 1px solid var(--ptc-line); border-radius: 16px;
+        background: linear-gradient(135deg, var(--ptc-accent-soft), transparent 70%), var(--ptc-surface);
       }
-      .editor-version-badge span {
-        font-weight: 700;
-        color: var(--primary-color, #03a9f4);
+      .hero-avatar {
+        width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--ptc-accent-soft); color: var(--ptc-accent);
+        box-shadow: 0 0 0 2px var(--ptc-accent);
+      }
+      .hero-text { flex: 1; min-width: 0; }
+      .hero-title { font-size: 16px; font-weight: 700; letter-spacing: 0.2px; }
+      .hero-sub {
+        font-size: 12px; color: var(--ptc-muted); margin-top: 2px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .hero-ver {
+        flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 4px 10px;
+        border-radius: 999px; background: var(--ptc-accent-soft); color: var(--ptc-accent);
       }
 
+      /* ── Tabs ── */
       .tabs {
-        display: flex;
-        margin-bottom: 20px;
-        border-bottom: 1px solid var(--divider-color);
+        display: flex; gap: 4px; padding: 4px; margin-bottom: 16px;
+        border: 1px solid var(--ptc-line); border-radius: 14px; background: var(--ptc-surface);
       }
-
       .tab {
-        padding: 8px 16px;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: var(--primary-text-color);
-        font-size: 14px;
-        transition: all 0.3s;
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-
-      .tab:hover {
-        background: var(--secondary-background-color);
-      }
-
-      .tab.active {
-        color: var(--primary-color);
-      }
-
-      .tab.active::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--primary-color);
-      }
-
-      .section {
-        margin-bottom: 24px;
-      }
-
-      .section-title {
-        font-size: 12px;
-        color: var(--secondary-text-color);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-        font-weight: 500;
-      }
-
-      .config-row {
-        display: flex;
-        align-items: center;
-        padding: 8px 0;
-        min-height: 40px;
-      }
-
-      .config-row ha-switch {
-        margin-left: auto;
-      }
-
-      .config-row ha-textfield,
-      .config-row ha-select {
-        width: 100%;
-      }
-
-      .config-label {
-        flex: 1;
-      }
-
-      .config-value {
-        flex: 2;
-        margin-left: 16px;
-      }
-
-      .two-column {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
-
-      ha-entity-picker {
-        display: block;
-        margin: 8px 0;
-      }
-
-      ha-textfield {
-        display: block;
-        margin: 8px 0;
-      }
-
-      ha-select {
-        display: block;
-        margin: 8px 0;
-        width: 100%;
-      }
-
-      .sensor-group {
-        background: var(--card-background-color);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 8px 0;
-      }
-
-      .sensor-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-      }
-
-      .sensor-icon {
-        margin-right: 8px;
-        color: var(--primary-color);
-      }
-
-      .sensor-title {
-        font-weight: 500;
-        flex: 1;
-      }
-
-      .state-item {
-        background: var(--card-background-color);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 8px 0;
-      }
-
-      .state-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-      }
-
-      mwc-button {
-        margin-top: 8px;
-      }
-
-      .add-button {
-        width: 100%;
-      }
-
-      .remove-button {
-        --mdc-icon-button-size: 32px;
+        flex: 1 1 0; min-width: 0;
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+        padding: 8px 4px; border: 0; border-radius: 10px; background: none;
+        color: var(--ptc-muted); font: inherit; font-size: 11.5px; font-weight: 600;
+        cursor: pointer; transition: background 0.2s, color 0.2s;
         --mdc-icon-size: 20px;
-        color: var(--error-color);
+      }
+      .tab span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .tab:hover { color: var(--ptc-text); background: var(--ptc-surface); }
+      .tab.active {
+        background: var(--ptc-accent); color: var(--ptc-on-accent);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
       }
 
-      .preview-box {
-        background: var(--secondary-background-color);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 16px 0;
+      /* ── Section card ── */
+      .card {
+        border: 1px solid var(--ptc-line); border-radius: 14px;
+        background: var(--ptc-surface); padding: 14px; margin-bottom: 14px;
       }
-
-      .preview-title {
-        font-size: 12px;
-        color: var(--secondary-text-color);
-        text-transform: uppercase;
-        margin-bottom: 8px;
+      .card > :last-child { margin-bottom: 0; }
+      .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+      .card-title { font-size: 14px; font-weight: 700; }
+      .badge {
+        width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--ptc-accent-soft); color: var(--ptc-accent);
+        --mdc-icon-size: 18px;
       }
-
-      .color-picker {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .info { font-size: 12px; line-height: 1.45; color: var(--ptc-muted); margin: 0 0 10px; }
+      .callout {
+        font-size: 12px; line-height: 1.45; color: var(--ptc-text);
+        padding: 10px 12px; margin: 10px 0; border-radius: 10px; background: var(--ptc-accent-soft);
       }
+      .field-label { font-size: 12px; color: var(--ptc-muted); margin: 12px 0 0 2px; }
 
-      .color-preview {
-        width: 40px;
-        height: 40px;
-        border-radius: 4px;
-        border: 1px solid var(--divider-color);
-        cursor: pointer;
-        position: relative;
+      /* ── Group (sub-card with optional switch) ── */
+      .group {
+        border: 1px solid var(--ptc-line); border-radius: 12px;
+        background: var(--ptc-inner); margin: 10px 0; overflow: hidden;
       }
+      .group-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+      .group-head .badge { width: 28px; height: 28px; border-radius: 8px; --mdc-icon-size: 16px; }
+      .group-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+      .group-body { padding: 4px 12px 12px; border-top: 1px solid var(--ptc-line); }
+      .group-body > .info:first-child { margin-top: 10px; }
+      .group.off .badge { filter: grayscale(1); opacity: 0.6; }
+      .group.off .group-title { color: var(--ptc-muted); }
 
-      input[type="color"] {
-        opacity: 0;
-        position: absolute;
-        width: 40px;
-        height: 40px;
-        cursor: pointer;
+      /* ── Rows ── */
+      .row { display: flex; align-items: center; gap: 12px; padding: 10px 0; min-height: 36px; }
+      .row + .row, .row + .color-row, .color-row + .row, .color-row + .color-row { border-top: 1px solid var(--ptc-line); }
+      .row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+      .row-label { font-size: 13.5px; font-weight: 500; line-height: 1.3; }
+      .row-desc { font-size: 11.5px; color: var(--ptc-muted); line-height: 1.4; }
+
+      /* ── Fields ── */
+      ptc-textfield, ha-entity-picker, ha-icon-picker, ha-service-control { display: block; margin: 10px 0; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+      .flex { display: flex; gap: 10px; align-items: flex-end; }
+      .flex > * { flex: 1; min-width: 0; }
+
+      /* ── Layout tiles ── */
+      .layouts { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+      .layout-tile {
+        padding: 2px; border: 2px solid transparent; border-radius: 15px; background: none;
+        font: inherit; color: inherit; cursor: pointer; transition: transform 0.15s, border-color 0.15s;
       }
-
-      .info-text {
-        font-size: 12px;
-        color: var(--secondary-text-color);
-        margin-top: 4px;
-        line-height: 1.4;
+      .layout-tile:hover { transform: translateY(-2px); }
+      .layout-tile.active { border-color: var(--ptc-accent); }
+      .lt-prev {
+        position: relative; height: 54px; border-radius: 11px; overflow: hidden;
+        display: flex; align-items: center; gap: 7px; padding: 0 10px;
+        box-shadow: inset 0 0 0 1px rgba(127,127,127,0.25);
       }
-
-      .auto-detect-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 8px 0 4px;
+      .lt-av {
+        width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+        border: 2px solid var(--a); background: rgba(255,255,255,0.18); box-shadow: 0 0 8px var(--a);
       }
-
-      .auto-detect-btn {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        background: var(--primary-color);
-        color: var(--text-primary-color, white);
-        border: none;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: opacity 0.2s;
-        white-space: nowrap;
+      .lt-lines { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+      .lt-lines i { display: block; height: 4px; border-radius: 2px; background: var(--fg); }
+      .lt-lines i:first-child { width: 80%; opacity: 0.85; }
+      .lt-lines i:last-child { width: 50%; background: var(--a); }
+      .lt-check {
+        position: absolute; top: 4px; right: 4px; width: 16px; height: 16px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--ptc-accent); color: var(--ptc-on-accent); font-size: 10px; font-weight: 700;
       }
-      .auto-detect-btn:hover:not(:disabled) { opacity: 0.82; }
-      .auto-detect-btn:disabled { opacity: 0.40; cursor: not-allowed; }
-      .auto-detect-btn ha-icon { --mdc-icon-size: 15px; }
-
-      .auto-detect-msg {
-        font-size: 12px;
-        color: var(--secondary-text-color);
+      .lt-name {
+        font-size: 11.5px; font-weight: 600; padding: 5px 2px 3px; text-align: center;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
+      .layout-tile.active .lt-name { color: var(--ptc-accent); }
 
-      .position-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-top: 12px;
+      /* ── Segmented choice ── */
+      .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px; }
+      .seg button {
+        border: 1px solid var(--ptc-line); background: none; color: var(--ptc-text);
+        font: inherit; font-size: 12.5px; font-weight: 500; padding: 7px 12px;
+        border-radius: 999px; cursor: pointer; transition: all 0.15s;
       }
+      .seg button:hover { border-color: var(--ptc-accent); }
+      .seg button.active { background: var(--ptc-accent); border-color: var(--ptc-accent); color: var(--ptc-on-accent); }
 
-      pre {
-        font-size: 11px;
-        overflow-x: auto;
-        background: var(--card-background-color);
-        padding: 8px;
-        border-radius: 4px;
+      /* ── Color ── */
+      .color-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; flex-wrap: wrap; }
+      .color-ctl { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+      .swatch {
+        position: relative; width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
+        border: 2px solid var(--ptc-line); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.25);
       }
+      .swatch.empty {
+        border-style: dashed; box-shadow: none;
+        background: repeating-conic-gradient(rgba(127,127,127,0.35) 0% 25%, transparent 0% 50%) 50% / 12px 12px;
+      }
+      .swatch input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+      .color-ctl ptc-textfield { width: 104px; margin: 0; }
 
-      @media (max-width: 600px) {
-        .tabs {
-          overflow-x: auto;
-          scrollbar-width: thin;
-        }
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        border: 1px solid var(--ptc-line); background: none; color: var(--ptc-text);
+        font: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px;
+        border-radius: 10px; cursor: pointer; transition: all 0.15s;
+        --mdc-icon-size: 18px;
+      }
+      .btn:hover:not(:disabled) { border-color: var(--ptc-accent); color: var(--ptc-accent); }
+      .btn.primary { background: var(--ptc-accent); border-color: var(--ptc-accent); color: var(--ptc-on-accent); }
+      .btn.primary:hover:not(:disabled) { color: var(--ptc-on-accent); filter: brightness(1.1); }
+      .btn.wide { width: 100%; border-style: dashed; margin-top: 4px; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 6px; }
+      .msg { font-size: 12px; color: var(--ptc-muted); }
+      .icon-btn {
+        width: 32px; height: 32px; border-radius: 50%; border: 0; flex-shrink: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--ptc-surface-2); color: var(--ptc-muted);
+        font-size: 13px; line-height: 1; cursor: pointer; transition: all 0.15s;
+      }
+      .icon-btn:hover { color: var(--ptc-text); }
+      .icon-btn.danger:hover { background: rgba(244,67,54,0.18); color: var(--error-color, #f44336); }
 
-        .two-column {
-          grid-template-columns: 1fr;
-        }
+      /* ── List items (states, chips) ── */
+      .item {
+        border: 1px solid var(--ptc-line); border-radius: 12px;
+        background: var(--ptc-inner); padding: 12px; margin: 10px 0;
+      }
+      .item-head { display: flex; align-items: center; gap: 10px; }
+      .item-head ha-icon { color: var(--ptc-accent); --mdc-icon-size: 20px; }
+      .item-title {
+        flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 2px var(--ptc-line); }
+
+      /* ── Position picker ── */
+      .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .pos { border: 1px solid var(--ptc-line); border-radius: 12px; padding: 10px; background: var(--ptc-inner); }
+      .pos-title {
+        display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+        font-size: 12.5px; font-weight: 600; line-height: 1.25; --mdc-icon-size: 16px;
+      }
+      .pos-title ha-icon { color: var(--ptc-accent); flex-shrink: 0; }
+      .pos-map {
+        position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 5px 0;
+        padding: 8px; border-radius: 10px; background: var(--ptc-surface-2);
+      }
+      .pos-map::after {
+        content: ''; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px;
+        border-radius: 50%; border: 2px dashed var(--ptc-line); pointer-events: none;
+      }
+      .pos-cell {
+        width: 32px; height: 16px; padding: 0; border-radius: 8px;
+        border: 1px solid var(--ptc-line); background: none; cursor: pointer; transition: all 0.15s;
+      }
+      .pos-cell.r { justify-self: end; }
+      .pos-cell:hover { border-color: var(--ptc-accent); }
+      .pos-cell.active { background: var(--ptc-accent); border-color: var(--ptc-accent); box-shadow: 0 0 8px var(--ptc-accent); }
+      .pos-gap { grid-column: 1 / -1; height: 8px; }
+
+      /* ── Footer ── */
+      .footer {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ptc-line);
+        font-size: 12px; color: var(--ptc-muted);
+      }
+      .footer a { color: var(--ptc-accent); font-weight: 600; text-decoration: none; }
+      .footer a:hover { text-decoration: underline; }
+      .footer .heart { color: #e25555; }
+      .footer .coffee {
+        padding: 7px 14px; border-radius: 999px; background: #ffdd00; color: #1a1a1a;
+        font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.25); transition: transform 0.15s;
+      }
+      .footer .coffee:hover { text-decoration: none; transform: translateY(-1px); }
+
+      @media (max-width: 420px) {
+        .grid2 { grid-template-columns: 1fr; }
+        .hero-ver { display: none; }
       }
     `;
   }
 
   render() {
-    if (!this.hass) {
+    if (!this.hass || !this._config) {
       return html``;
     }
 
+    const layout = this._config.layout || 'classic';
+    const tabs = [
+      { id: 'base', icon: 'mdi:card-account-details-outline', label: this._t('tabs.base') },
+      { id: 'sensors', icon: 'mdi:leak', label: this._t('tabs.sensors') },
+      ...(layout === 'classic' ? [{ id: 'position', icon: 'mdi:view-grid-outline', label: this._t('tabs.positions') }] : []),
+      { id: 'states', icon: 'mdi:palette-outline', label: this._t('tabs.states') },
+      { id: 'style', icon: 'mdi:brush-variant', label: this._t('tabs.style') },
+    ];
+    // The Positions tab only exists for the classic layout — fall back when the layout changes
+    const tab = tabs.some(t => t.id === this._selectedTab) ? this._selectedTab : 'base';
+
+    const person = this.hass.states[this._config.entity];
+    const picture = this._config.entity_picture || person?.attributes?.entity_picture;
+    const layoutName = (PTC_LAYOUTS.find(l => l.id === layout) || {}).name || layout;
+    const subtitle = [this._config.name || person?.attributes?.friendly_name || this._config.entity, layoutName]
+      .filter(Boolean).join(' · ');
+
     return html`
-      <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.18</span></div>
-        <div class="tabs">
-          <button
-            class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'base'}">
-            <ha-icon icon="mdi:card-account-details"></ha-icon>
-            ${this._t('tabs.base')}
-          </button>
-          <button
-            class="tab ${this._selectedTab === 'sensors' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'sensors'}">
-            <ha-icon icon="mdi:leak"></ha-icon>
-            ${this._t('tabs.sensors')}
-          </button>
-          ${this._config.layout === 'classic' ? html`
-            <button
-              class="tab ${this._selectedTab === 'position' ? 'active' : ''}"
-              @click="${() => this._selectedTab = 'position'}">
-              <ha-icon icon="mdi:grid"></ha-icon>
-              ${this._t('tabs.positions')}
-            </button>
-          ` : ''}
-          <button
-            class="tab ${this._selectedTab === 'states' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'states'}">
-            <ha-icon icon="mdi:palette"></ha-icon>
-            ${this._t('tabs.states')}
-          </button>
-          <button
-            class="tab ${this._selectedTab === 'style' ? 'active' : ''}"
-            @click="${() => this._selectedTab = 'style'}">
-            <ha-icon icon="mdi:brush"></ha-icon>
-            ${this._t('tabs.style')}
-          </button>
+      <div class="ptc">
+        <div class="hero">
+          ${picture
+            ? html`<img class="hero-avatar" src="${picture}" alt="">`
+            : html`<div class="hero-avatar"><ha-icon icon="mdi:account"></ha-icon></div>`}
+          <div class="hero-text">
+            <div class="hero-title">Person Tracker Card</div>
+            <div class="hero-sub">${subtitle}</div>
+          </div>
+          <span class="hero-ver">v${PTC_EDITOR_VERSION}</span>
         </div>
 
-        ${this._selectedTab === 'base' ? this._renderBaseTab() : ''}
-        ${this._selectedTab === 'sensors' ? this._renderSensorsTab() : ''}
-        ${this._selectedTab === 'position' ? this._renderPositionTab() : ''}
-        ${this._selectedTab === 'states' ? this._renderStatesTab() : ''}
-        ${this._selectedTab === 'style' ? this._renderStyleTab() : ''}
+        <div class="tabs">
+          ${tabs.map(t => html`
+            <button class="tab ${tab === t.id ? 'active' : ''}" @click=${() => { this._selectedTab = t.id; }}>
+              <ha-icon icon="${t.icon}"></ha-icon>
+              <span>${t.label}</span>
+            </button>
+          `)}
+        </div>
+
+        <div class="pane">
+          ${tab === 'base' ? this._renderBaseTab() : ''}
+          ${tab === 'sensors' ? this._renderSensorsTab() : ''}
+          ${tab === 'position' ? this._renderPositionTab() : ''}
+          ${tab === 'states' ? this._renderStatesTab() : ''}
+          ${tab === 'style' ? this._renderStyleTab() : ''}
+        </div>
+
+        <div class="footer">
+          <span>Made with <span class="heart">❤</span> by
+            <a href="https://github.com/djdevil" target="_blank" rel="noopener noreferrer">djdevil</a></span>
+          <a class="coffee" href="https://www.buymeacoffee.com/divil17f" target="_blank" rel="noopener noreferrer">☕ Buy me a coffee</a>
+        </div>
       </div>
     `;
   }
 
-  _renderBaseTab() {
-    if (!this._config) {
-      return html`<div>Configuration not available.</div>`;
-    }
+  // ── UI building blocks ──────────────────────────────────────────────────
 
-    const entityValue = this._config.entity || '';
+  // Section titles in the translations may start with an emoji; the badge icon replaces it
+  _cleanTitle(title) {
+    return String(title || '').replace(/^[^\p{L}\p{N}]+/u, '');
+  }
+
+  _section(icon, title, content, desc) {
+    return html`
+      <div class="card">
+        <div class="card-head">
+          <div class="badge"><ha-icon icon="${icon}"></ha-icon></div>
+          <div class="card-title">${this._cleanTitle(title)}</div>
+        </div>
+        ${desc ? html`<p class="info">${desc}</p>` : ''}
+        ${content}
+      </div>
+    `;
+  }
+
+  // Sub-card. With `key` it gets a switch in the header and the body shows only when enabled.
+  _group({ icon, title, key, checked, body, desc }) {
+    const on = key ? checked : true;
+    const hasBody = on && (body || desc);
+    return html`
+      <div class="group ${on ? '' : 'off'}">
+        <div class="group-head">
+          <div class="badge"><ha-icon icon="${icon}"></ha-icon></div>
+          <span class="group-title">${title}</span>
+          ${key ? html`
+            <ha-switch .checked=${!!checked} @change=${(e) => this._valueChanged(e, key)}></ha-switch>
+          ` : ''}
+        </div>
+        ${hasBody ? html`
+          <div class="group-body">
+            ${desc ? html`<p class="info">${desc}</p>` : ''}
+            ${body || ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  _toggle(key, label, checked, desc) {
+    return html`
+      <div class="row">
+        <div class="row-text">
+          <span class="row-label">${label}</span>
+          ${desc ? html`<span class="row-desc">${desc}</span>` : ''}
+        </div>
+        <ha-switch .checked=${!!checked} @change=${(e) => this._valueChanged(e, key)}></ha-switch>
+      </div>
+    `;
+  }
+
+  _text(key, label, o = {}) {
+    return html`
+      <ptc-textfield
+        .label=${label}
+        .type=${o.type || 'text'}
+        .min=${o.min}
+        .max=${o.max}
+        .placeholder=${o.placeholder || ''}
+        .helper=${o.helper || ''}
+        .value=${o.value !== undefined ? o.value : (this._config[key] || o.fallback || '')}
+        @input=${(e) => this._valueChanged(e, key)}>
+      </ptc-textfield>
+    `;
+  }
+
+  _entity(key, o = {}) {
+    return html`
+      <ha-entity-picker
+        .hass=${this.hass}
+        .value=${o.value !== undefined ? o.value : (this._config[key] || '')}
+        .label=${o.label || ''}
+        .includeDomains=${o.domains}
+        allow-custom-entity
+        @value-changed=${(e) => this._entityPickerChanged(e, key)}>
+      </ha-entity-picker>
+    `;
+  }
+
+  // Swatch + hex field. onInput('') clears the color (when clearable).
+  _color(label, value, onInput, o = {}) {
+    return html`
+      <div class="color-row">
+        <div class="row-text">
+          <span class="row-label">${label}</span>
+          ${o.desc ? html`<span class="row-desc">${o.desc}</span>` : ''}
+        </div>
+        <div class="color-ctl">
+          <div class="swatch ${value ? '' : 'empty'}" style="${value ? `background:${value}` : ''}">
+            <input type="color" .value=${value || o.fallback || '#ffffff'} @input=${(e) => onInput(e.target.value)}>
+          </div>
+          <ptc-textfield
+            .value=${value || ''}
+            .placeholder=${o.fallback || '#ffffff'}
+            pattern="^#[0-9A-Fa-f]{6}$"
+            @input=${(e) => onInput(e.target.value)}>
+          </ptc-textfield>
+          ${o.clearable !== false && value ? html`
+            <button class="icon-btn" title="${this._t('common.remove')}" @click=${() => onInput('')}>✕</button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  _seg(options, value, onSelect) {
+    return html`
+      <div class="seg">
+        ${options.map(o => html`
+          <button class="${o.value === value ? 'active' : ''}" @click=${() => onSelect(o.value)}>${o.label}</button>
+        `)}
+      </div>
+    `;
+  }
+
+  _tapOptions() {
+    return ['more-info', 'navigate', 'url', 'call-service', 'none'].map(value => ({
+      value,
+      label: this._t(`editor.extra_chip_tap_${value.replace('-', '_')}`),
+    }));
+  }
+
+  // ── Tabs ────────────────────────────────────────────────────────────────
+
+  _renderBaseTab() {
+    const layout = this._config.layout || 'classic';
+    const tap = this._config.tap_action || {};
+    const tapAction = tap.action || 'more-info';
+    const layoutDescKey = `section.${layout}_description`;
+    const layoutDesc = this._t(layoutDescKey);
 
     return html`
-      <div class="section">
-        <div class="section-title">${this._t('tabs.base')}</div>
-
+      ${this._section('mdi:account', this._t('tabs.base'), html`
         <ha-entity-picker
           .hass=${this.hass}
-          .value=${entityValue}
+          .value=${this._config.entity || ''}
           .label=${this._t('editor.entity') + ' (' + this._t('editor.required') + ')'}
           .includeDomains=${['person']}
           .required=${true}
           @value-changed=${(e) => this._valueChanged(e, 'entity')}>
         </ha-entity-picker>
+        ${this._text('name', this._t('editor.name'))}
+        ${this._text('entity_picture', this._t('editor.custom_image_url'), { placeholder: '/local/photos/mario.jpg' })}
+      `)}
 
-        <ha-select
-          label="${this._t('editor.layout')}"
-          .value=${this._config.layout || 'classic'}
-          @request-selected=${(e) => this._handleLayoutChange(e)}>
-          <mwc-list-item value="classic">Classic</mwc-list-item>
-          <mwc-list-item value="compact">Compact</mwc-list-item>
-          <mwc-list-item value="modern">Modern</mwc-list-item>
-          <mwc-list-item value="neon">Neon ✦</mwc-list-item>
-          <mwc-list-item value="glass">Glass ◈</mwc-list-item>
-          <mwc-list-item value="bio">Bioluminescence ◉</mwc-list-item>
-          <mwc-list-item value="holo">Holographic 3D ◈</mwc-list-item>
-          <mwc-list-item value="wxstation">Weather Station ⛅</mwc-list-item>
-          <mwc-list-item value="matrix">Matrix Rain 🖥️</mwc-list-item>
-          <mwc-list-item value="orbital">Orbital 🪐</mwc-list-item>
-          <mwc-list-item value="ink">Liquid Ink 🖋️</mwc-list-item>
-        </ha-select>
-
-        ${this._config.layout === 'compact' ? html`
-          <ha-textfield
-            label="${this._t('editor.compact_width')}"
-            type="number"
-            min="200"
-            max="500"
-            .value=${this._config.compact_width || '300'}
-            @input=${(e) => this._valueChanged(e, 'compact_width')}
-            helper-text="Maximum width in pixels (default: 300px)">
-          </ha-textfield>
-          <div class="config-row">
-            <span class="config-label">${this._t('editor.compact_stretch')}</span>
-            <ha-switch
-              .checked=${this._config.compact_stretch === true}
-              @change=${(e) => this._valueChanged(e, 'compact_stretch')}>
-            </ha-switch>
-          </div>
-        ` : ''}
-
-        ${this._config.layout === 'modern' ? html`
-          <ha-textfield
-            label="${this._t('editor.modern_width')}"
-            type="number"
-            min="200"
-            max="500"
-            .value=${this._config.modern_width || '300'}
-            @input=${(e) => this._valueChanged(e, 'modern_width')}
-            helper-text="Maximum width in pixels (default: 300px)">
-          </ha-textfield>
-        ` : ''}
-
-        <ha-textfield
-          label="${this._t('editor.name')}"
-          .value=${this._config.name || ''}
-          @input=${(e) => this._valueChanged(e, 'name')}>
-        </ha-textfield>
-
-        <ha-textfield
-          label="${this._t('editor.custom_image_url')}"
-          .value=${this._config.entity_picture || ''}
-          @input=${(e) => this._valueChanged(e, 'entity_picture')}
-          helper-text="E.g.: /local/photos/mario.jpg">
-        </ha-textfield>
-
-        ${this._config.layout === 'classic' ? html`
-          <ha-textfield
-            label="${this._t('editor.aspect_ratio')}"
-            .value=${this._config.aspect_ratio || '1/0.7'}
-            @input=${(e) => this._valueChanged(e, 'aspect_ratio')}
-            helper-text="Format: width/height (e.g., 1/0.7)">
-          </ha-textfield>
-        ` : ''}
-      </div>
-
-      <div class="section">
-        <div class="section-title">${this._t('editor.display_options')}</div>
-
-        <div class="config-row">
-          <span class="config-label">${this._t('editor.show_entity_picture')}</span>
-          <ha-switch
-            .checked=${this._config.show_entity_picture !== false}
-            @change=${(e) => this._valueChanged(e, 'show_entity_picture')}>
-          </ha-switch>
+      ${this._section('mdi:view-dashboard-outline', this._t('editor.layout'), html`
+        <div class="layouts">
+          ${PTC_LAYOUTS.map(l => html`
+            <button class="layout-tile ${layout === l.id ? 'active' : ''}" title="${l.name}" @click=${() => this._setLayout(l.id)}>
+              <div class="lt-prev" style="background:${l.bg};--a:${l.accent};--fg:${l.light ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.8)'};">
+                <span class="lt-av"></span>
+                <span class="lt-lines"><i></i><i></i></span>
+                ${layout === l.id ? html`<span class="lt-check">✓</span>` : ''}
+              </div>
+              <div class="lt-name">${l.name}</div>
+            </button>
+          `)}
         </div>
 
-        <div class="config-row">
-          <span class="config-label">${this._t('editor.show_person_name')}</span>
-          <ha-switch
-            .checked=${this._config.show_person_name !== false}
-            @change=${(e) => this._valueChanged(e, 'show_person_name')}>
-          </ha-switch>
-        </div>
+        ${layoutDesc !== layoutDescKey ? html`<div class="callout">${layoutDesc}</div>` : ''}
 
-        <div class="config-row">
-          <span class="config-label">${this._t('editor.show_name')}</span>
-          <ha-switch
-            .checked=${this._config.show_name !== false}
-            @change=${(e) => this._valueChanged(e, 'show_name')}>
-          </ha-switch>
-        </div>
-
-        ${this._config.layout !== 'modern' ? html`
-          <div class="config-row">
-            <span class="config-label">${this._t('editor.show_last_updated')}</span>
-            <ha-switch
-              .checked=${this._config.show_last_changed !== false}
-              @change=${(e) => this._valueChanged(e, 'show_last_changed')}>
-            </ha-switch>
-          </div>
+        ${layout === 'compact' ? html`
+          ${this._text('compact_width', this._t('editor.compact_width'), { type: 'number', min: 200, max: 500, fallback: '300', helper: 'Default: 300' })}
+          ${this._toggle('compact_stretch', this._t('editor.compact_stretch'), this._config.compact_stretch === true)}
         ` : ''}
-      </div>
+        ${layout === 'modern' ? this._text('modern_width', this._t('editor.modern_width'), { type: 'number', min: 200, max: 500, fallback: '300', helper: 'Default: 300' }) : ''}
+        ${layout === 'classic' ? this._text('aspect_ratio', this._t('editor.aspect_ratio'), { fallback: '1/0.7', helper: 'Default: 1/0.7' }) : ''}
+      `)}
 
-      <div class="section">
-        <div class="section-title">Tap Action</div>
+      ${this._section('mdi:eye-outline', this._t('editor.display_options'), html`
+        ${this._toggle('show_entity_picture', this._t('editor.show_entity_picture'), this._config.show_entity_picture !== false)}
+        ${this._toggle('show_person_name', this._t('editor.show_person_name'), this._config.show_person_name !== false)}
+        ${this._toggle('show_name', this._t('editor.show_name'), this._config.show_name !== false)}
+        ${layout !== 'modern' ? this._toggle('show_last_changed', this._t('editor.show_last_updated'), this._config.show_last_changed !== false) : ''}
+      `)}
 
-        <ha-select
-          label="On tap"
-          .value=${this._config.tap_action?.action || 'more-info'}
-          @request-selected=${(e) => this._handleTapActionChange(e)}>
-          <mwc-list-item value="more-info">More Info (default)</mwc-list-item>
-          <mwc-list-item value="navigate">Navigate</mwc-list-item>
-          <mwc-list-item value="url">Open URL</mwc-list-item>
-          <mwc-list-item value="call-service">Call Service</mwc-list-item>
-          <mwc-list-item value="none">None</mwc-list-item>
-        </ha-select>
+      ${this._section('mdi:gesture-tap', this._t('editor.extra_chip_tap_action'), html`
+        ${this._seg(this._tapOptions(), tapAction, (v) => this._setTapAction(v))}
 
-        ${(this._config.tap_action?.action === 'more-info') ? html`
+        ${tapAction === 'more-info' ? html`
           <ha-entity-picker
             .hass=${this.hass}
-            .value=${this._config.tap_action?.entity || ''}
-            label="Entity (leave empty for person entity)"
+            .value=${tap.entity || ''}
+            .label=${this._t('editor.tap_entity')}
             allow-custom-entity
             @value-changed=${(e) => this._updateTapAction('entity', e.detail?.value || '')}>
           </ha-entity-picker>
         ` : ''}
 
-        ${(this._config.tap_action?.action === 'navigate') ? html`
-          <ha-textfield
-            label="Navigation path (e.g. /lovelace/home)"
-            .value=${this._config.tap_action?.navigation_path || ''}
+        ${tapAction === 'navigate' ? html`
+          <ptc-textfield
+            .label=${this._t('editor.extra_chip_nav_path')}
+            .value=${tap.navigation_path || ''}
+            placeholder="/lovelace/home"
             @input=${(e) => this._updateTapAction('navigation_path', e.target.value)}>
-          </ha-textfield>
+          </ptc-textfield>
         ` : ''}
 
-        ${(this._config.tap_action?.action === 'url') ? html`
-          <ha-textfield
-            label="URL"
-            .value=${this._config.tap_action?.url_path || ''}
+        ${tapAction === 'url' ? html`
+          <ptc-textfield
+            .label=${this._t('editor.extra_chip_url_path')}
+            .value=${tap.url_path || ''}
+            placeholder="https://"
             @input=${(e) => this._updateTapAction('url_path', e.target.value)}>
-          </ha-textfield>
+          </ptc-textfield>
         ` : ''}
 
-        ${(this._config.tap_action?.action === 'call-service') ? html`
+        ${tapAction === 'call-service' ? html`
           <ha-service-control
             .hass=${this.hass}
             .value=${{
-              action: this._config.tap_action?.service || '',
-              target: this._config.tap_action?.target || {},
-              data: this._config.tap_action?.service_data || {}
+              action: tap.service || '',
+              target: tap.target || {},
+              data: tap.service_data || {}
             }}
             .showAdvanced=${true}
             @value-changed=${(e) => {
@@ -1774,23 +1898,23 @@ class PersonTrackerCardEditor extends LitElement {
                 }
               };
               this._fireEvent('config-changed', { config: this._config });
-              this.requestUpdate();
             }}>
           </ha-service-control>
         ` : ''}
-      </div>
+      `)}
     `;
   }
 
+  _setLayout(value) {
+    if (!PTC_LAYOUTS.some(l => l.id === value) || value === this._config.layout) return;
+    this._config = { ...this._config, layout: value };
+    this._fireEvent('config-changed', { config: this._config });
+  }
 
-  _handleTapActionChange(ev) {
-    if (!this._config || !this.hass) return;
-    ev.stopPropagation();
-    const value = ev.target && ev.target.getAttribute ? ev.target.getAttribute('value') : null;
-    if (!value) return;
+  _setTapAction(value) {
+    if (value === (this._config.tap_action?.action || 'more-info') && this._config.tap_action) return;
     this._config = { ...this._config, tap_action: { action: value } };
     this._fireEvent('config-changed', { config: this._config });
-    this.requestUpdate();
   }
 
   _updateTapAction(key, value) {
@@ -1805,1035 +1929,426 @@ class PersonTrackerCardEditor extends LitElement {
       : 'example';
     const p = this._config.entity ? this._resolveDevicePrefixEditor() : null;
     const auto = this._config.entity ? this._getAutoSensorIds() : {};
+    const c = this._config;
+    const mapsOptions = [
+      { value: 'none', label: this._t('editor.maps_provider_none') },
+      { value: 'google', label: 'Google Maps' },
+      { value: 'apple', label: 'Apple Maps' },
+      { value: 'osm', label: 'OpenStreetMap' },
+    ];
 
     return html`
-      <div class="section">
-        <div class="section-title">${this._t('section.automatic_sensors')}</div>
-        <p class="info-text">
-          ${this._t('section.sensors_description')}${p ? `sensor.${p}_*` : `sensor.phone_${entityBase}_* / sensor.watch_${entityBase}_*`}
-        </p>
-        <div class="auto-detect-row">
-          <button class="auto-detect-btn"
-            ?disabled=${!this._config?.entity}
-            @click=${() => this._autoDetectSensors()}>
+      ${this._section('mdi:radar', this._t('section.automatic_sensors'), html`
+        <div class="btn-row">
+          <button class="btn primary" ?disabled=${!c.entity} @click=${() => this._autoDetectSensors()}>
             <ha-icon icon="mdi:radar"></ha-icon>
             ${this._t('section.auto_detect_btn')}
           </button>
-          ${this._autoDetectMsg ? html`<span class="auto-detect-msg">${this._autoDetectMsg}</span>` : ''}
+          ${this._autoDetectMsg ? html`<span class="msg">${this._autoDetectMsg}</span>` : ''}
         </div>
 
-        <!-- Battery -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:battery" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_battery')}</span>
-            <ha-switch
-              .checked=${this._config.show_battery !== false}
-              @change=${(e) => this._valueChanged(e, 'show_battery')}>
-            </ha-switch>
-          </div>
+        ${this._group({
+          icon: 'mdi:battery', title: this._t('editor.show_battery'),
+          key: 'show_battery', checked: c.show_battery !== false,
+          body: html`
+            ${this._entity('battery_sensor', {
+              value: c.battery_sensor || auto.battery_sensor || '',
+              label: auto.battery_sensor || 'sensor.phone_' + entityBase + '_battery_level',
+              domains: ['sensor', 'input_number'] })}
+            ${this._entity('battery_state_sensor', {
+              value: c.battery_state_sensor || auto.battery_state_sensor || '',
+              label: auto.battery_state_sensor || 'sensor.phone_' + entityBase + '_battery_state',
+              domains: ['sensor', 'binary_sensor'] })}
+            ${this._text('battery_charging_value', this._t('editor.battery_charging_value'), { helper: this._t('editor.charging_helper') })}
+          `
+        })}
 
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.battery_sensor || auto.battery_sensor || ''}
-            .label=${auto.battery_sensor || 'sensor.phone_' + entityBase + '_battery_level'}
-            .includeDomains=${['sensor', 'input_number']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'battery_sensor')}>
-          </ha-entity-picker>
+        ${this._group({
+          icon: 'mdi:watch', title: this._t('editor.show_watch_battery'),
+          key: 'show_watch_battery', checked: c.show_watch_battery !== false,
+          body: html`
+            ${this._entity('watch_battery_sensor', {
+              value: c.watch_battery_sensor || auto.watch_battery_sensor || '',
+              label: auto.watch_battery_sensor || 'sensor.watch_' + entityBase + '_battery_level',
+              domains: ['sensor', 'input_number'] })}
+            ${this._entity('watch_battery_state_sensor', {
+              value: c.watch_battery_state_sensor || auto.watch_battery_state_sensor || '',
+              label: auto.watch_battery_state_sensor || 'sensor.watch_' + entityBase + '_battery_state',
+              domains: ['sensor', 'binary_sensor'] })}
+            ${this._text('watch_battery_charging_value', this._t('editor.watch_battery_charging_value'), { helper: this._t('editor.charging_helper') })}
+          `
+        })}
 
-          <!-- Battery charging state sensor -->
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.battery_state_sensor || auto.battery_state_sensor || ''}
-            .label=${auto.battery_state_sensor || 'sensor.phone_' + entityBase + '_battery_state'}
-            .includeDomains=${['sensor', 'binary_sensor']}
-            allow-custom-entity
-            @value-changed=${(e) => this._entityPickerChanged(e, 'battery_state_sensor')}>
-          </ha-entity-picker>
+        ${this._group({
+          icon: 'mdi:devices', title: this._t('editor.show_device_2_battery'),
+          key: 'show_device_2_battery', checked: c.show_device_2_battery !== false,
+          body: html`
+            ${this._entity('device_2_battery_sensor', {
+              value: c.device_2_battery_sensor || auto.device_2_battery_sensor || '',
+              label: auto.device_2_battery_sensor || this._t('editor.device_2_battery_sensor'),
+              domains: ['sensor', 'input_number'] })}
+            ${this._entity('device_2_battery_state_sensor', {
+              value: c.device_2_battery_state_sensor || auto.device_2_battery_state_sensor || '',
+              label: auto.device_2_battery_state_sensor || this._t('editor.device_2_battery_state_sensor'),
+              domains: ['sensor', 'binary_sensor'] })}
+          `
+        })}
 
-          <ha-textfield
-            .value=${this._config.battery_charging_value || ''}
-            .label=${this._t('editor.battery_charging_value')}
-            .helper=${this._t('editor.charging_helper')}
-            @input=${(e) => this._valueChanged(e, 'battery_charging_value')}>
-          </ha-textfield>
+        ${this._group({
+          icon: 'mdi:walk', title: this._t('editor.show_activity'),
+          key: 'show_activity', checked: c.show_activity !== false,
+          body: this._entity('activity_sensor', {
+            value: c.activity_sensor || auto.activity_sensor || '',
+            label: auto.activity_sensor || 'sensor.phone_' + entityBase + '_activity',
+            domains: ['sensor'] })
+        })}
+
+        ${this._group({
+          icon: 'mdi:wifi', title: this._t('editor.show_connection'),
+          key: 'show_connection', checked: c.show_connection !== false,
+          body: html`
+            ${this._entity('connection_sensor', {
+              value: c.connection_sensor || auto.connection_sensor || '',
+              label: auto.connection_sensor || 'sensor.phone_' + entityBase + '_connection_type',
+              domains: ['sensor', 'binary_sensor'] })}
+            ${this._entity('wifi_ssid_sensor', { label: this._t('editor.wifi_ssid_sensor'), domains: ['sensor'] })}
+            <p class="info">${this._t('editor.wifi_ssid_sensor_description')}</p>
+          `
+        })}
+
+        ${this._group({
+          icon: 'mdi:map-marker-account', title: this._t('editor.show_geocoded_location'),
+          key: 'show_geocoded_location', checked: c.show_geocoded_location !== false,
+          desc: this._t('editor.geocoded_location_description'),
+          body: this._entity('geocoded_location_entity', {
+            value: c.geocoded_location_entity || auto.geocoded_location_entity || '',
+            label: auto.geocoded_location_entity || this._t('editor.geocoded_location_entity'),
+            domains: ['sensor'] })
+        })}
+
+        ${this._group({
+          icon: 'mdi:map-marker-radius', title: this._t('editor.maps_provider'),
+          desc: this._t('editor.maps_provider_description'),
+          body: this._seg(mapsOptions, c.maps_provider || 'none', (v) => this._updateConfig('maps_provider', v === 'none' ? null : v))
+        })}
+
+        ${this._group({
+          icon: 'mdi:text-box-outline', title: this._t('editor.state_entity'),
+          desc: this._t('editor.state_entity_description'),
+          body: this._entity('state_entity', { domains: ['sensor', 'input_text', 'input_select'] })
+        })}
+      `, `${this._t('section.sensors_description')} ${p ? `sensor.${p}_*` : `sensor.phone_${entityBase}_* / sensor.watch_${entityBase}_*`}`)}
+
+      ${this._section('mdi:shape-plus-outline', this._t('section.extra_chips'), html`
+        ${(c.extra_chips || []).map((chip, idx) => this._renderExtraChip(chip, idx))}
+        <button class="btn wide" @click=${() => this._addExtraChip()}>${this._t('editor.extra_chip_add')}</button>
+      `, this._t('editor.extra_chips_description'))}
+
+      ${this._section('mdi:car-clock', this._t('section.travel_sensor_2'), html`
+        ${this._toggle('smart_travel_mode', this._t('editor.smart_travel_mode'), c.smart_travel_mode !== false)}
+        ${this._toggle('pair_travel_animation', this._t('editor.pair_travel_animation'), c.pair_travel_animation !== false)}
+
+        ${this._group({
+          icon: 'mdi:home-export-outline',
+          title: `${this._t('editor.show_travel_time')} (${this._t('editor.direction_home_work')})`,
+          key: 'show_travel_time', checked: c.show_travel_time !== false,
+          body: this._entity('travel_sensor', { label: this._t('editor.travel_sensor_home_work'), domains: ['sensor', 'input_number'] })
+        })}
+
+        ${this._group({
+          icon: 'mdi:home-import-outline',
+          title: `${this._t('editor.show_travel_time')} (${this._t('editor.direction_work_home')})`,
+          key: 'show_travel_time_2', checked: c.show_travel_time_2 !== false,
+          body: this._entity('travel_sensor_2', { label: this._t('editor.travel_sensor_work_home'), domains: ['sensor', 'input_number'] })
+        })}
+
+        ${this._entity('zone_2', { label: this._t('editor.zone_2'), domains: ['zone'] })}
+      `, this._t('section.travel_sensor_2_description'))}
+
+      ${this._section('mdi:map-marker-distance', this._t('section.distance_optional'), html`
+        ${this._group({
+          icon: 'mdi:home-export-outline',
+          title: `${this._t('editor.show_distance')} (${this._t('editor.direction_home_work')})`,
+          key: 'show_distance', checked: c.show_distance !== false,
+          body: this._entity('distance_sensor', { label: this._t('editor.distance_sensor_home_work'), domains: ['sensor', 'input_number'] })
+        })}
+
+        ${this._group({
+          icon: 'mdi:home-import-outline',
+          title: `${this._t('editor.show_distance_2')} (${this._t('editor.direction_work_home')})`,
+          key: 'show_distance_2', checked: c.show_distance_2 !== false,
+          body: this._entity('distance_sensor_2', { label: this._t('editor.distance_sensor_work_home'), domains: ['sensor', 'input_number'] })
+        })}
+
+        ${this._text('distance_precision', this._t('editor.distance_precision'), { type: 'number', min: 0, max: 3, value: String(c.distance_precision ?? 1) })}
+        ${this._text('distance_unit', this._t('editor.distance_unit'), { placeholder: 'km', helper: this._t('editor.distance_unit_description') })}
+      `, this._t('section.distance_optional_description'))}
+    `;
+  }
+
+  _renderExtraChip(chip, idx) {
+    const ta = chip.tap_action || {};
+    const taAction = ta.action || 'more-info';
+    const ent = chip.entity ? this.hass.states[chip.entity] : null;
+    const showLabel = this._config.layout !== 'modern' && this._config.layout !== 'compact';
+
+    return html`
+      <div class="item">
+        <div class="item-head">
+          <ha-icon icon="${chip.icon || 'mdi:shape-outline'}" style="${chip.color ? `color:${chip.color}` : ''}"></ha-icon>
+          <span class="item-title">${chip.label || ent?.attributes?.friendly_name || chip.entity || `#${idx + 1}`}</span>
+          <button class="icon-btn danger" title="${this._t('common.remove')}" @click=${() => this._removeExtraChip(idx)}>✕</button>
         </div>
 
-        <!-- Watch Battery -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:watch" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_watch_battery')}</span>
-            <ha-switch
-              .checked=${this._config.show_watch_battery !== false}
-              @change=${(e) => this._valueChanged(e, 'show_watch_battery')}>
-            </ha-switch>
-          </div>
-
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.watch_battery_sensor || auto.watch_battery_sensor || ''}
-            .label=${auto.watch_battery_sensor || 'sensor.watch_' + entityBase + '_battery_level'}
-            .includeDomains=${['sensor', 'input_number']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'watch_battery_sensor')}>
-          </ha-entity-picker>
-
-          <!-- Watch battery charging state sensor -->
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.watch_battery_state_sensor || auto.watch_battery_state_sensor || ''}
-            .label=${auto.watch_battery_state_sensor || 'sensor.watch_' + entityBase + '_battery_state'}
-            .includeDomains=${['sensor', 'binary_sensor']}
-            allow-custom-entity
-            @value-changed=${(e) => this._entityPickerChanged(e, 'watch_battery_state_sensor')}>
-          </ha-entity-picker>
-
-          <ha-textfield
-            .value=${this._config.watch_battery_charging_value || ''}
-            .label=${this._t('editor.watch_battery_charging_value')}
-            .helper=${this._t('editor.charging_helper')}
-            @input=${(e) => this._valueChanged(e, 'watch_battery_charging_value')}>
-          </ha-textfield>
-        </div>
-
-        <!-- Device 2 Battery (tablet/laptop) -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:devices" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_device_2_battery')}</span>
-            <ha-switch
-              .checked=${this._config.show_device_2_battery !== false}
-              @change=${(e) => this._valueChanged(e, 'show_device_2_battery')}>
-            </ha-switch>
-          </div>
-
-          ${this._config.show_device_2_battery !== false ? html`
-            <ha-entity-picker
-              .hass=${this.hass}
-              .value=${this._config.device_2_battery_sensor || auto.device_2_battery_sensor || ''}
-              .label=${auto.device_2_battery_sensor || this._t('editor.device_2_battery_sensor')}
-              .includeDomains=${['sensor', 'input_number']}
-              allow-custom-entity
-              @value-changed=${(e) => this._valueChanged(e, 'device_2_battery_sensor')}>
-            </ha-entity-picker>
-            <ha-entity-picker
-              .hass=${this.hass}
-              .value=${this._config.device_2_battery_state_sensor || auto.device_2_battery_state_sensor || ''}
-              .label=${auto.device_2_battery_state_sensor || this._t('editor.device_2_battery_state_sensor')}
-              .includeDomains=${['sensor', 'binary_sensor']}
-              allow-custom-entity
-              @value-changed=${(e) => this._entityPickerChanged(e, 'device_2_battery_state_sensor')}>
-            </ha-entity-picker>
-          ` : ''}
-        </div>
-
-        <!-- Activity -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:walk" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_activity')}</span>
-            <ha-switch
-              .checked=${this._config.show_activity !== false}
-              @change=${(e) => this._valueChanged(e, 'show_activity')}>
-            </ha-switch>
-          </div>
-
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.activity_sensor || auto.activity_sensor || ''}
-            .label=${auto.activity_sensor || 'sensor.phone_' + entityBase + '_activity'}
-            .includeDomains=${['sensor']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'activity_sensor')}>
-          </ha-entity-picker>
-        </div>
-
-        <!-- Connection -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:wifi" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_connection')}</span>
-            <ha-switch
-              .checked=${this._config.show_connection !== false}
-              @change=${(e) => this._valueChanged(e, 'show_connection')}>
-            </ha-switch>
-          </div>
-
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.connection_sensor || auto.connection_sensor || ''}
-            .label=${auto.connection_sensor || 'sensor.phone_' + entityBase + '_connection_type'}
-            .includeDomains=${['sensor', 'binary_sensor']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'connection_sensor')}>
-          </ha-entity-picker>
-
-          ${this._config.show_connection !== false ? html`
-            <p class="info-text" style="margin:8px 0 4px;">${this._t('editor.wifi_ssid_sensor_description')}</p>
-            <ha-entity-picker
-              .hass=${this.hass}
-              .value=${this._config.wifi_ssid_sensor || ''}
-              .label=${this._t('editor.wifi_ssid_sensor')}
-              .includeDomains=${['sensor']}
-              allow-custom-entity
-              @value-changed=${(e) => this._entityPickerChanged(e, 'wifi_ssid_sensor')}>
-            </ha-entity-picker>
-          ` : ''}
-        </div>
-
-        <!-- Geocoded Location -->
-        <div class="sensor-group">
-          <p class="info-text" style="margin:0 0 6px;">${this._t('editor.geocoded_location_description')}</p>
-          <div class="sensor-header">
-            <ha-icon icon="mdi:map-marker-account" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_geocoded_location')}</span>
-            <ha-switch
-              .checked=${this._config.show_geocoded_location !== false}
-              @change=${(e) => this._valueChanged(e, 'show_geocoded_location')}>
-            </ha-switch>
-          </div>
-          ${this._config.show_geocoded_location ? html`
-            <ha-entity-picker
-              .hass=${this.hass}
-              .value=${this._config.geocoded_location_entity || auto.geocoded_location_entity || ''}
-              .label=${auto.geocoded_location_entity || this._t('editor.geocoded_location_entity')}
-              .includeDomains=${['sensor']}
-              allow-custom-entity
-              @value-changed=${(e) => this._entityPickerChanged(e, 'geocoded_location_entity')}>
-            </ha-entity-picker>
-          ` : ''}
-        </div>
-
-        <!-- Maps provider -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:map-marker-radius" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.maps_provider')}</span>
-          </div>
-          <p class="info-text">${this._t('editor.maps_provider_description')}</p>
-          <ha-select
-            label="${this._t('editor.maps_provider')}"
-            .value=${this._config.maps_provider || 'none'}
-            fixedMenuPosition
-            naturalMenuWidth
-            @request-selected=${(e) => {
-              e.stopPropagation();
-              if (e.detail && e.detail.selected === false) return;
-              const raw = e.target && e.target.getAttribute ? e.target.getAttribute('value') : null;
-              if (raw === null) return;
-              this._config = { ...this._config, maps_provider: raw === 'none' ? null : raw };
-              this._fireEvent('config-changed', { config: this._config });
-              this.requestUpdate();
-            }}>
-            <mwc-list-item value="none">${this._t('editor.maps_provider_none')}</mwc-list-item>
-            <mwc-list-item value="google">Google Maps</mwc-list-item>
-            <mwc-list-item value="apple">Apple Maps</mwc-list-item>
-            <mwc-list-item value="osm">OpenStreetMap</mwc-list-item>
-          </ha-select>
-        </div>
-
-        <!-- Custom state entity -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:text-box-outline" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.state_entity')}</span>
-          </div>
-          <p class="info-text">${this._t('editor.state_entity_description')}</p>
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.state_entity || ''}
-            .includeDomains=${['sensor', 'input_text', 'input_select']}
-            allow-custom-entity
-            @value-changed=${(e) => this._entityPickerChanged(e, 'state_entity')}>
-          </ha-entity-picker>
-        </div>
-
-        <!-- Extra chips section -->
-        <div class="section-title">${this._t('section.extra_chips')}</div>
-        <p class="info-text">${this._t('editor.extra_chips_description')}</p>
-
-        ${(this._config.extra_chips || []).map((chip, idx) => html`
-        <div class="extra-chip-row" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-
-          <!-- Header row: entity picker + delete button -->
-          <div style="display:flex;gap:6px;align-items:center;">
-            <ha-entity-picker
-              style="flex:1"
-              .hass=${this.hass}
-              .value=${chip.entity || ''}
-              label="${this._t('editor.extra_chip_entity')}"
-              allow-custom-entity
-              @value-changed=${(e) => this._updateExtraChip(idx, 'entity', e.detail.value)}
-            ></ha-entity-picker>
-            <button
-              @click=${() => this._removeExtraChip(idx)}
-              title="Rimuovi chip"
-              style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:none;background:rgba(244,67,54,0.18);cursor:pointer;font-size:18px;line-height:1;color:#f44336;font-weight:bold;">
-              ✕
-            </button>
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:6px;">
-
-            <div style="display:flex;gap:6px;align-items:flex-end;">
-              <ha-icon-picker
-                style="flex:2"
-                .hass=${this.hass}
-                .value=${chip.icon || ''}
-                .label=${this._t('editor.extra_chip_icon_label')}
-                @value-changed=${(e) => this._updateExtraChip(idx, 'icon', e.detail.value || undefined)}
-              ></ha-icon-picker>
-              <ha-textfield style="flex:1" label="${this._t('editor.extra_chip_show_when')}" .value=${chip.show_when !== undefined ? chip.show_when : ''}
-                @change=${(e) => this._updateExtraChip(idx, 'show_when', e.target.value || undefined)}></ha-textfield>
-            </div>
-
-            <div style="display:flex;gap:6px;align-items:center;">
-              ${this._config.layout !== 'modern' && this._config.layout !== 'compact' ? html`
-              <ha-textfield style="flex:1" label="${this._t('editor.extra_chip_label')}" .value=${chip.label !== undefined ? chip.label : ''}
-                @change=${(e) => this._updateExtraChip(idx, 'label', e.target.value !== '' ? e.target.value : undefined)}></ha-textfield>
-              ` : ''}
-              <div class="color-picker" style="flex:1">
-                <div class="color-preview" style="${chip.color ? `background-color:${chip.color}` : 'background:repeating-linear-gradient(45deg,#444 0,#444 4px,#222 4px,#222 8px);border:2px dashed #666;'}">
-                  <input type="color" .value=${chip.color || '#4a9eff'}
-                    @input=${(e) => this._updateExtraChip(idx, 'color', e.target.value)}>
-                </div>
-                <ha-textfield
-                  .value=${chip.color || ''}
-                  label="${this._t('editor.extra_chip_color')}"
-                  @input=${(e) => this._updateExtraChip(idx, 'color', e.target.value || undefined)}
-                  pattern="^#[0-9A-Fa-f]{6}$">
-                </ha-textfield>
-              </div>
-            </div>
-
-            <!-- Tap action row -->
-            ${(() => {
-              const ta = chip.tap_action || {};
-              const taAction = ta.action || 'more-info';
-              return html`
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                <ha-select
-                  .label=${this._t('editor.extra_chip_tap_action')}
-                  .value=${taAction}
-                  fixedMenuPosition
-                  @request-selected=${(e) => {
-                    e.stopPropagation();
-                    if (e.detail && e.detail.selected === false) return;
-                    const val = e.target?.getAttribute ? e.target.getAttribute('value') : null;
-                    if (!val) return;
-                    this._updateExtraChip(idx, 'tap_action', val === 'more-info' ? undefined : { action: val });
-                  }}>
-                  <mwc-list-item value="more-info">${this._t('editor.extra_chip_tap_more_info')}</mwc-list-item>
-                  <mwc-list-item value="call-service">${this._t('editor.extra_chip_tap_call_service')}</mwc-list-item>
-                  <mwc-list-item value="navigate">${this._t('editor.extra_chip_tap_navigate')}</mwc-list-item>
-                  <mwc-list-item value="url">${this._t('editor.extra_chip_tap_url')}</mwc-list-item>
-                  <mwc-list-item value="none">${this._t('editor.extra_chip_tap_none')}</mwc-list-item>
-                </ha-select>
-                ${taAction === 'call-service' ? html`
-                  <ha-service-control
-                    .hass=${this.hass}
-                    .value=${{
-                      action: ta.service || this._getDefaultServiceForEntity(chip.entity),
-                      target: ta.target || {},
-                      data: ta.service_data || {}
-                    }}
-                    .showAdvanced=${true}
-                    @value-changed=${(e) => {
-                      const v = e.detail.value || {};
-                      this._updateExtraChip(idx, 'tap_action', {
-                        action: 'call-service',
-                        service: v.action || v.service || undefined,
-                        target: (v.target && Object.keys(v.target).length) ? v.target : undefined,
-                        service_data: (v.data && Object.keys(v.data).length) ? v.data : undefined
-                      });
-                    }}>
-                  </ha-service-control>
-                ` : ''}
-                ${taAction === 'navigate' ? html`
-                  <ha-textfield label="${this._t('editor.extra_chip_nav_path')}" .value=${ta.navigation_path || ''}
-                    @change=${(e) => this._updateExtraChip(idx, 'tap_action', { ...ta, action: 'navigate', navigation_path: e.target.value || undefined })}></ha-textfield>
-                ` : ''}
-                ${taAction === 'url' ? html`
-                  <ha-textfield label="${this._t('editor.extra_chip_url_path')}" .value=${ta.url_path || ''}
-                    @change=${(e) => this._updateExtraChip(idx, 'tap_action', { ...ta, action: 'url', url_path: e.target.value || undefined })}></ha-textfield>
-                ` : ''}
-              </div>`;
-            })()}
-
-          </div>
-        </div>
-        `)}
-
-        <mwc-button outlined @click=${this._addExtraChip} style="width:100%;margin-top:4px;">
-          <ha-icon icon="mdi:plus" slot="icon"></ha-icon>
-          ${this._t('editor.extra_chip_add')}
-        </mwc-button>
-
-      </div>
-
-      <!-- Bidirectional Travel Time (Issue #22) -->
-      <div class="section">
-        <div class="section-title">${this._t('section.travel_sensor_2')}</div>
-        <p class="info-text">${this._t('section.travel_sensor_2_description')}</p>
-
-        <!-- Smart travel mode toggle -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:swap-horizontal" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.smart_travel_mode')}</span>
-            <ha-switch
-              .checked=${this._config.smart_travel_mode !== false}
-              @change=${(e) => this._valueChanged(e, 'smart_travel_mode')}>
-            </ha-switch>
-          </div>
-        </div>
-
-        <!-- Pair travel animation toggle -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:animation-play" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.pair_travel_animation')}</span>
-            <ha-switch
-              .checked=${this._config.pair_travel_animation !== false}
-              @change=${(e) => this._valueChanged(e, 'pair_travel_animation')}>
-            </ha-switch>
-          </div>
-        </div>
-
-        <!-- Travel time Casa → Lavoro (sensor 1) -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:home-export-outline" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_travel_time')} (${this._t('editor.direction_home_work')})</span>
-            <ha-switch
-              .checked=${this._config.show_travel_time !== false}
-              @change=${(e) => this._valueChanged(e, 'show_travel_time')}>
-            </ha-switch>
-          </div>
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.travel_sensor || ''}
-            .label=${this._t('editor.travel_sensor_home_work')}
-            .includeDomains=${['sensor', 'input_number']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'travel_sensor')}>
-          </ha-entity-picker>
-        </div>
-
-        <!-- Travel time Lavoro → Casa (sensor 2) -->
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:home-import-outline" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_travel_time')} (${this._t('editor.direction_work_home')})</span>
-            <ha-switch
-              .checked=${this._config.show_travel_time_2 !== false}
-              @change=${(e) => this._valueChanged(e, 'show_travel_time_2')}>
-            </ha-switch>
-          </div>
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.travel_sensor_2 || ''}
-            .label=${this._t('editor.travel_sensor_work_home')}
-            .includeDomains=${['sensor', 'input_number']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'travel_sensor_2')}>
-          </ha-entity-picker>
-        </div>
-
-        <!-- Zone 2 (work zone) -->
         <ha-entity-picker
           .hass=${this.hass}
-          .value=${this._config.zone_2 || ''}
-          .label=${this._t('editor.zone_2')}
-          .includeDomains=${['zone']}
+          .value=${chip.entity || ''}
+          .label=${this._t('editor.extra_chip_entity')}
           allow-custom-entity
-          @value-changed=${(e) => this._valueChanged(e, 'zone_2')}>
+          @value-changed=${(e) => this._updateExtraChip(idx, 'entity', e.detail.value)}>
         </ha-entity-picker>
-      </div>
 
-      <!-- Optional distance (always visible, position-independent) -->
-      <div class="section">
-        <div class="section-title">${this._t('section.distance_optional')}</div>
-        <p class="info-text">${this._t('section.distance_optional_description')}</p>
+        <ha-icon-picker
+          .hass=${this.hass}
+          .value=${chip.icon || ''}
+          .label=${this._t('editor.extra_chip_icon_label')}
+          @value-changed=${(e) => this._updateExtraChip(idx, 'icon', e.detail.value || undefined)}>
+        </ha-icon-picker>
 
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:map-marker-distance" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_distance')} (${this._t('editor.direction_home_work')})</span>
-            <ha-switch
-              .checked=${this._config.show_distance !== false}
-              @change=${(e) => this._valueChanged(e, 'show_distance')}>
-            </ha-switch>
-          </div>
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.distance_sensor || ''}
-            .label=${this._t('editor.distance_sensor_home_work')}
-            .includeDomains=${['sensor', 'input_number']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'distance_sensor')}>
-          </ha-entity-picker>
+        <div class="${showLabel ? 'grid2' : ''}">
+          <ptc-textfield
+            .label=${this._t('editor.extra_chip_show_when')}
+            .value=${chip.show_when !== undefined ? chip.show_when : ''}
+            @change=${(e) => this._updateExtraChip(idx, 'show_when', e.target.value || undefined)}>
+          </ptc-textfield>
+          ${showLabel ? html`
+            <ptc-textfield
+              .label=${this._t('editor.extra_chip_label')}
+              .value=${chip.label !== undefined ? chip.label : ''}
+              @change=${(e) => this._updateExtraChip(idx, 'label', e.target.value !== '' ? e.target.value : undefined)}>
+            </ptc-textfield>
+          ` : ''}
         </div>
 
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <ha-icon icon="mdi:map-marker-distance" class="sensor-icon"></ha-icon>
-            <span class="sensor-title">${this._t('editor.show_distance_2')} (${this._t('editor.direction_work_home')})</span>
-            <ha-switch
-              .checked=${this._config.show_distance_2 !== false}
-              @change=${(e) => this._valueChanged(e, 'show_distance_2')}>
-            </ha-switch>
-          </div>
-          <ha-entity-picker
+        ${this._color(this._t('editor.extra_chip_color'), chip.color, (v) => {
+          if (v && !/^#[0-9A-Fa-f]{6}$/.test(v)) return;
+          this._updateExtraChip(idx, 'color', v || undefined);
+        }, { fallback: '#4a9eff' })}
+
+        <div class="field-label">${this._t('editor.extra_chip_tap_action')}</div>
+        ${this._seg(this._tapOptions(), taAction, (v) =>
+          this._updateExtraChip(idx, 'tap_action', v === 'more-info' ? undefined : { action: v }))}
+
+        ${taAction === 'call-service' ? html`
+          <ha-service-control
             .hass=${this.hass}
-            .value=${this._config.distance_sensor_2 || ''}
-            .label=${this._t('editor.distance_sensor_work_home')}
-            .includeDomains=${['sensor', 'input_number']}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'distance_sensor_2')}>
-          </ha-entity-picker>
-        </div>
-
-        <ha-textfield
-          label="${this._t('editor.distance_precision')}"
-          type="number"
-          min="0"
-          max="3"
-          .value=${String(this._config.distance_precision ?? 1)}
-          @input=${(e) => this._valueChanged(e, 'distance_precision')}>
-        </ha-textfield>
-
-        <ha-textfield
-          label="${this._t('editor.distance_unit')}"
-          .value=${this._config.distance_unit || ''}
-          placeholder="km"
-          @input=${(e) => this._valueChanged(e, 'distance_unit')}>
-        </ha-textfield>
-        <div class="description">${this._t('editor.distance_unit_description')}</div>
+            .value=${{
+              action: ta.service || this._getDefaultServiceForEntity(chip.entity),
+              target: ta.target || {},
+              data: ta.service_data || {}
+            }}
+            .showAdvanced=${true}
+            @value-changed=${(e) => {
+              const v = e.detail.value || {};
+              this._updateExtraChip(idx, 'tap_action', {
+                action: 'call-service',
+                service: v.action || v.service || undefined,
+                target: (v.target && Object.keys(v.target).length) ? v.target : undefined,
+                service_data: (v.data && Object.keys(v.data).length) ? v.data : undefined
+              });
+            }}>
+          </ha-service-control>
+        ` : ''}
+        ${taAction === 'navigate' ? html`
+          <ptc-textfield
+            .label=${this._t('editor.extra_chip_nav_path')}
+            .value=${ta.navigation_path || ''}
+            placeholder="/lovelace/home"
+            @change=${(e) => this._updateExtraChip(idx, 'tap_action', { ...ta, action: 'navigate', navigation_path: e.target.value || undefined })}>
+          </ptc-textfield>
+        ` : ''}
+        ${taAction === 'url' ? html`
+          <ptc-textfield
+            .label=${this._t('editor.extra_chip_url_path')}
+            .value=${ta.url_path || ''}
+            placeholder="https://"
+            @change=${(e) => this._updateExtraChip(idx, 'tap_action', { ...ta, action: 'url', url_path: e.target.value || undefined })}>
+          </ptc-textfield>
+        ` : ''}
       </div>
     `;
   }
-
 
   _renderPositionTab() {
-    if (!this._config) {
-      return html`<div>Configuration not available.</div>`;
-    }
+    const c = this._config;
+    const items = [
+      ['show_battery', 'battery_position', 'position.battery', 'mdi:battery'],
+      ['show_watch_battery', 'watch_battery_position', 'position.watch_battery', 'mdi:watch'],
+      ['show_activity', 'activity_position', 'position.activity', 'mdi:walk'],
+      ['show_connection', 'connection_position', 'position.connection', 'mdi:wifi'],
+      ['show_distance', 'distance_position', 'position.distance', 'mdi:map-marker-distance'],
+      ['show_travel_time', 'travel_position', 'position.travel', 'mdi:car-clock'],
+    ].filter(([showKey]) => c[showKey] !== false);
 
-    return html`
-      <div class="section">
-        <div class="section-title">${this._t('section.element_positions')}</div>
-        <p class="info-text">
-          ${this._t('section.positions_description')}
-        </p>
-
-        ${this._config.show_battery !== false ? html`
-          ${this._renderPositionButtons('battery_position', this._t('position.battery'))}
-        ` : ''}
-
-        ${this._config.show_watch_battery !== false ? html`
-          ${this._renderPositionButtons('watch_battery_position', this._t('position.watch_battery'))}
-        ` : ''}
-
-        ${this._config.show_activity !== false ? html`
-          ${this._renderPositionButtons('activity_position', this._t('position.activity'))}
-        ` : ''}
-
-        ${this._config.show_connection !== false ? html`
-          ${this._renderPositionButtons('connection_position', this._t('position.connection'))}
-        ` : ''}
-
-        ${this._config.show_distance !== false ? html`
-          ${this._renderPositionButtons('distance_position', this._t('position.distance'))}
-        ` : ''}
-
-        ${this._config.show_travel_time !== false ? html`
-          ${this._renderPositionButtons('travel_position', this._t('position.travel'))}
-        ` : ''}
+    return this._section('mdi:view-grid-outline', this._t('section.element_positions'), html`
+      <div class="pos-grid">
+        ${items.map(([, key, labelKey, icon]) => this._renderPositionPicker(key, this._t(labelKey), icon))}
       </div>
-    `;
+    `, this._t('section.positions_description'));
   }
 
-
-
-  _renderStatesTab() {
-    const states = this._config.state || [];
-
-    return html`
-      <div class="section">
-        <div class="section-title">${this._t('section.custom_states')}</div>
-        <p class="info-text">
-          ${this._t('section.states_description')}
-        </p>
-
-        ${states.map((state, index) => html`
-          <div class="state-item">
-            <div class="state-header">
-              <span>${state.name || state.value || 'New state'}</span>
-              <ha-icon-button
-                icon="mdi:delete"
-                class="remove-button"
-                @click=${() => this._removeState(index)}>
-              </ha-icon-button>
-            </div>
-
-            <ha-textfield
-              label="${this._t('editor.state_value')} (e.g., home, not_home)"
-              .value=${state.value || ''}
-              @input=${(e) => this._updateState(index, 'value', e.target.value)}>
-            </ha-textfield>
-
-            <ha-textfield
-              label="${this._t('editor.displayed_name')}"
-              .value=${state.name || ''}
-              @input=${(e) => this._updateState(index, 'name', e.target.value)}>
-            </ha-textfield>
-
-            <ha-textfield
-              label="${this._t('editor.custom_image')} (${this._t('editor.optional')})"
-              .value=${state.entity_picture || ''}
-              @input=${(e) => this._updateState(index, 'entity_picture', e.target.value)}>
-            </ha-textfield>
-
-            <div class="config-row">
-              <span class="config-label">${this._t('state.name_color')}</span>
-              <div class="color-picker">
-                <div class="color-preview"
-                     style="background-color: ${state.styles?.name?.color || '#7DDA9F'}">
-                  <input type="color"
-                         .value=${state.styles?.name?.color || '#7DDA9F'}
-                         @input=${(e) => this._updateStateColor(index, e.target.value)}>
-                </div>
-                <ha-textfield
-                  .value=${state.styles?.name?.color || '#7DDA9F'}
-                  @input=${(e) => this._updateStateColor(index, e.target.value)}
-                  pattern="^#[0-9A-Fa-f]{6}$">
-                </ha-textfield>
-              </div>
-            </div>
-          </div>
-        `)}
-
-        <mwc-button
-          outlined
-          icon="mdi:plus"
-          class="add-button"
-          @click=${this._addState}>
-          ${this._t('state.add_state')}
-        </mwc-button>
-      </div>
-
-      <div class="preview-box">
-        <div class="preview-title">${this._t('state.default_states')}</div>
-        <mwc-button
-          @click=${this._addDefaultStates}
-          icon="mdi:magic">
-          ${this._t('state.add_default_states')}
-        </mwc-button>
-      </div>
-    `;
-  }
-
-  _renderStyleTab() {
-    return html`
-      <div class="section">
-        <div class="section-title">${this._t('section.card_style')}</div>
-
-        ${this._config.layout === 'classic' ? html`
-          <div class="two-column">
-            <ha-textfield
-              label="${this._t('editor.name_font_size')}"
-              .value=${this._config.name_font_size || '20px'}
-              @input=${(e) => this._valueChanged(e, 'name_font_size')}>
-            </ha-textfield>
-
-            <ha-textfield
-              label="${this._t('editor.state_font_size')}"
-              .value=${this._config.state_font_size || '14px'}
-              @input=${(e) => this._valueChanged(e, 'state_font_size')}>
-            </ha-textfield>
-          </div>
-
-          <ha-textfield
-            label="${this._t('editor.last_changed_font_size')}"
-            .value=${this._config.last_changed_font_size || '12px'}
-            @input=${(e) => this._valueChanged(e, 'last_changed_font_size')}
-            helper-text="E.g.: 12px, 0.9em, 14px">
-          </ha-textfield>
-        ` : ''}
-
-        ${this._config.layout !== 'modern' ? html`
-          <div class="config-row" style="margin-top:8px;">
-            <span class="config-label">${this._t('editor.last_changed_color')}</span>
-            <div class="color-picker">
-              <div class="color-preview"
-                   style="background-color:${this._config.last_changed_color || '#888888'}">
-                <input type="color"
-                       .value=${this._config.last_changed_color || '#888888'}
-                       @input=${(e) => this._updateConfigColor('last_changed_color', e.target.value)}>
-              </div>
-              <ha-textfield
-                .value=${this._config.last_changed_color || ''}
-                placeholder="#888888"
-                @input=${(e) => this._updateConfigColor('last_changed_color', e.target.value)}
-                pattern="^#[0-9A-Fa-f]{6}$">
-              </ha-textfield>
-            </div>
-          </div>
-          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
-            ${this._t('editor.last_changed_color_description')}
-          </p>
-        ` : ''}
-
-        ${['location_color', 'geocoded_location_color'].map(key => html`
-          <div class="config-row" style="margin-top:8px;">
-            <span class="config-label">${this._t(`editor.${key}`)}</span>
-            <div class="color-picker">
-              <div class="color-preview"
-                   style="background-color:${this._config[key] || '#ffffff'}">
-                <input type="color"
-                       .value=${this._config[key] || '#ffffff'}
-                       @input=${(e) => this._updateConfigColor(key, e.target.value)}>
-              </div>
-              <ha-textfield
-                .value=${this._config[key] || ''}
-                placeholder="#ffffff"
-                @input=${(e) => this._updateConfigColor(key, e.target.value)}
-                pattern="^#[0-9A-Fa-f]{6}$">
-              </ha-textfield>
-            </div>
-          </div>
-          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
-            ${this._t(`editor.${key}_description`)}
-          </p>
-        `)}
-
-        ${['glass', 'bio'].includes(this._config.layout) ? html`
-          <div class="sensor-group" style="margin-bottom:8px;">
-            <div class="sensor-header">
-              <ha-icon icon="mdi:circle-opacity" class="sensor-icon"></ha-icon>
-              <span class="sensor-title">${this._t('editor.transparent_background')}</span>
-              <ha-switch
-                .checked=${this._config.transparent_background === true}
-                @change=${(e) => this._valueChanged(e, 'transparent_background')}>
-              </ha-switch>
-            </div>
-          </div>
-          <div class="sensor-group" style="margin-bottom:8px;">
-            <div class="sensor-header">
-              <ha-icon icon="mdi:blur" class="sensor-icon"></ha-icon>
-              <span class="sensor-title">${this._t('editor.show_particles')}</span>
-              <ha-switch
-                .checked=${this._config.show_particles !== false}
-                @change=${(e) => this._valueChanged(e, 'show_particles')}>
-              </ha-switch>
-            </div>
-          </div>
-        ` : ''}
-
-        ${this._config.layout === 'ink' ? html`
-          <ha-textfield
-            label="${this._t('editor.home_icon')}"
-            .value=${this._config.home_icon || ''}
-            placeholder="mdi:home"
-            @input=${(e) => this._valueChanged(e, 'home_icon')}>
-          </ha-textfield>
-          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
-            ${this._t('editor.home_icon_description')}
-          </p>
-          <ha-entity-picker
-            label="${this._t('editor.home_icon_entity')}"
-            .hass=${this.hass}
-            .value=${this._config.home_icon_entity || ''}
-            allow-custom-entity
-            @value-changed=${(e) => this._valueChanged(e, 'home_icon_entity')}>
-          </ha-entity-picker>
-          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
-            ${this._t('editor.home_icon_entity_description')}
-          </p>
-        ` : ''}
-
-        <ha-textfield
-          label="${this._t('editor.card_background')}"
-          .value=${this._config.card_background || 'rgba(255,255,255,0.05)'}
-          @input=${(e) => this._valueChanged(e, 'card_background')}
-          helper-text="E.g.: rgba(255,255,255,0.05) or #1a1a2e">
-        </ha-textfield>
-
-        <ha-textfield
-          label="${this._t('editor.border_radius')}"
-          .value=${this._config.card_border_radius || '15px'}
-          @input=${(e) => this._valueChanged(e, 'card_border_radius')}>
-        </ha-textfield>
-
-        ${this._config.layout === 'classic' ? html`
-          <ha-textfield
-            label="${this._t('editor.image_size')}"
-            type="number"
-            min="10"
-            max="100"
-            .value=${this._config.picture_size || '40'}
-            @input=${(e) => this._valueChanged(e, 'picture_size')}>
-          </ha-textfield>
-        ` : ''}
-      </div>
-
-      <!-- Classic Layout Options -->
-      ${this._config.layout === 'classic' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.classic_options')}</div>
-
-          <ha-textfield
-            label="${this._t('editor.classic_icon_size')}"
-            type="number"
-            min="12"
-            max="32"
-            .value=${this._config.classic_icon_size || '16'}
-            @input=${(e) => this._valueChanged(e, 'classic_icon_size')}
-            helper-text="Default: 16px (icon size for indicators)">
-          </ha-textfield>
-
-          <ha-textfield
-            label="${this._t('editor.battery_font_size')}"
-            .value=${this._config.battery_font_size || '13px'}
-            @input=${(e) => this._valueChanged(e, 'battery_font_size')}
-            helper-text="Default: 13px">
-          </ha-textfield>
-
-          <ha-textfield
-            label="${this._t('editor.activity_font_size')}"
-            .value=${this._config.activity_font_size || '13px'}
-            @input=${(e) => this._valueChanged(e, 'activity_font_size')}
-            helper-text="Default: 13px">
-          </ha-textfield>
-        </div>
-      ` : ''}
-
-      <!-- Compact Layout Options -->
-      ${this._config.layout === 'compact' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.compact_options')}</div>
-
-          <ha-textfield
-            label="${this._t('editor.compact_icon_size')}"
-            type="number"
-            min="12"
-            max="32"
-            .value=${this._config.compact_icon_size || '16'}
-            @input=${(e) => this._valueChanged(e, 'compact_icon_size')}
-            helper-text="Default: 16px (scales entire card proportionally)">
-          </ha-textfield>
-        </div>
-      ` : ''}
-
-      <!-- Neon Layout Options -->
-      ${this._config.layout === 'neon' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.neon_options')}</div>
-          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
-            ${this._t('section.neon_description')}
-          </p>
-        </div>
-      ` : ''}
-
-      <!-- Glass Layout Options -->
-      ${this._config.layout === 'glass' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.glass_options')}</div>
-          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
-            ${this._t('section.glass_description')}
-          </p>
-        </div>
-      ` : ''}
-
-      ${this._config.layout === 'bio' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.bio_options')}</div>
-          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
-            ${this._t('section.bio_description')}
-          </p>
-        </div>
-      ` : ''}
-
-      ${this._config.layout === 'holo' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.holo_options')}</div>
-          <p style="font-size:12px; color: var(--secondary-text-color); margin: 0 0 8px 0;">
-            ${this._t('section.holo_description')}
-          </p>
-        </div>
-      ` : ''}
-
-      <!-- Modern Layout Options -->
-      ${this._config.layout === 'modern' ? html`
-        <div class="section">
-          <div class="section-title">${this._t('section.modern_options')}</div>
-
-          <ha-textfield
-            label="${this._t('editor.modern_picture_size')}"
-            type="number"
-            min="30"
-            max="80"
-            .value=${this._config.modern_picture_size || '40'}
-            @input=${(e) => this._valueChanged(e, 'modern_picture_size')}
-            helper-text="Default: 40px">
-          </ha-textfield>
-
-          <ha-textfield
-            label="${this._t('editor.modern_ring_size')}"
-            type="number"
-            min="28"
-            max="60"
-            .value=${this._config.modern_ring_size || '38'}
-            @input=${(e) => this._valueChanged(e, 'modern_ring_size')}
-            helper-text="Default: 38px (size of circular indicators)">
-          </ha-textfield>
-
-          <div class="two-column">
-            <ha-textfield
-              label="${this._t('editor.modern_name_font_size')}"
-              .value=${this._config.modern_name_font_size || '14px'}
-              @input=${(e) => this._valueChanged(e, 'modern_name_font_size')}
-              helper-text="Default: 14px">
-            </ha-textfield>
-
-            <ha-textfield
-              label="${this._t('editor.modern_state_font_size')}"
-              .value=${this._config.modern_state_font_size || '12px'}
-              @input=${(e) => this._valueChanged(e, 'modern_state_font_size')}
-              helper-text="Default: 12px">
-            </ha-textfield>
-          </div>
-
-          <ha-textfield
-            label="${this._t('editor.modern_travel_max_time')}"
-            type="number"
-            min="10"
-            max="180"
-            .value=${this._config.modern_travel_max_time || '60'}
-            @input=${(e) => this._valueChanged(e, 'modern_travel_max_time')}
-            helper-text="Default: 60 min (used for progress ring calculation)">
-          </ha-textfield>
-
-          <ha-textfield
-            label="${this._t('editor.modern_distance_max')}"
-            type="number"
-            min="1"
-            max="5000"
-            .value=${this._config.modern_distance_max || '100'}
-            @input=${(e) => this._valueChanged(e, 'modern_distance_max')}
-            helper-text="Default: 100 km (used for distance ring calculation)">
-          </ha-textfield>
-        </div>
-      ` : ''}
-
-      <!-- Weather Options (all layouts) -->
-      <div class="section">
-        <div class="section-title">${this._t('section.weather')}</div>
-        <div class="sensor-group">
-          <div class="sensor-header">
-            <span class="sensor-title">${this._t('editor.show_weather')}</span>
-            <ha-switch
-              .checked=${this._config.show_weather || false}
-              @change=${(e) => this._valueChanged(e, 'show_weather')}>
-            </ha-switch>
-          </div>
-        </div>
-        ${this._config.show_weather ? html`
-          <ha-entity-picker
-            .hass=${this.hass}
-            .value=${this._config.weather_entity || ''}
-            .includeDomains=${['weather']}
-            .label=${this._t('editor.weather_entity')}
-            allow-custom-entity
-            @value-changed=${(e) => this._entityPickerChanged(e, 'weather_entity')}>
-          </ha-entity-picker>
-          <p style="font-size:11px; color: var(--secondary-text-color); margin: 4px 0 0 0;">
-            ${this._t('section.weather_description')}
-          </p>
-          ${this._config.layout !== 'matrix' ? html`
-          <div class="sensor-group" style="margin-top:8px;">
-            <div class="sensor-header">
-              <span class="sensor-title">${this._t('editor.show_weather_background')}</span>
-              <ha-switch
-                .checked=${this._config.show_weather_background !== false}
-                @change=${(e) => this._valueChanged(e, 'show_weather_background')}>
-              </ha-switch>
-            </div>
-          </div>
-          ` : ''}
-          <div class="sensor-group">
-            <div class="sensor-header">
-              <span class="sensor-title">${this._t('editor.show_weather_temperature')}</span>
-              <ha-switch
-                .checked=${this._config.show_weather_temperature !== false}
-                @change=${(e) => this._valueChanged(e, 'show_weather_temperature')}>
-              </ha-switch>
-            </div>
-          </div>
-
-          <!-- Weather text color -->
-          <div class="config-row" style="margin-top:8px;">
-            <span class="config-label">${this._t('editor.weather_text_color')}</span>
-            <div class="color-picker">
-              <div class="color-preview"
-                   style="background-color:${this._config.weather_text_color || '#cccccc'}">
-                <input type="color"
-                       .value=${this._config.weather_text_color || '#cccccc'}
-                       @input=${(e) => this._updateConfigColor('weather_text_color', e.target.value)}>
-              </div>
-              <ha-textfield
-                .value=${this._config.weather_text_color || ''}
-                placeholder="#cccccc"
-                @input=${(e) => this._updateConfigColor('weather_text_color', e.target.value)}
-                pattern="^#[0-9A-Fa-f]{6}$">
-              </ha-textfield>
-            </div>
-          </div>
-          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
-            ${this._t('editor.weather_text_color_description')}
-          </p>
-
-        ` : ''}
-      </div>
-    `;
-  }
-
-  _renderPositionButtons(configKey, label) {
-    const options = [
-      { value: 'top-left', label: 'Top Left' },
-      { value: 'top-right', label: 'Top Right' },
-      { value: 'bottom-left', label: 'Bottom Left' },
-      { value: 'bottom-right', label: 'Bottom Right' }
-    ];
-    const selected = this._config[configKey] || options[0].value;
+  // Mini card diagram: 5 slots per side, matching the positions the card supports
+  _renderPositionPicker(configKey, label, icon) {
+    const selected = this._config[configKey];
+    const rows = [['top', ''], ['top', '-2'], ['top', '-3'], null, ['bottom', '-2'], ['bottom', '']];
+    const cell = (v, side, suffix) => {
+      const id = `${v}-${side}${suffix}`;
+      return html`
+        <button class="pos-cell ${side === 'right' ? 'r' : ''} ${selected === id ? 'active' : ''}"
+                title="${id}" @click=${() => this._onSelectPosition(configKey, id)}></button>
+      `;
+    };
 
     return html`
-      <div class="sensor-group">
-        <div class="sensor-header">
-          <span class="sensor-title">${label}</span>
-        </div>
-        <div class="position-button-group buttons">
-          ${options.map(opt => html`
-            <button
-              class="${selected === opt.value ? 'selected' : ''}"
-              @click="${() => this._onSelectPosition(configKey, opt.value)}">
-              ${opt.label}
-            </button>
-          `)}
+      <div class="pos">
+        <div class="pos-title"><ha-icon icon="${icon}"></ha-icon><span>${label}</span></div>
+        <div class="pos-map">
+          ${rows.map(r => r === null
+            ? html`<div class="pos-gap"></div>`
+            : html`${cell(r[0], 'left', r[1])}${cell(r[0], 'right', r[1])}`)}
         </div>
       </div>
     `;
   }
-
-
 
   _onSelectPosition(configKey, value) {
     this._config = { ...this._config, [configKey]: value };
     this._fireEvent('config-changed', { config: this._config });
-    this.requestUpdate();
+  }
+
+  _renderStatesTab() {
+    const states = this._config.state || [];
+
+    return this._section('mdi:palette-outline', this._t('section.custom_states'), html`
+      ${states.map((state, index) => {
+        const color = state.styles?.name?.color || '#7DDA9F';
+        return html`
+          <div class="item">
+            <div class="item-head">
+              <span class="dot" style="background:${color}"></span>
+              <span class="item-title">${state.name || state.value || `#${index + 1}`}</span>
+              <button class="icon-btn danger" title="${this._t('common.remove')}" @click=${() => this._removeState(index)}>✕</button>
+            </div>
+
+            <div class="grid2">
+              <ptc-textfield
+                .label=${this._t('editor.state_value')}
+                .value=${state.value || ''}
+                placeholder="home, not_home…"
+                @input=${(e) => this._updateState(index, 'value', e.target.value)}>
+              </ptc-textfield>
+              <ptc-textfield
+                .label=${this._t('editor.displayed_name')}
+                .value=${state.name || ''}
+                @input=${(e) => this._updateState(index, 'name', e.target.value)}>
+              </ptc-textfield>
+            </div>
+
+            <ptc-textfield
+              .label=${`${this._t('editor.custom_image')} (${this._t('editor.optional')})`}
+              .value=${state.entity_picture || ''}
+              placeholder="/local/photos/mario.jpg"
+              @input=${(e) => this._updateState(index, 'entity_picture', e.target.value)}>
+            </ptc-textfield>
+
+            ${this._color(this._t('state.name_color'), color, (v) => this._updateStateColor(index, v), { clearable: false, fallback: '#7DDA9F' })}
+          </div>
+        `;
+      })}
+
+      <div class="btn-row">
+        <button class="btn primary" @click=${() => this._addState()}>
+          <ha-icon icon="mdi:plus"></ha-icon>
+          ${this._t('state.add_state')}
+        </button>
+        <button class="btn" @click=${() => this._addDefaultStates()}>
+          <ha-icon icon="mdi:auto-fix"></ha-icon>
+          ${this._t('state.add_default_states')}
+        </button>
+      </div>
+    `, this._t('section.states_description'));
+  }
+
+  _renderStyleTab() {
+    const c = this._config;
+    const layout = c.layout || 'classic';
+    const configColor = (key, fallback) => this._color(
+      this._t(`editor.${key}`), c[key], (v) => this._updateConfigColor(key, v),
+      { fallback, desc: this._t(`editor.${key}_description`) });
+
+    return html`
+      ${this._section('mdi:format-color-fill', this._t('section.card_style'), html`
+        ${layout !== 'modern' ? configColor('last_changed_color', '#888888') : ''}
+        ${configColor('location_color', '#ffffff')}
+        ${configColor('geocoded_location_color', '#ffffff')}
+
+        ${['glass', 'bio'].includes(layout) ? html`
+          ${this._toggle('transparent_background', this._t('editor.transparent_background'), c.transparent_background === true)}
+          ${this._toggle('show_particles', this._t('editor.show_particles'), c.show_particles !== false)}
+        ` : ''}
+
+        <div class="grid2">
+          ${this._text('card_background', this._t('editor.card_background'), { fallback: 'rgba(255,255,255,0.05)' })}
+          ${this._text('card_border_radius', this._t('editor.border_radius'), { fallback: '15px' })}
+        </div>
+
+        ${layout === 'ink' ? html`
+          ${this._text('home_icon', this._t('editor.home_icon'), { placeholder: 'mdi:home', helper: this._t('editor.home_icon_description') })}
+          ${this._entity('home_icon_entity', { label: this._t('editor.home_icon_entity') })}
+          <p class="info">${this._t('editor.home_icon_entity_description')}</p>
+        ` : ''}
+      `)}
+
+      ${layout === 'classic' ? this._section('mdi:tune-variant', this._t('section.classic_options'), html`
+        <div class="grid2">
+          ${this._text('picture_size', this._t('editor.image_size'), { type: 'number', min: 10, max: 100, fallback: '40', helper: 'Default: 40' })}
+          ${this._text('classic_icon_size', this._t('editor.classic_icon_size'), { type: 'number', min: 12, max: 32, fallback: '16', helper: 'Default: 16' })}
+          ${this._text('name_font_size', this._t('editor.name_font_size'), { fallback: '20px', helper: 'Default: 20px' })}
+          ${this._text('state_font_size', this._t('editor.state_font_size'), { fallback: '14px', helper: 'Default: 14px' })}
+          ${this._text('last_changed_font_size', this._t('editor.last_changed_font_size'), { fallback: '12px', helper: 'Default: 12px' })}
+          ${this._text('battery_font_size', this._t('editor.battery_font_size'), { fallback: '13px', helper: 'Default: 13px' })}
+          ${this._text('activity_font_size', this._t('editor.activity_font_size'), { fallback: '13px', helper: 'Default: 13px' })}
+        </div>
+      `) : ''}
+
+      ${layout === 'compact' ? this._section('mdi:tune-variant', this._t('section.compact_options'), html`
+        ${this._text('compact_icon_size', this._t('editor.compact_icon_size'), { type: 'number', min: 12, max: 32, fallback: '16', helper: 'Default: 16' })}
+      `) : ''}
+
+      ${layout === 'modern' ? this._section('mdi:tune-variant', this._t('section.modern_options'), html`
+        <div class="grid2">
+          ${this._text('modern_picture_size', this._t('editor.modern_picture_size'), { type: 'number', min: 30, max: 80, fallback: '40', helper: 'Default: 40' })}
+          ${this._text('modern_ring_size', this._t('editor.modern_ring_size'), { type: 'number', min: 28, max: 60, fallback: '38', helper: 'Default: 38' })}
+          ${this._text('modern_name_font_size', this._t('editor.modern_name_font_size'), { fallback: '14px', helper: 'Default: 14px' })}
+          ${this._text('modern_state_font_size', this._t('editor.modern_state_font_size'), { fallback: '12px', helper: 'Default: 12px' })}
+          ${this._text('modern_travel_max_time', this._t('editor.modern_travel_max_time'), { type: 'number', min: 10, max: 180, fallback: '60', helper: 'Default: 60' })}
+          ${this._text('modern_distance_max', this._t('editor.modern_distance_max'), { type: 'number', min: 1, max: 5000, fallback: '100', helper: 'Default: 100' })}
+        </div>
+      `) : ''}
+
+      ${this._section('mdi:weather-partly-cloudy', this._t('section.weather'), html`
+        ${this._group({
+          icon: 'mdi:weather-partly-rainy', title: this._t('editor.show_weather'),
+          key: 'show_weather', checked: c.show_weather === true,
+          body: html`
+            ${this._entity('weather_entity', { label: this._t('editor.weather_entity'), domains: ['weather'] })}
+            ${layout !== 'matrix' ? this._toggle('show_weather_background', this._t('editor.show_weather_background'), c.show_weather_background !== false) : ''}
+            ${this._toggle('show_weather_temperature', this._t('editor.show_weather_temperature'), c.show_weather_temperature !== false)}
+            ${configColor('weather_text_color', '#cccccc')}
+          `
+        })}
+      `, this._t('section.weather_description'))}
+    `;
   }
 
   _valueChanged(ev, configValue) {
@@ -2913,102 +2428,8 @@ class PersonTrackerCardEditor extends LitElement {
   }
 
 
-  _handleLayoutChange(ev) {
-    if (!this._config || !this.hass) return;
-
-    ev.stopPropagation();
-
-    // Skip deselect events — request-selected fires twice: once for the newly
-    // selected item (selected=true) and once for the previously selected item
-    // (selected=false). Processing the second event would reset the layout back.
-    if (ev.detail && ev.detail.selected === false) return;
-
-    // HA 2025: ha-select emette request-selected sull'item cliccato
-    // Try multiple value sources for robustness
-    const item = ev.target;
-    const value = ev.detail?.value
-      || item?.value
-      || (item && item.getAttribute ? item.getAttribute('value') : null);
-
-    if (!value || (value !== 'classic' && value !== 'compact' && value !== 'modern' && value !== 'neon' && value !== 'glass' && value !== 'bio' && value !== 'holo' && value !== 'wxstation' && value !== 'matrix' && value !== 'orbital' && value !== 'ink')) {
-      console.warn('Invalid layout value:', value);
-      return;
-    }
-
-    // Aggiorna il label visibile nel picker (fix HA 2025)
-    const select = ev.currentTarget || ev.composedPath().find(el => el.tagName === 'HA-SELECT');
-    if (select) {
-      select.value = value;
-      const pf = select.shadowRoot && select.shadowRoot.querySelector('ha-picker-field');
-      if (pf && pf.shadowRoot) {
-        const cb = pf.shadowRoot.querySelector('ha-combo-box-item');
-        if (cb) { const sp = cb.querySelector('span[slot="headline"]'); if (sp) sp.textContent = item.textContent.trim(); }
-      }
-      const dropdown = select.shadowRoot && select.shadowRoot.querySelector('ha-dropdown');
-      if (dropdown) dropdown.open = false;
-    }
-
-    this._config = { ...this._config, layout: value };
-    this._fireEvent('config-changed', { config: this._config });
-    this.requestUpdate();
-  }
-
-
-  _selectChanged(ev, configValue) {
-    if (!this._config || !this.hass) return;
-
-    ev.stopPropagation();
-    ev.preventDefault();
-
-    // HA 2025: request-selected porta il valore nell'item (ev.target), non in ev.detail.value
-    const value = (ev.target && ev.target.getAttribute && ev.target.getAttribute('value'))
-      || ev.detail?.value;
-
-    // Allowed values for triggers_update
-    const validTriggerValues = ['all', 'entity', 'custom'];
-
-    // Allowed values for layout
-    const validLayoutValues = ['classic', 'compact', 'modern', 'neon', 'glass', 'bio', 'holo', 'wxstation', 'matrix', 'orbital', 'ink'];
-
-    // Allowed values for positions
-    const validPositions = [
-      'top-left', 'top-right', 'bottom-left', 'bottom-right',
-      'top-left-2', 'top-right-2', 'bottom-left-2', 'bottom-right-2'
-    ];
-
-    if (!value || typeof value !== 'string') {
-      console.warn(`Invalid value (type or undefined) for ${configValue}:`, value);
-      return;
-    }
-
-    if (configValue === 'triggers_update') {
-      if (!validTriggerValues.includes(value)) {
-        console.warn(`Invalid triggers_update value:`, value);
-        return;
-      }
-    } else if (configValue === 'layout') {
-      if (!validLayoutValues.includes(value)) {
-        console.warn(`Invalid layout value:`, value);
-        return;
-      }
-    } else {
-      if (!validPositions.includes(value)) {
-        console.warn(`Invalid position value for ${configValue}:`, value);
-        return;
-      }
-    }
-
-    this._config = { ...this._config, [configValue]: value };
-    this._fireEvent('config-changed', { config: this._config });
-    this.requestUpdate();
-  }
-
-
-
-
-
   _addState() {
-    const states = this._config.state || [];
+    const states = [...(this._config.state || [])];
     states.push({
       value: '',
       name: '',
@@ -3118,16 +2539,24 @@ class PersonTrackerCardEditor extends LitElement {
       if (this.hass.states[`sensor.${prefix}_battery_level`]) return prefix;
     }
 
-    // Fallback: scan all device_trackers whose name contains the person name
+    // Fallback: scan all device_trackers whose name contains the person name.
+    // Editor-only, and cached for a few seconds: render() asks for the prefix several times.
+    const cacheKey = `${this._config.entity}|${deviceTrackers.join(',')}`;
+    const cached = this._prefixScanCache;
+    if (cached && cached.key === cacheKey && Date.now() - cached.at < 5000) return cached.value;
+
+    let found = null;
     const personName = this._config.entity.replace('person.', '');
     for (const entityId of Object.keys(this.hass.states)) {
       if (!entityId.startsWith('device_tracker.')) continue;
       const prefix = entityId.replace('device_tracker.', '');
       if (prefix.includes(personName) && this.hass.states[`sensor.${prefix}_battery_level`]) {
-        return prefix;
+        found = prefix;
+        break;
       }
     }
-    return null;
+    this._prefixScanCache = { key: cacheKey, at: Date.now(), value: found };
+    return found;
   }
 
   // Returns a map of auto-detected sensor IDs using the resolved device prefix.
