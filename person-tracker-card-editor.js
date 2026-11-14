@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.18: location_color + geocoded_location_color pickers in Style tab (all layouts); 6 languages translated
 // v1.4.17: No editor changes — bump only for card-side perf fix (PR #48)
 // v1.4.16: home_icon_entity option for ink layout — read home state icon dynamically from a HA entity state
 // v1.4.15: home_icon option for ink layout — customize home state location icon; "auto" uses device icon
@@ -170,6 +171,10 @@ class EditorLocalizationHelper {
         'editor.weather_text_color_description': 'Colore di temperatura, icona e condizione. Lascia vuoto per usare il colore predefinito del layout.',
         'editor.last_changed_color': 'Colore testo aggiornamento',
         'editor.last_changed_color_description': 'Colore del timestamp di ultimo aggiornamento. Lascia vuoto per usare il colore predefinito.',
+        'editor.location_color': 'Colore testo posizione',
+        'editor.location_color_description': 'Colore della zona/stato per tutte le posizioni. Un colore impostato per un singolo stato ha la priorità. Lascia vuoto per il colore predefinito del layout.',
+        'editor.geocoded_location_color': 'Colore indirizzo GPS',
+        'editor.geocoded_location_color_description': 'Colore dell\'indirizzo geocodificato. Lascia vuoto per usare il colore testo posizione (o il predefinito del layout).',
         'section.weather_description': 'Aggiunge uno sfondo animato alla card (pioggia, neve, sole, stelle, fulmini…). Funziona su tutti i layout.',
         'section.travel_sensor_2': '🏢 Sensori Casa ↔ Lavoro',
         'section.travel_sensor_2_description': 'Sensori 1 (casa→lavoro): visibili a casa e in transito, nascosti al lavoro. Sensori 2 (lavoro→casa): visibili al lavoro e in transito, nascosti a casa. Disattiva la modalità smart per mostrare sempre entrambi.',
@@ -344,6 +349,10 @@ class EditorLocalizationHelper {
         'editor.weather_text_color_description': 'Color of temperature, icon and condition label. Leave empty to use the layout default.',
         'editor.last_changed_color': 'Last updated text color',
         'editor.last_changed_color_description': 'Color of the last-updated timestamp. Leave empty to use the layout default.',
+        'editor.location_color': 'Location text color',
+        'editor.location_color_description': 'Color of the zone/state text for every location. A color set for a single state takes priority. Leave empty to use the layout default.',
+        'editor.geocoded_location_color': 'GPS address color',
+        'editor.geocoded_location_color_description': 'Color of the geocoded address. Leave empty to use the location text color (or the layout default).',
         'section.weather_description': 'Adds an animated weather background to the card (rain, snow, sun, stars, lightning…). Works on all layouts.',
         'section.travel_sensor_2': '🏢 Home ↔ Work Sensors',
         'section.travel_sensor_2_description': 'Sensor 1 (home→work): visible at home and in transit, hidden at work. Sensor 2 (work→home): visible at work and in transit, hidden at home. Disable smart mode to always show both.',
@@ -518,6 +527,10 @@ class EditorLocalizationHelper {
         'editor.weather_text_color_description': 'Couleur de la température, de l\'icône et de la condition. Laissez vide pour la couleur par défaut du layout.',
         'editor.last_changed_color': 'Couleur du texte de mise à jour',
         'editor.last_changed_color_description': 'Couleur du timestamp de dernière mise à jour. Laissez vide pour la couleur par défaut.',
+        'editor.location_color': 'Couleur du texte de position',
+        'editor.location_color_description': 'Couleur de la zone/état pour toutes les positions. Une couleur définie pour un état précis reste prioritaire. Laissez vide pour la couleur par défaut du layout.',
+        'editor.geocoded_location_color': 'Couleur de l\'adresse GPS',
+        'editor.geocoded_location_color_description': 'Couleur de l\'adresse géocodée. Laissez vide pour utiliser la couleur du texte de position (ou celle du layout).',
         'section.weather_description': 'Ajoute un fond animé à la carte (pluie, neige, soleil, étoiles, foudre…). Fonctionne sur tous les layouts.',
         'section.travel_sensor_2': '🏢 Capteurs Maison ↔ Travail',
         'section.travel_sensor_2_description': 'Capteur 1 (maison→travail): visible à la maison et en transit, masqué au travail. Capteur 2 (travail→maison): visible au travail et en transit, masqué à la maison. Désactivez le mode smart pour toujours afficher les deux.',
@@ -692,6 +705,10 @@ class EditorLocalizationHelper {
         'editor.weather_text_color_description': 'Farbe für Temperatur, Symbol und Wetterbedingung. Leer lassen für die Standard-Layout-Farbe.',
         'editor.last_changed_color': 'Farbe des Aktualisierungstexts',
         'editor.last_changed_color_description': 'Farbe des Zeitstempels der letzten Aktualisierung. Leer lassen für die Standard-Farbe.',
+        'editor.location_color': 'Farbe des Standorttexts',
+        'editor.location_color_description': 'Farbe des Zonen-/Statustexts für alle Standorte. Eine für einen einzelnen Status gesetzte Farbe hat Vorrang. Leer lassen für die Standard-Layout-Farbe.',
+        'editor.geocoded_location_color': 'Farbe der GPS-Adresse',
+        'editor.geocoded_location_color_description': 'Farbe der geokodierten Adresse. Leer lassen, um die Farbe des Standorttexts (oder die Layout-Farbe) zu verwenden.',
         'section.weather_description': 'Fügt der Karte einen animierten Wetterhintergrund hinzu (Regen, Schnee, Sonne, Sterne, Blitze…). Funktioniert auf allen Layouts.',
         'section.travel_sensor_2': '🏢 Zuhause ↔ Arbeit Sensoren',
         'section.travel_sensor_2_description': 'Sensor 1 (zuhause→arbeit): sichtbar zuhause und unterwegs, versteckt bei der Arbeit. Sensor 2 (arbeit→zuhause): sichtbar bei der Arbeit und unterwegs, versteckt zuhause. Smart-Modus deaktivieren um immer beide anzuzeigen.',
@@ -866,6 +883,10 @@ class EditorLocalizationHelper {
         'editor.weather_text_color_description': 'Kolor temperatury, ikony i etykiety warunków. Pozostaw puste dla domyślnego koloru układu.',
         'editor.last_changed_color': 'Kolor tekstu aktualizacji',
         'editor.last_changed_color_description': 'Kolor znacznika czasu ostatniej aktualizacji. Pozostaw puste dla koloru domyślnego.',
+        'editor.location_color': 'Kolor tekstu lokalizacji',
+        'editor.location_color_description': 'Kolor tekstu strefy/stanu dla wszystkich lokalizacji. Kolor ustawiony dla pojedynczego stanu ma pierwszeństwo. Pozostaw puste dla domyślnego koloru układu.',
+        'editor.geocoded_location_color': 'Kolor adresu GPS',
+        'editor.geocoded_location_color_description': 'Kolor adresu geokodowanego. Pozostaw puste, aby użyć koloru tekstu lokalizacji (lub domyślnego koloru układu).',
         'section.weather_description': 'Dodaje animowane tło pogody do karty (deszcz, śnieg, słońce, gwiazdy, pioruny…). Działa na wszystkich układach.',
         'section.travel_sensor_2': '🏢 Sensory Dom ↔ Praca',
         'section.travel_sensor_2_description': 'Sensor 1 (dom→praca): widoczny w domu i w drodze, ukryty w pracy. Sensor 2 (praca→dom): widoczny w pracy i w drodze, ukryty w domu. Wyłącz tryb smart, aby zawsze pokazywać oba.',
@@ -1040,6 +1061,10 @@ class EditorLocalizationHelper {
         'editor.weather_text_color_description': 'Kleur voor temperatuur, pictogram en weerconditielabel. Leeg laten voor de standaard lay-outkleur.',
         'editor.last_changed_color': 'Kleur van updatetekst',
         'editor.last_changed_color_description': 'Kleur van het tijdstempel van de laatste update. Leeg laten voor de standaardkleur.',
+        'editor.location_color': 'Kleur van locatietekst',
+        'editor.location_color_description': 'Kleur van de zone-/statustekst voor alle locaties. Een kleur die voor één status is ingesteld heeft voorrang. Leeg laten voor de standaard lay-outkleur.',
+        'editor.geocoded_location_color': 'Kleur van GPS-adres',
+        'editor.geocoded_location_color_description': 'Kleur van het gegeocodeerde adres. Leeg laten om de kleur van de locatietekst (of de lay-outstandaard) te gebruiken.',
         'section.weather_description': 'Voegt een geanimeerde weerachtergrond toe aan de kaart (regen, sneeuw, zon, sterren, bliksem…). Werkt op alle lay-outs.',
         'section.travel_sensor_2': '🏢 Thuis ↔ Werk sensoren',
         'section.travel_sensor_2_description': 'Sensor 1 (thuis→werk): zichtbaar thuis en onderweg, verborgen op het werk. Sensor 2 (werk→thuis): zichtbaar op het werk en onderweg, verborgen thuis. Schakel slimme modus uit om altijd beide te tonen.',
@@ -1514,7 +1539,7 @@ class PersonTrackerCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div class="editor-version-badge">Person Tracker Card <span>v1.4.17</span></div>
+        <div class="editor-version-badge">Person Tracker Card <span>v1.4.18</span></div>
         <div class="tabs">
           <button
             class="tab ${this._selectedTab === 'base' ? 'active' : ''}"
@@ -2461,6 +2486,29 @@ class PersonTrackerCardEditor extends LitElement {
             ${this._t('editor.last_changed_color_description')}
           </p>
         ` : ''}
+
+        ${['location_color', 'geocoded_location_color'].map(key => html`
+          <div class="config-row" style="margin-top:8px;">
+            <span class="config-label">${this._t(`editor.${key}`)}</span>
+            <div class="color-picker">
+              <div class="color-preview"
+                   style="background-color:${this._config[key] || '#ffffff'}">
+                <input type="color"
+                       .value=${this._config[key] || '#ffffff'}
+                       @input=${(e) => this._updateConfigColor(key, e.target.value)}>
+              </div>
+              <ha-textfield
+                .value=${this._config[key] || ''}
+                placeholder="#ffffff"
+                @input=${(e) => this._updateConfigColor(key, e.target.value)}
+                pattern="^#[0-9A-Fa-f]{6}$">
+              </ha-textfield>
+            </div>
+          </div>
+          <p style="font-size:10px;color:var(--secondary-text-color);margin:2px 0 8px 0;">
+            ${this._t(`editor.${key}_description`)}
+          </p>
+        `)}
 
         ${['glass', 'bio'].includes(this._config.layout) ? html`
           <div class="sensor-group" style="margin-bottom:8px;">
