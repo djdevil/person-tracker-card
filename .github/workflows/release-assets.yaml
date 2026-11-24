@@ -1,0 +1,39 @@
+# The Home Assistant Marketplace (HA 2026.11+) installs a dashboard card from the
+# assets of the latest GitHub release, and looks for one file only. The card loads
+# person-tracker-card-editor.js next to itself at runtime, so both files are
+# attached to every release.
+name: Release assets
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the files to (e.g. v1.4.20)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Check that CARD_VERSION matches the tag
+        run: |
+          version=$(grep -oP "^const CARD_VERSION = '\K[^']+" person-tracker-card.js)
+          if [ "v${version}" != "${TAG}" ] && [ "${version}" != "${TAG}" ]; then
+            echo "::error::CARD_VERSION is '${version}' but the release tag is '${TAG}'"
+            exit 1
+          fi
+
+      - name: Attach card files to the release
+        run: gh release upload "$TAG" person-tracker-card.js person-tracker-card-editor.js --clobber

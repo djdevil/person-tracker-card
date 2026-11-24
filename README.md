@@ -1,7 +1,8 @@
 # 👤 Person Tracker Card for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-1.4.19-blue.svg)](https://github.com/djdevil/person-tracker-card)
+[![Release](https://img.shields.io/github/v/release/djdevil/person-tracker-card)](https://github.com/djdevil/person-tracker-card/releases/latest)
+[![Validate](https://github.com/djdevil/person-tracker-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/djdevil/person-tracker-card/actions/workflows/validate.yaml)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
 
 Advanced card for Home Assistant that displays detailed information about people with complete visual editor and **eleven layout modes**.
@@ -264,12 +265,14 @@ show_weather_temperature: true  # temperature label
 
 ## 📦 Installation
 
-### Via HACS (Recommended)
+### Via Marketplace / HACS (Recommended)
+
+Starting with **Home Assistant 2026.11**, HACS is built into Home Assistant as the **Marketplace** (Settings → Marketplace), where cards are listed under **Dashboard**. The button below opens the card in the Marketplace, or in HACS on older versions.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)  [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/divil17f)
 
 > [!NOTE]
-> If the button above doesn't work, follow the manual steps below.
+> If the button above doesn't work on HACS, follow the manual steps below.
 
 <details>
 <summary>📋 Manual HACS installation steps</summary>
@@ -293,7 +296,7 @@ show_weather_temperature: true  # temperature label
 
 ### Manual Installation
 
-1. Download `person-tracker-card.js` and `person-tracker-card-editor.js`
+1. Download `person-tracker-card.js` and `person-tracker-card-editor.js` from the [latest release](https://github.com/djdevil/person-tracker-card/releases/latest) (both files are needed: the second one is the visual editor)
 2. Copy to `config/www/person-tracker-card/`
 3. Add resource:
    - Settings → Dashboards → ⋮ → Resources → **+ ADD RESOURCE**
@@ -1068,12 +1071,14 @@ Funziona su tutti e 11 i layout. Le opzioni `show_weather_background` e `show_we
 
 ## 📦 Installazione
 
-### Via HACS (Consigliato)
+### Via Marketplace / HACS (Consigliato)
+
+Da **Home Assistant 2026.11** HACS è integrato in Home Assistant come **Marketplace** (Impostazioni → Marketplace), dove le card sono nella categoria **Dashboard**. Il pulsante qui sotto apre la card nel Marketplace, o in HACS sulle versioni precedenti.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)  [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/divil17f)
 
 > [!NOTE]
-> Se il pulsante non funziona, segui i passaggi manuali qui sotto.
+> Se il pulsante non funziona su HACS, segui i passaggi manuali qui sotto.
 
 <details>
 <summary>📋 Istruzioni installazione manuale HACS</summary>
@@ -1097,7 +1102,7 @@ Funziona su tutti e 11 i layout. Le opzioni `show_weather_background` e `show_we
 
 ### Installazione Manuale
 
-1. Scarica `person-tracker-card.js` e `person-tracker-card-editor.js`
+1. Scarica `person-tracker-card.js` e `person-tracker-card-editor.js` dall'[ultima release](https://github.com/djdevil/person-tracker-card/releases/latest) (servono entrambi: il secondo è l'editor visuale)
 2. Copia in `config/www/person-tracker-card/`
 3. Aggiungi risorsa:
    - Impostazioni → Dashboard → ⋮ → Risorse → **+ AGGIUNGI RISORSA**
