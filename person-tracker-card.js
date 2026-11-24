@@ -1,6 +1,7 @@
-// Person Tracker Card v1.4.19 - Multilanguage Version
+// Person Tracker Card v1.4.20 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.20: Home Assistant Marketplace (HA 2026.11) readiness — HACS validation workflow, card + editor attached to every release. No code changes.
 // v1.4.19: Editor rebuilt — no longer depends on HA components removed in 2026.5 (ha-textfield) or at risk (ha-select, mwc-button); new modern UI.
 //          Modern layout: a long geocoded address no longer makes the rings wrap onto a second row.
 // v1.4.18: location_color + geocoded_location_color options — one global color for the zone/state text and GPS address in all 11 layouts (issue #49); state matching tolerant (case/trim, away ≡ not_home) — fixes not_home color ignored (issue #49)
@@ -49,7 +50,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.19 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.20 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -390,7 +391,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.19';
+const CARD_VERSION = '1.4.20';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -6421,7 +6422,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.19 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.20 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'

@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.20] - 2026-11-24
+
+### Fixed
+- 🐛 **Visual editor missing when installed from the Home Assistant Marketplace** — Starting with Home Assistant 2026.11, HACS is built in as the Marketplace, which installs only the file named in `hacs.json` from the release assets. The editor lives in a second file (`person-tracker-card-editor.js`) and was not installed. Both files are now attached to every release, so the Marketplace installs them together.
+
+### Added
+- ✅ HACS validation workflow (`.github/workflows/validate.yaml`), needed for the default HACS / Marketplace catalog.
+- 📦 Release workflow (`.github/workflows/release-assets.yaml`) that attaches both JS files to each published release and checks that `CARD_VERSION` matches the release tag.
+
+### Changed
+- 📖 README: installation instructions for the Marketplace (Settings → Marketplace), release and validation badges.
+
+No changes to the card, the editor or your YAML.
+
+---
+
 ## [1.4.19] - 2026-11-14
 
 ### Fixed
