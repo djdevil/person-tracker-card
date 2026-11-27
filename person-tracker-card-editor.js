@@ -1,5 +1,6 @@
 // Person Tracker Card Editor - Multilanguage Version
 // Languages: Italian (default), English, French, German
+// v1.4.21: No editor changes — version bump
 // v1.4.20: No editor changes — version bump for the Marketplace release
 // v1.4.19: Editor redesign + audit — own text field (ha-textfield was removed in HA 2026.5, fields were blank), no more ha-select/mwc-button/ha-icon-button;
 //          visual layout picker, card sections, segmented choices, 10-slot position picker, unified color rows; fixes listed in CHANGELOG
@@ -91,7 +92,7 @@ class PtcTextfield extends LitElement {
 }
 if (!customElements.get('ptc-textfield')) customElements.define('ptc-textfield', PtcTextfield);
 
-const PTC_EDITOR_VERSION = '1.4.20';
+const PTC_EDITOR_VERSION = '1.4.21';
 
 // Layout picker tiles: id, display name and the palette of the mini preview
 const PTC_LAYOUTS = [

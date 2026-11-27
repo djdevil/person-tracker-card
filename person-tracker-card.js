@@ -1,6 +1,7 @@
-// Person Tracker Card v1.4.20 - Multilanguage Version
+// Person Tracker Card v1.4.21 - Multilanguage Version
 // Full support for all editor options
 // Languages: Italian (default), English, French, German
+// v1.4.21: Removed the block that rewrote Lovelace resource URLs and reloaded the page on load (HACS review, hacs/default#14851). HACS/Marketplace handle cache busting with hacstag.
 // v1.4.20: Home Assistant Marketplace (HA 2026.11) readiness — HACS validation workflow, card + editor attached to every release. No code changes.
 // v1.4.19: Editor rebuilt — no longer depends on HA components removed in 2026.5 (ha-textfield) or at risk (ha-select, mwc-button); new modern UI.
 //          Modern layout: a long geocoded address no longer makes the rings wrap onto a second row.
@@ -50,7 +51,7 @@
 // v1.1.2: Activity icon now follows entity's icon attribute with fallback to predefined mapping
 // v1.1.2: Fixed WiFi detection for Android (case-insensitive check for "wifi", "Wi-Fi", etc.)
 
-console.log("Person Tracker Card v1.4.20 Multilanguage loading...");
+console.log("Person Tracker Card v1.4.21 Multilanguage loading...");
 
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace") || customElements.get("hui-view")
@@ -391,7 +392,7 @@ class LocalizationHelper {
   }
 }
 
-const CARD_VERSION = '1.4.20';
+const CARD_VERSION = '1.4.21';
 
 class PersonTrackerCard extends LitElement {
   static get properties() {
@@ -6422,7 +6423,7 @@ class PersonTrackerCard extends LitElement {
 if (!customElements.get('person-tracker-card')) {
   customElements.define('person-tracker-card', PersonTrackerCard);
   console.info(
-    '%c PERSON-TRACKER-CARD %c v1.4.20 %c!',
+    '%c PERSON-TRACKER-CARD %c v1.4.21 %c!',
     'background-color: #7DDA9F; color: black; font-weight: bold;',
     'background-color: #93ADCB; color: white; font-weight: bold;',
     'background-color: #A0D4A0; color: black; font-weight: bold;'
@@ -6437,62 +6438,3 @@ window.customCards.push({
   description: 'Advanced person tracking card with full visual editor',
   preview: true
 });
-
-// Cache-busting: automatically update the Lovelace resource URLs with the current
-// version query param (?v=X.X.X). When HACS updates the files the browser would
-// otherwise serve the cached old versions because the URLs haven't changed.
-// This ensures all users get the new version without manually clearing the cache.
-// Both person-tracker-card.js and person-tracker-card-editor.js are updated.
-(async () => {
-  const CARD_FILES = ['person-tracker-card.js', 'person-tracker-card-editor.js'];
-
-  try {
-    // Wait until home-assistant element is available
-    await customElements.whenDefined('home-assistant');
-    const ha = document.querySelector('home-assistant');
-    if (!ha) return;
-
-    // Wait for hass object (may take a moment on startup)
-    let attempts = 0;
-    while (!(ha.__hass || ha._hass) && attempts < 20) {
-      await new Promise(r => setTimeout(r, 500));
-      attempts++;
-    }
-    const hass = ha.__hass || ha._hass;
-    if (!hass) return;
-
-    // Only admins can update Lovelace resources
-    if (!hass.user?.is_admin) return;
-
-    const resources = await hass.callWS({ type: 'lovelace/resources' });
-    if (!Array.isArray(resources)) return;
-
-    let needsReload = false;
-
-    for (const cardFile of CARD_FILES) {
-      const res = resources.find(r => r.url && r.url.includes(cardFile));
-      if (!res) continue;
-
-      const baseUrl = res.url.split('?')[0];
-      const expectedUrl = `${baseUrl}?v=${CARD_VERSION}`;
-
-      if (res.url !== expectedUrl) {
-        await hass.callWS({
-          type: 'lovelace/resources/update',
-          resource_id: res.id,
-          res_type: res.type,
-          url: expectedUrl,
-        });
-        console.info(`[Person Tracker Card] Resource URL updated: ${cardFile} → v${CARD_VERSION}`);
-        needsReload = true;
-      }
-    }
-
-    if (needsReload) {
-      console.info('[Person Tracker Card] Reloading page to clear cache...');
-      window.location.reload();
-    }
-  } catch (e) {
-    // Silent fail — non-critical, user can still clear cache manually
-  }
-})();

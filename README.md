@@ -732,7 +732,7 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 - Manually specify sensors in configuration
 
 ### Editor shows old version after HACS update
-- The editor is loaded with a version-specific cache-busting parameter (`?v=1.3.9`)
+- HACS and the Marketplace add a cache-busting parameter (`hacstag`) to the resource URL, and the editor inherits it
 - Hard refresh the browser after any update
 
 ### Images don't show
@@ -1465,7 +1465,7 @@ entity_picture: "{{ states('sensor.marco_avatar') }}"
 - Specifica manualmente i sensori nella configurazione
 
 ### Editor mostra versione vecchia dopo aggiornamento HACS
-- Il file editor viene caricato con parametro cache-busting (`?v=1.3.9`)
+- HACS e il Marketplace aggiungono un parametro anti-cache (`hacstag`) all'URL della risorsa, e l'editor lo eredita
 - Esegui ricarica forzata del browser dopo ogni aggiornamento
 
 ### Immagini non appaiono

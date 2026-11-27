@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.21] - 2026-11-27
+
+### Removed
+- 🧹 **Automatic resource rewrite and page reload** — On every dashboard load for admin users, the card rewrote every Lovelace resource whose URL contained `person-tracker-card.js` or `person-tracker-card-editor.js` to `?v=<version>`, then reloaded the whole page. This changed Home Assistant configuration without being asked, removed the `hacstag` parameter that HACS and the Marketplace manage for cache busting, could match another resource with a similar URL, and reloaded the frontend under the user. The block is gone: HACS and the Marketplace already handle cache busting with `hacstag`, and the editor inherits it. *(Requested in the HACS default catalog review, hacs/default#14851)*
+
+**Manual installs:** after updating the files, add or change `?v=` on the resource URL (e.g. `/local/person-tracker-card/person-tracker-card.js?v=1.4.21`) or do a hard refresh (Ctrl+Shift+R).
+
+---
+
 ## [1.4.20] - 2026-11-24
 
 ### Fixed
