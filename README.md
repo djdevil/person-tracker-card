@@ -1,6 +1,6 @@
 # 👤 Person Tracker Card for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://hacs.xyz)
 [![Release](https://img.shields.io/github/v/release/djdevil/person-tracker-card)](https://github.com/djdevil/person-tracker-card/releases/latest)
 [![Validate](https://github.com/djdevil/person-tracker-card/actions/workflows/validate.yaml/badge.svg)](https://github.com/djdevil/person-tracker-card/actions/workflows/validate.yaml)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/divil17f)
@@ -267,32 +267,22 @@ show_weather_temperature: true  # temperature label
 
 ### Via Marketplace / HACS (Recommended)
 
-Starting with **Home Assistant 2026.11**, HACS is built into Home Assistant as the **Marketplace** (Settings → Marketplace), where cards are listed under **Dashboard**. The button below opens the card in the Marketplace, or in HACS on older versions.
+Person Tracker Card is in the **default catalog**, so you can find it by searching: no custom repository needed.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)  [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/divil17f)
 
+**Home Assistant 2026.11 and later (Marketplace):**
+1. Go to **Settings → Marketplace**
+2. Search for `Person Tracker Card` (category **Dashboard**)
+3. Install it, then reload the page
+
+**Older Home Assistant versions (HACS):**
+1. Open **HACS**
+2. Search for `Person Tracker Card`
+3. **Download**, then reload the page
+
 > [!NOTE]
-> If the button above doesn't work on HACS, follow the manual steps below.
-
-<details>
-<summary>📋 Manual HACS installation steps</summary>
-
-**HACS v2 (new interface):**
-1. Open HACS
-2. Click the **⋮** menu (top right) → **Custom repositories**
-3. Repository URL: `https://github.com/djdevil/person-tracker-card`
-4. Category: **Dashboard** → **Add**
-5. Search for `Person Tracker Card` → **Download**
-6. Restart Home Assistant
-
-**HACS v1 (old interface):**
-1. HACS → Frontend → **⋮** → **Custom repositories**
-2. Repository URL: `https://github.com/djdevil/person-tracker-card`
-3. Category: **Dashboard** → **Add**
-4. Search for `Person Tracker Card` → **Install**
-5. Restart Home Assistant
-
-</details>
+> If you added this card earlier as a custom repository, it keeps working: updates now come from the default catalog.
 
 ### Manual Installation
 
@@ -1073,32 +1063,22 @@ Funziona su tutti e 11 i layout. Le opzioni `show_weather_background` e `show_we
 
 ### Via Marketplace / HACS (Consigliato)
 
-Da **Home Assistant 2026.11** HACS è integrato in Home Assistant come **Marketplace** (Impostazioni → Marketplace), dove le card sono nella categoria **Dashboard**. Il pulsante qui sotto apre la card nel Marketplace, o in HACS sulle versioni precedenti.
+Person Tracker Card è nel **catalogo ufficiale**, quindi basta cercarla: non serve aggiungere un repository personalizzato.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=djdevil&repository=person-tracker-card&category=plugin)  [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/divil17f)
 
+**Home Assistant 2026.11 e successivi (Marketplace):**
+1. Vai in **Impostazioni → Marketplace**
+2. Cerca `Person Tracker Card` (categoria **Dashboard**)
+3. Installala, poi ricarica la pagina
+
+**Versioni precedenti di Home Assistant (HACS):**
+1. Apri **HACS**
+2. Cerca `Person Tracker Card`
+3. **Scarica**, poi ricarica la pagina
+
 > [!NOTE]
-> Se il pulsante non funziona su HACS, segui i passaggi manuali qui sotto.
-
-<details>
-<summary>📋 Istruzioni installazione manuale HACS</summary>
-
-**HACS v2 (nuova interfaccia):**
-1. Apri HACS
-2. Clicca il menu **⋮** (in alto a destra) → **Repository personalizzati**
-3. URL repository: `https://github.com/djdevil/person-tracker-card`
-4. Categoria: **Dashboard** → **Aggiungi**
-5. Cerca `Person Tracker Card` → **Scarica**
-6. Riavvia Home Assistant
-
-**HACS v1 (vecchia interfaccia):**
-1. HACS → Frontend → **⋮** → **Repository personalizzati**
-2. URL repository: `https://github.com/djdevil/person-tracker-card`
-3. Categoria: **Dashboard** → **Aggiungi**
-4. Cerca `Person Tracker Card` → **Installa**
-5. Riavvia Home Assistant
-
-</details>
+> Se avevi già aggiunto la card come repository personalizzato, continua a funzionare: ora gli aggiornamenti arrivano dal catalogo ufficiale.
 
 ### Installazione Manuale
 
